@@ -20,6 +20,7 @@ import { FiscalPeriodsModule } from './fiscal-periods/fiscal-periods.module';
 import { WarehousesModule } from '../modules/warehouses/warehouses.module';
 import { StockMovementsModule } from '../modules/stock-movements/stock-movements.module';
 import { GenesModule } from '../modules/genes/genes.module';
+import { DocumentationModule } from '../modules/documentation/documentation.module';
 
 @Module({
   imports: [
@@ -41,7 +42,8 @@ import { GenesModule } from '../modules/genes/genes.module';
     FiscalPeriodsModule,
     WarehousesModule,
     StockMovementsModule,
-    GenesModule
+    GenesModule,
+    DocumentationModule
   ],
   controllers: [AppController],
   providers: [AppService],
