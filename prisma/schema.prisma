@@ -307,3 +307,329 @@ enum ConfigScope {
   UNIT        /// على مستوى الوحدة
   PROJECT     /// على مستوى المشروع
 }
+
+// ============================================================================
+// 4. ACCOUNTING SYSTEM - CHART OF ACCOUNTS (نظام دليل الحسابات)
+// ============================================================================
+
+/// الحساب المحاسبي
+model Account {
+  id               String        @id @default(cuid())
+  code             String        @unique /// رمز الحساب (مثل: 1010, 2010)
+  nameAr           String        /// الاسم بالعربية
+  nameEn           String        /// الاسم بالإنجليزية
+  description      String?       /// وصف الحساب
+  accountType      AccountType   /// نوع الحساب (أصول، خصوم، إلخ)
+  accountNature    AccountNature /// طبيعة الحساب (مدين، دائن)
+  level            Int           /// مستوى الحساب في الشجرة (1, 2, 3, ...)
+  isParent         Boolean       @default(false) /// هل الحساب رئيسي (يحتوي على حسابات فرعية)
+  isActive         Boolean       @default(true) /// حالة التفعيل
+  allowManualEntry Boolean       @default(true) /// السماح بالقيد المباشر (false للحسابات الرئيسية)
+  
+  // العلاقات الهرمية (Self-Referencing)
+  parentId         String?
+  parent           Account?      @relation("AccountHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children         Account[]     @relation("AccountHierarchy")
+  
+  // العلاقات مع الكيانات (اختياري)
+  holdingId        String?
+  unitId           String?
+  
+  // العلاقات
+  journalEntryLines JournalEntryLine[]
+  accountBalances   AccountBalance[]
+  hierarchyAsAccount AccountHierarchy[] @relation("AccountAsAccount")
+  hierarchyAsAncestor AccountHierarchy[] @relation("AccountAsAncestor")
+  
+  // التدقيق (Audit Trail)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  
+  @@map("accounts")
+  @@index([code])
+  @@index([accountType])
+  @@index([parentId])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([isActive])
+  @@index([allowManualEntry])
+}
+
+/// نوع الحساب
+enum AccountType {
+  ASSET       /// أصول
+  LIABILITY   /// خصوم (التزامات)
+  EQUITY      /// حقوق ملكية
+  REVENUE     /// إيرادات
+  EXPENSE     /// مصروفات
+}
+
+/// طبيعة الحساب
+enum AccountNature {
+  DEBIT       /// مدين (الأصول والمصروفات)
+  CREDIT      /// دائن (الخصوم وحقوق الملكية والإيرادات)
+}
+
+/// أرصدة الحسابات
+model AccountBalance {
+  id             String   @id @default(cuid())
+  
+  accountId      String
+  account        Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  fiscalYearId   String
+  fiscalYear     FiscalYear @relation(fields: [fiscalYearId], references: [id], onDelete: Cascade)
+  
+  openingBalance Decimal  @default(0) @db.Decimal(15, 2) /// الرصيد الافتتاحي
+  closingBalance Decimal  @default(0) @db.Decimal(15, 2) /// الرصيد الختامي
+  debitTotal     Decimal  @default(0) @db.Decimal(15, 2) /// إجمالي المدين
+  creditTotal    Decimal  @default(0) @db.Decimal(15, 2) /// إجمالي الدائن
+  
+  // التدقيق (Audit Trail)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@map("account_balances")
+  @@unique([accountId, fiscalYearId])
+  @@index([accountId])
+  @@index([fiscalYearId])
+}
+
+/// التسلسل الهرمي للحسابات (Materialized Path)
+model AccountHierarchy {
+  id         String  @id @default(cuid())
+  
+  accountId  String
+  account    Account @relation("AccountAsAccount", fields: [accountId], references: [id], onDelete: Cascade)
+  
+  ancestorId String
+  ancestor   Account @relation("AccountAsAncestor", fields: [ancestorId], references: [id], onDelete: Cascade)
+  
+  depth      Int     /// عمق العلاقة (0 للحساب نفسه، 1 للأب المباشر، إلخ)
+  
+  @@map("account_hierarchy")
+  @@index([accountId, ancestorId])
+  @@index([accountId])
+  @@index([ancestorId])
+}
+
+// ============================================================================
+// 5. ACCOUNTING SYSTEM - JOURNAL ENTRIES (نظام القيود اليومية)
+// ============================================================================
+
+/// القيد المحاسبي (رأس القيد)
+model JournalEntry {
+  id           String             @id @default(cuid())
+  entryNumber  String             @unique /// رقم القيد (مثل: JE-2025-0001)
+  entryDate    DateTime           /// تاريخ القيد
+  description  String             /// وصف القيد
+  reference    String?            /// مرجع خارجي (رقم فاتورة، شيك، إلخ)
+  entryType    JournalEntryType   /// نوع القيد
+  status       JournalEntryStatus @default(DRAFT) /// حالة القيد
+  totalDebit   Decimal            @default(0) @db.Decimal(15, 2) /// إجمالي المدين
+  totalCredit  Decimal            @default(0) @db.Decimal(15, 2) /// إجمالي الدائن
+  isBalanced   Boolean            @default(false) /// هل القيد متوازن (Computed)
+  
+  // الترحيل والعكس
+  postedAt     DateTime?          /// تاريخ الترحيل
+  postedBy     String?            /// من قام بالترحيل
+  reversedAt   DateTime?          /// تاريخ العكس
+  reversedBy   String?            /// من قام بالعكس
+  
+  // العلاقة مع القيد المعكوس
+  reversalOfId String?
+  reversalOf   JournalEntry?      @relation("ReversalRelation", fields: [reversalOfId], references: [id], onDelete: SetNull)
+  reversals    JournalEntry[]     @relation("ReversalRelation")
+  
+  // العلاقات مع الكيانات
+  fiscalYearId String
+  fiscalYear   FiscalYear         @relation(fields: [fiscalYearId], references: [id], onDelete: Restrict)
+  
+  holdingId    String?
+  unitId       String?
+  projectId    String?
+  
+  // العلاقات
+  lines        JournalEntryLine[]
+  
+  // التدقيق (Audit Trail)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  
+  @@map("journal_entries")
+  @@index([entryNumber])
+  @@index([entryDate])
+  @@index([status])
+  @@index([fiscalYearId])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([projectId])
+}
+
+/// نوع القيد
+enum JournalEntryType {
+  OPENING     /// قيد افتتاحي
+  REGULAR     /// قيد عادي
+  CLOSING     /// قيد إقفال
+  ADJUSTMENT  /// قيد تسوية
+}
+
+/// حالة القيد
+enum JournalEntryStatus {
+  DRAFT       /// مسودة (قابل للتعديل)
+  POSTED      /// مرحّل (غير قابل للتعديل)
+  REVERSED    /// معكوس
+}
+
+/// سطر القيد المحاسبي
+model JournalEntryLine {
+  id             String        @id @default(cuid())
+  
+  journalEntryId String
+  journalEntry   JournalEntry  @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  
+  lineNumber     Int           /// رقم السطر (1, 2, 3, ...)
+  
+  accountId      String
+  account        Account       @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  
+  description    String        /// وصف السطر
+  debit          Decimal       @default(0) @db.Decimal(15, 2) /// المبلغ المدين
+  credit         Decimal       @default(0) @db.Decimal(15, 2) /// المبلغ الدائن
+  
+  // مركز التكلفة (اختياري)
+  costCenterId   String?
+  costCenter     CostCenter?   @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
+  
+  // التدقيق (Audit Trail)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  
+  @@map("journal_entry_lines")
+  @@unique([journalEntryId, lineNumber])
+  @@index([journalEntryId])
+  @@index([accountId])
+  @@index([costCenterId])
+}
+
+// ============================================================================
+// 6. ACCOUNTING SYSTEM - COST CENTERS (نظام مراكز التكلفة)
+// ============================================================================
+
+/// مركز التكلفة
+model CostCenter {
+  id          String   @id @default(cuid())
+  code        String   @unique /// رمز مركز التكلفة
+  nameAr      String   /// الاسم بالعربية
+  nameEn      String   /// الاسم بالإنجليزية
+  description String?  /// الوصف
+  isActive    Boolean  @default(true) /// حالة التفعيل
+  
+  // العلاقات الهرمية (Self-Referencing)
+  parentId    String?
+  parent      CostCenter? @relation("CostCenterHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    CostCenter[] @relation("CostCenterHierarchy")
+  
+  // العلاقات مع الكيانات (اختياري)
+  holdingId   String?
+  unitId      String?
+  projectId   String?
+  
+  // العلاقات
+  journalEntryLines JournalEntryLine[]
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  
+  @@map("cost_centers")
+  @@index([code])
+  @@index([parentId])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([projectId])
+  @@index([isActive])
+}
+
+// ============================================================================
+// 7. ACCOUNTING SYSTEM - FISCAL YEARS (نظام السنوات المالية)
+// ============================================================================
+
+/// السنة المالية
+model FiscalYear {
+  id          String           @id @default(cuid())
+  code        String           @unique /// رمز السنة المالية (مثل: FY-2025)
+  nameAr      String           /// الاسم بالعربية
+  nameEn      String           /// الاسم بالإنجليزية
+  startDate   DateTime         /// تاريخ بداية السنة المالية
+  endDate     DateTime         /// تاريخ نهاية السنة المالية
+  status      FiscalYearStatus @default(OPEN) /// حالة السنة
+  isCurrent   Boolean          @default(false) /// هل هي السنة الحالية
+  
+  // العلاقات مع الكيانات (اختياري)
+  holdingId   String?
+  
+  // العلاقات
+  periods         FiscalPeriod[]
+  journalEntries  JournalEntry[]
+  accountBalances AccountBalance[]
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  
+  @@map("fiscal_years")
+  @@index([code])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([status])
+  @@index([isCurrent])
+  @@index([holdingId])
+}
+
+/// حالة السنة المالية
+enum FiscalYearStatus {
+  OPEN    /// مفتوحة (قابلة للقيد)
+  CLOSED  /// مغلقة (غير قابلة للقيد)
+  LOCKED  /// مقفلة (مغلقة نهائياً)
+}
+
+/// الفترة المحاسبية
+model FiscalPeriod {
+  id           String             @id @default(cuid())
+  
+  fiscalYearId String
+  fiscalYear   FiscalYear         @relation(fields: [fiscalYearId], references: [id], onDelete: Cascade)
+  
+  periodNumber Int                /// رقم الفترة (1-12 للشهور)
+  nameAr       String             /// الاسم بالعربية (يناير، فبراير، ...)
+  nameEn       String             /// الاسم بالإنجليزية (January, February, ...)
+  startDate    DateTime           /// تاريخ بداية الفترة
+  endDate      DateTime           /// تاريخ نهاية الفترة
+  status       FiscalPeriodStatus @default(OPEN) /// حالة الفترة
+  
+  // التدقيق (Audit Trail)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  
+  @@map("fiscal_periods")
+  @@unique([fiscalYearId, periodNumber])
+  @@index([fiscalYearId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+/// حالة الفترة المحاسبية
+enum FiscalPeriodStatus {
+  OPEN    /// مفتوحة
+  CLOSED  /// مغلقة
+}
