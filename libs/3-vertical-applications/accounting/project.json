@@ -1,0 +1,9 @@
+{
+  "name": "accounting",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/3-vertical-applications/accounting/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project accounting --web",
+  "targets": {}
+}

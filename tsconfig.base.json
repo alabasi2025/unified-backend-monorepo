@@ -14,7 +14,51 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@semop/multi-entity": ["libs/1-core-services/multi-entity/src/index.ts"],
+      "@semop/identity-and-access": [
+        "libs/1-core-services/identity-and-access/src/index.ts"
+      ],
+      "@semop/configuration": [
+        "libs/1-core-services/configuration/src/index.ts"
+      ],
+      "@semop/billing-engine": [
+        "libs/1-core-services/billing-engine/src/index.ts"
+      ],
+      "@semop/wallet-service": [
+        "libs/1-core-services/wallet-service/src/index.ts"
+      ],
+      "@semop/developer-system": [
+        "libs/1-core-services/developer-system/src/index.ts"
+      ],
+      "@semop/iot-gateway": [
+        "libs/2-operational-platform/iot-gateway/src/index.ts"
+      ],
+      "@semop/hardware-adapters": [
+        "libs/2-operational-platform/hardware-adapters/src/index.ts"
+      ],
+      "@semop/network-adapters": [
+        "libs/2-operational-platform/network-adapters/src/index.ts"
+      ],
+      "@semop/accounting": [
+        "libs/3-vertical-applications/accounting/src/index.ts"
+      ],
+      "@semop/inventory": [
+        "libs/3-vertical-applications/inventory/src/index.ts"
+      ],
+      "@semop/scm": ["libs/3-vertical-applications/scm/src/index.ts"],
+      "@semop/assets": ["libs/3-vertical-applications/assets/src/index.ts"],
+      "@semop/crm": ["libs/3-vertical-applications/crm/src/index.ts"],
+      "@semop/tasks-and-workflows": [
+        "libs/3-vertical-applications/tasks-and-workflows/src/index.ts"
+      ],
+      "@semop/energy-sector": [
+        "libs/4-sector-libraries/energy-sector/src/index.ts"
+      ],
+      "@semop/retail-sector": [
+        "libs/4-sector-libraries/retail-sector/src/index.ts"
+      ]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

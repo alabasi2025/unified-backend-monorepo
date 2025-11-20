@@ -1,0 +1,9 @@
+{
+  "name": "multi-entity",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/1-core-services/multi-entity/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project multi-entity --web",
+  "targets": {}
+}
