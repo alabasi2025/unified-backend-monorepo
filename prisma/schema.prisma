@@ -341,6 +341,11 @@ model Account {
   hierarchyAsAccount AccountHierarchy[] @relation("AccountAsAccount")
   hierarchyAsAncestor AccountHierarchy[] @relation("AccountAsAncestor")
   
+  // Item Relations (Inventory Integration)
+  itemsAsSalesAccount     Item[] @relation("ItemSalesAccount")
+  itemsAsPurchaseAccount  Item[] @relation("ItemPurchaseAccount")
+  itemsAsInventoryAccount Item[] @relation("ItemInventoryAccount")
+  
   // التدقيق (Audit Trail)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
@@ -453,6 +458,12 @@ model JournalEntry {
   
   // العلاقات
   lines        JournalEntryLine[]
+  
+  // Invoice Relations
+  purchaseInvoices PurchaseInvoice[]
+  purchaseReturns  PurchaseReturn[]
+  salesInvoices    SalesInvoice[]
+  salesReturns     SalesReturn[]
   
   // التدقيق (Audit Trail)
   createdAt    DateTime           @default(now())
@@ -632,4 +643,1098 @@ model FiscalPeriod {
 enum FiscalPeriodStatus {
   OPEN    /// مفتوحة
   CLOSED  /// مغلقة
+}
+
+
+// ============================================================================
+// 6. SUPPLIERS SYSTEM (نظام الموردين)
+// ============================================================================
+
+/// فئات الموردين
+model SupplierCategory {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  nameAr      String
+  nameEn      String
+  description String?
+  isActive    Boolean  @default(true)
+  
+  // Relations
+  suppliers   Supplier[]
+  
+  // Audit Trail
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  
+  @@map("supplier_categories")
+  @@index([code])
+  @@index([isActive])
+}
+
+/// الموردين
+model Supplier {
+  id                  String   @id @default(cuid())
+  code                String   @unique
+  nameAr              String
+  nameEn              String
+  taxNumber           String?  @unique
+  commercialRegister  String?
+  email               String?
+  phone               String?
+  website             String?
+  paymentTerms        Int      @default(30) /// أيام الدفع
+  creditLimit         Decimal  @default(0) @db.Decimal(15, 2)
+  currentBalance      Decimal  @default(0) @db.Decimal(15, 2)
+  isActive            Boolean  @default(true)
+  
+  // Relations
+  categoryId          String?
+  category            SupplierCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  
+  // Multi-Entity Support
+  holdingId           String?
+  unitId              String?
+  
+  // Relations
+  addresses           SupplierAddress[]
+  contacts            SupplierContact[]
+  purchaseOrders      PurchaseOrder[]
+  purchaseInvoices    PurchaseInvoice[]
+  purchaseReturns     PurchaseReturn[]
+  
+  // Audit Trail
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  
+  @@map("suppliers")
+  @@index([code])
+  @@index([taxNumber])
+  @@index([email])
+  @@index([categoryId])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([isActive])
+}
+
+enum AddressType {
+  BILLING
+  SHIPPING
+  BOTH
+}
+
+/// عناوين الموردين
+model SupplierAddress {
+  id              String      @id @default(cuid())
+  supplierId      String
+  supplier        Supplier    @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  
+  addressType     AddressType
+  country         String
+  city            String
+  district        String?
+  street          String?
+  buildingNumber  String?
+  postalCode      String?
+  isPrimary       Boolean     @default(false)
+  
+  // Audit Trail
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@map("supplier_addresses")
+  @@index([supplierId])
+  @@index([addressType])
+  @@index([isPrimary])
+}
+
+/// جهات اتصال الموردين
+model SupplierContact {
+  id          String   @id @default(cuid())
+  supplierId  String
+  supplier    Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  
+  name        String
+  position    String?
+  email       String?
+  phone       String?
+  mobile      String?
+  isPrimary   Boolean  @default(false)
+  
+  // Audit Trail
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("supplier_contacts")
+  @@index([supplierId])
+  @@index([isPrimary])
+}
+
+// ============================================================================
+// 7. CUSTOMERS SYSTEM (نظام العملاء)
+// ============================================================================
+
+/// فئات العملاء
+model CustomerCategory {
+  id                  String   @id @default(cuid())
+  code                String   @unique
+  nameAr              String
+  nameEn              String
+  description         String?
+  discountPercentage  Decimal  @default(0) @db.Decimal(5, 2)
+  isActive            Boolean  @default(true)
+  
+  // Relations
+  customers           Customer[]
+  
+  // Audit Trail
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  
+  @@map("customer_categories")
+  @@index([code])
+  @@index([isActive])
+}
+
+/// العملاء
+model Customer {
+  id                  String   @id @default(cuid())
+  code                String   @unique
+  nameAr              String
+  nameEn              String
+  taxNumber           String?  @unique
+  commercialRegister  String?
+  email               String?
+  phone               String?
+  website             String?
+  paymentTerms        Int      @default(30)
+  creditLimit         Decimal  @default(0) @db.Decimal(15, 2)
+  currentBalance      Decimal  @default(0) @db.Decimal(15, 2)
+  isActive            Boolean  @default(true)
+  
+  // Relations
+  categoryId          String?
+  category            CustomerCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  
+  // Multi-Entity Support
+  holdingId           String?
+  unitId              String?
+  
+  // Relations
+  addresses           CustomerAddress[]
+  contacts            CustomerContact[]
+  salesOrders         SalesOrder[]
+  salesInvoices       SalesInvoice[]
+  salesReturns        SalesReturn[]
+  
+  // Audit Trail
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  
+  @@map("customers")
+  @@index([code])
+  @@index([taxNumber])
+  @@index([email])
+  @@index([categoryId])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([isActive])
+}
+
+/// عناوين العملاء
+model CustomerAddress {
+  id              String      @id @default(cuid())
+  customerId      String
+  customer        Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  addressType     AddressType
+  country         String
+  city            String
+  district        String?
+  street          String?
+  buildingNumber  String?
+  postalCode      String?
+  isPrimary       Boolean     @default(false)
+  
+  // Audit Trail
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@map("customer_addresses")
+  @@index([customerId])
+  @@index([addressType])
+  @@index([isPrimary])
+}
+
+/// جهات اتصال العملاء
+model CustomerContact {
+  id          String   @id @default(cuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  name        String
+  position    String?
+  email       String?
+  phone       String?
+  mobile      String?
+  isPrimary   Boolean  @default(false)
+  
+  // Audit Trail
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("customer_contacts")
+  @@index([customerId])
+  @@index([isPrimary])
+}
+
+// ============================================================================
+// 8. INVENTORY SYSTEM (نظام المخزون)
+// ============================================================================
+
+/// فئات الأصناف
+model ItemCategory {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  nameAr      String
+  nameEn      String
+  description String?
+  isActive    Boolean  @default(true)
+  
+  // Self-Referencing (Hierarchical)
+  parentId    String?
+  parent      ItemCategory?  @relation("ItemCategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    ItemCategory[] @relation("ItemCategoryHierarchy")
+  
+  // Relations
+  items       Item[]
+  
+  // Audit Trail
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  
+  @@map("item_categories")
+  @@index([code])
+  @@index([parentId])
+  @@index([isActive])
+}
+
+enum ItemType {
+  PRODUCT   /// منتج
+  SERVICE   /// خدمة
+  MATERIAL  /// مادة خام
+}
+
+/// الأصناف
+model Item {
+  id                  String   @id @default(cuid())
+  code                String   @unique
+  barcode             String?  @unique
+  nameAr              String
+  nameEn              String
+  description         String?
+  itemType            ItemType
+  unit                String   /// وحدة القياس
+  
+  // Pricing
+  costPrice           Decimal  @default(0) @db.Decimal(15, 2)
+  sellingPrice        Decimal  @default(0) @db.Decimal(15, 2)
+  minSellingPrice     Decimal? @db.Decimal(15, 2)
+  
+  // Stock
+  reorderLevel        Decimal? @db.Decimal(10, 2)
+  maxStockLevel       Decimal? @db.Decimal(10, 2)
+  
+  // Flags
+  isActive            Boolean  @default(true)
+  isSellable          Boolean  @default(true)
+  isPurchasable       Boolean  @default(true)
+  isStockable         Boolean  @default(true)
+  
+  // Relations
+  categoryId          String?
+  category            ItemCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  
+  // Accounting Integration
+  salesAccountId      String?
+  salesAccount        Account?  @relation("ItemSalesAccount", fields: [salesAccountId], references: [id], onDelete: SetNull)
+  
+  purchaseAccountId   String?
+  purchaseAccount     Account?  @relation("ItemPurchaseAccount", fields: [purchaseAccountId], references: [id], onDelete: SetNull)
+  
+  inventoryAccountId  String?
+  inventoryAccount    Account?  @relation("ItemInventoryAccount", fields: [inventoryAccountId], references: [id], onDelete: SetNull)
+  
+  // Multi-Entity Support
+  holdingId           String?
+  
+  // Relations
+  stockLevels         StockLevel[]
+  stockMovements      StockMovement[]
+  purchaseOrderLines  PurchaseOrderLine[]
+  purchaseInvoiceLines PurchaseInvoiceLine[]
+  salesOrderLines     SalesOrderLine[]
+  salesInvoiceLines   SalesInvoiceLine[]
+  stockCountLines     StockCountLine[]
+  
+  // Audit Trail
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  
+  @@map("items")
+  @@index([code])
+  @@index([barcode])
+  @@index([itemType])
+  @@index([categoryId])
+  @@index([salesAccountId])
+  @@index([purchaseAccountId])
+  @@index([inventoryAccountId])
+  @@index([holdingId])
+  @@index([isActive])
+  @@index([isSellable])
+  @@index([isPurchasable])
+  @@index([isStockable])
+}
+
+/// المخازن
+model Warehouse {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  nameAr          String
+  nameEn          String
+  description     String?
+  location        String?
+  isActive        Boolean  @default(true)
+  
+  // Multi-Entity Support
+  holdingId       String?
+  unitId          String?
+  
+  // Relations
+  stockLevels     StockLevel[]
+  stockMovements  StockMovement[]
+  stockCounts     StockCount[]
+  purchaseInvoiceLines PurchaseInvoiceLine[]
+  salesInvoiceLines    SalesInvoiceLine[]
+  
+  // Audit Trail
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  
+  @@map("warehouses")
+  @@index([code])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([isActive])
+}
+
+/// مستويات المخزون
+model StockLevel {
+  id                  String   @id @default(cuid())
+  
+  itemId              String
+  item                Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  warehouseId         String
+  warehouse           Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  
+  quantity            Decimal  @default(0) @db.Decimal(10, 2)
+  reservedQuantity    Decimal  @default(0) @db.Decimal(10, 2)
+  availableQuantity   Decimal  @default(0) @db.Decimal(10, 2)
+  
+  // Audit Trail
+  updatedAt           DateTime @updatedAt
+  
+  @@map("stock_levels")
+  @@unique([itemId, warehouseId])
+  @@index([itemId])
+  @@index([warehouseId])
+}
+
+enum StockMovementType {
+  PURCHASE_RECEIPT      /// استلام شراء
+  SALES_ISSUE           /// صرف مبيعات
+  TRANSFER_IN           /// تحويل وارد
+  TRANSFER_OUT          /// تحويل صادر
+  ADJUSTMENT_IN         /// تسوية إضافة
+  ADJUSTMENT_OUT        /// تسوية خصم
+  OPENING_BALANCE       /// رصيد افتتاحي
+  RETURN_FROM_CUSTOMER  /// مرتجع من عميل
+  RETURN_TO_SUPPLIER    /// مرتجع لمورد
+}
+
+/// حركات المخزون
+model StockMovement {
+  id                      String            @id @default(cuid())
+  movementNumber          String            @unique
+  movementDate            DateTime
+  movementType            StockMovementType
+  
+  itemId                  String
+  item                    Item              @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  
+  warehouseId             String
+  warehouse               Warehouse         @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  
+  quantity                Decimal           @db.Decimal(10, 2)
+  unitCost                Decimal?          @db.Decimal(15, 2)
+  totalCost               Decimal?          @db.Decimal(15, 2)
+  
+  reference               String?
+  notes                   String?
+  
+  // Relations (optional based on movement type)
+  purchaseInvoiceLineId   String?
+  salesInvoiceLineId      String?
+  
+  // Audit Trail
+  createdAt               DateTime          @default(now())
+  createdBy               String?
+  
+  @@map("stock_movements")
+  @@index([movementNumber])
+  @@index([movementDate])
+  @@index([movementType])
+  @@index([itemId])
+  @@index([warehouseId])
+}
+
+enum StockCountStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+/// الجرد
+model StockCount {
+  id              String           @id @default(cuid())
+  countNumber     String           @unique
+  countDate       DateTime
+  status          StockCountStatus
+  
+  warehouseId     String
+  warehouse       Warehouse        @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  
+  notes           String?
+  
+  // Relations
+  lines           StockCountLine[]
+  
+  // Audit Trail
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  completedAt     DateTime?
+  completedBy     String?
+  
+  @@map("stock_counts")
+  @@index([countNumber])
+  @@index([countDate])
+  @@index([status])
+  @@index([warehouseId])
+}
+
+/// سطور الجرد
+model StockCountLine {
+  id                String     @id @default(cuid())
+  
+  stockCountId      String
+  stockCount        StockCount @relation(fields: [stockCountId], references: [id], onDelete: Cascade)
+  
+  itemId            String
+  item              Item       @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  
+  systemQuantity    Decimal    @db.Decimal(10, 2)
+  countedQuantity   Decimal    @db.Decimal(10, 2)
+  difference        Decimal    @db.Decimal(10, 2)
+  
+  notes             String?
+  
+  // Audit Trail
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  
+  @@map("stock_count_lines")
+  @@index([stockCountId])
+  @@index([itemId])
+}
+
+// ============================================================================
+// 9. PURCHASES SYSTEM (نظام المشتريات)
+// ============================================================================
+
+enum PurchaseOrderStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+/// طلبات الشراء
+model PurchaseOrder {
+  id                    String              @id @default(cuid())
+  orderNumber           String              @unique
+  orderDate             DateTime
+  expectedDeliveryDate  DateTime?
+  status                PurchaseOrderStatus
+  
+  supplierId            String
+  supplier              Supplier            @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  
+  subtotal              Decimal             @default(0) @db.Decimal(15, 2)
+  taxAmount             Decimal             @default(0) @db.Decimal(15, 2)
+  discountAmount        Decimal             @default(0) @db.Decimal(15, 2)
+  totalAmount           Decimal             @default(0) @db.Decimal(15, 2)
+  
+  notes                 String?
+  
+  // Multi-Entity Support
+  holdingId             String?
+  unitId                String?
+  projectId             String?
+  
+  // Relations
+  lines                 PurchaseOrderLine[]
+  invoices              PurchaseInvoice[]
+  
+  // Audit Trail
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  createdBy             String?
+  updatedBy             String?
+  approvedAt            DateTime?
+  approvedBy            String?
+  
+  @@map("purchase_orders")
+  @@index([orderNumber])
+  @@index([orderDate])
+  @@index([status])
+  @@index([supplierId])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([projectId])
+}
+
+/// سطور طلبات الشراء
+model PurchaseOrderLine {
+  id                String        @id @default(cuid())
+  
+  purchaseOrderId   String
+  purchaseOrder     PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  
+  lineNumber        Int
+  
+  itemId            String
+  item              Item          @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  
+  description       String?
+  quantity          Decimal       @db.Decimal(10, 2)
+  unitPrice         Decimal       @db.Decimal(15, 2)
+  taxRate           Decimal       @default(15) @db.Decimal(5, 2)
+  discountRate      Decimal       @default(0) @db.Decimal(5, 2)
+  
+  // Computed Fields
+  lineTotal         Decimal       @db.Decimal(15, 2)
+  taxAmount         Decimal       @db.Decimal(15, 2)
+  discountAmount    Decimal       @db.Decimal(15, 2)
+  netAmount         Decimal       @db.Decimal(15, 2)
+  
+  receivedQuantity  Decimal       @default(0) @db.Decimal(10, 2)
+  
+  // Audit Trail
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  @@map("purchase_order_lines")
+  @@unique([purchaseOrderId, lineNumber])
+  @@index([purchaseOrderId])
+  @@index([itemId])
+}
+
+enum PurchaseInvoiceStatus {
+  DRAFT
+  POSTED
+  PARTIALLY_PAID
+  PAID
+  CANCELLED
+}
+
+/// فواتير الشراء
+model PurchaseInvoice {
+  id                      String                @id @default(cuid())
+  invoiceNumber           String                @unique
+  supplierInvoiceNumber   String?
+  invoiceDate             DateTime
+  dueDate                 DateTime?
+  status                  PurchaseInvoiceStatus
+  
+  supplierId              String
+  supplier                Supplier              @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  
+  purchaseOrderId         String?
+  purchaseOrder           PurchaseOrder?        @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
+  
+  subtotal                Decimal               @default(0) @db.Decimal(15, 2)
+  taxAmount               Decimal               @default(0) @db.Decimal(15, 2)
+  discountAmount          Decimal               @default(0) @db.Decimal(15, 2)
+  totalAmount             Decimal               @default(0) @db.Decimal(15, 2)
+  paidAmount              Decimal               @default(0) @db.Decimal(15, 2)
+  remainingAmount         Decimal               @default(0) @db.Decimal(15, 2)
+  
+  notes                   String?
+  
+  // Multi-Entity Support
+  holdingId               String?
+  unitId                  String?
+  projectId               String?
+  
+  // Accounting Integration
+  journalEntryId          String?
+  journalEntry            JournalEntry?         @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+  
+  // Relations
+  lines                   PurchaseInvoiceLine[]
+  returns                 PurchaseReturn[]
+  
+  // Audit Trail
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  createdBy               String?
+  updatedBy               String?
+  postedAt                DateTime?
+  postedBy                String?
+  
+  @@map("purchase_invoices")
+  @@index([invoiceNumber])
+  @@index([invoiceDate])
+  @@index([status])
+  @@index([supplierId])
+  @@index([purchaseOrderId])
+  @@index([journalEntryId])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([projectId])
+}
+
+/// سطور فواتير الشراء
+model PurchaseInvoiceLine {
+  id                  String          @id @default(cuid())
+  
+  purchaseInvoiceId   String
+  purchaseInvoice     PurchaseInvoice @relation(fields: [purchaseInvoiceId], references: [id], onDelete: Cascade)
+  
+  lineNumber          Int
+  
+  itemId              String
+  item                Item            @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  
+  warehouseId         String
+  warehouse           Warehouse       @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  
+  description         String?
+  quantity            Decimal         @db.Decimal(10, 2)
+  unitPrice           Decimal         @db.Decimal(15, 2)
+  taxRate             Decimal         @default(15) @db.Decimal(5, 2)
+  discountRate        Decimal         @default(0) @db.Decimal(5, 2)
+  
+  // Computed Fields
+  lineTotal           Decimal         @db.Decimal(15, 2)
+  taxAmount           Decimal         @db.Decimal(15, 2)
+  discountAmount      Decimal         @db.Decimal(15, 2)
+  netAmount           Decimal         @db.Decimal(15, 2)
+  
+  // Audit Trail
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  
+  @@map("purchase_invoice_lines")
+  @@unique([purchaseInvoiceId, lineNumber])
+  @@index([purchaseInvoiceId])
+  @@index([itemId])
+  @@index([warehouseId])
+}
+
+enum PurchaseReturnStatus {
+  DRAFT
+  POSTED
+  CANCELLED
+}
+
+/// مرتجعات الشراء
+model PurchaseReturn {
+  id                  String               @id @default(cuid())
+  returnNumber        String               @unique
+  returnDate          DateTime
+  status              PurchaseReturnStatus
+  
+  supplierId          String
+  supplier            Supplier             @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  
+  purchaseInvoiceId   String
+  purchaseInvoice     PurchaseInvoice      @relation(fields: [purchaseInvoiceId], references: [id], onDelete: Restrict)
+  
+  totalAmount         Decimal              @default(0) @db.Decimal(15, 2)
+  
+  reason              String?
+  notes               String?
+  
+  // Multi-Entity Support
+  holdingId           String?
+  unitId              String?
+  
+  // Accounting Integration
+  journalEntryId      String?
+  journalEntry        JournalEntry?        @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+  
+  // Relations
+  lines               PurchaseReturnLine[]
+  
+  // Audit Trail
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  
+  @@map("purchase_returns")
+  @@index([returnNumber])
+  @@index([returnDate])
+  @@index([status])
+  @@index([supplierId])
+  @@index([purchaseInvoiceId])
+  @@index([journalEntryId])
+  @@index([holdingId])
+  @@index([unitId])
+}
+
+/// سطور مرتجعات الشراء
+model PurchaseReturnLine {
+  id                String         @id @default(cuid())
+  
+  purchaseReturnId  String
+  purchaseReturn    PurchaseReturn @relation(fields: [purchaseReturnId], references: [id], onDelete: Cascade)
+  
+  lineNumber        Int
+  
+  itemId            String
+  
+  warehouseId       String
+  
+  description       String?
+  quantity          Decimal        @db.Decimal(10, 2)
+  unitPrice         Decimal        @db.Decimal(15, 2)
+  taxRate           Decimal        @default(15) @db.Decimal(5, 2)
+  
+  // Computed Fields
+  lineTotal         Decimal        @db.Decimal(15, 2)
+  taxAmount         Decimal        @db.Decimal(15, 2)
+  netAmount         Decimal        @db.Decimal(15, 2)
+  
+  // Audit Trail
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  @@map("purchase_return_lines")
+  @@unique([purchaseReturnId, lineNumber])
+  @@index([purchaseReturnId])
+  @@index([itemId])
+  @@index([warehouseId])
+}
+
+// ============================================================================
+// 10. SALES SYSTEM (نظام المبيعات)
+// ============================================================================
+
+enum SalesOrderStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  PARTIALLY_INVOICED
+  INVOICED
+  CANCELLED
+}
+
+/// طلبات المبيعات / عروض الأسعار
+model SalesOrder {
+  id                    String           @id @default(cuid())
+  orderNumber           String           @unique
+  orderDate             DateTime
+  expectedDeliveryDate  DateTime?
+  status                SalesOrderStatus
+  
+  customerId            String
+  customer              Customer         @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  
+  subtotal              Decimal          @default(0) @db.Decimal(15, 2)
+  taxAmount             Decimal          @default(0) @db.Decimal(15, 2)
+  discountAmount        Decimal          @default(0) @db.Decimal(15, 2)
+  totalAmount           Decimal          @default(0) @db.Decimal(15, 2)
+  
+  notes                 String?
+  
+  // Multi-Entity Support
+  holdingId             String?
+  unitId                String?
+  projectId             String?
+  
+  // Relations
+  lines                 SalesOrderLine[]
+  invoices              SalesInvoice[]
+  
+  // Audit Trail
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  createdBy             String?
+  updatedBy             String?
+  approvedAt            DateTime?
+  approvedBy            String?
+  
+  @@map("sales_orders")
+  @@index([orderNumber])
+  @@index([orderDate])
+  @@index([status])
+  @@index([customerId])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([projectId])
+}
+
+/// سطور طلبات المبيعات
+model SalesOrderLine {
+  id              String      @id @default(cuid())
+  
+  salesOrderId    String
+  salesOrder      SalesOrder  @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  
+  lineNumber      Int
+  
+  itemId          String
+  item            Item        @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  
+  description     String?
+  quantity        Decimal     @db.Decimal(10, 2)
+  unitPrice       Decimal     @db.Decimal(15, 2)
+  taxRate         Decimal     @default(15) @db.Decimal(5, 2)
+  discountRate    Decimal     @default(0) @db.Decimal(5, 2)
+  
+  // Computed Fields
+  lineTotal       Decimal     @db.Decimal(15, 2)
+  taxAmount       Decimal     @db.Decimal(15, 2)
+  discountAmount  Decimal     @db.Decimal(15, 2)
+  netAmount       Decimal     @db.Decimal(15, 2)
+  
+  invoicedQuantity Decimal    @default(0) @db.Decimal(10, 2)
+  
+  // Audit Trail
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@map("sales_order_lines")
+  @@unique([salesOrderId, lineNumber])
+  @@index([salesOrderId])
+  @@index([itemId])
+}
+
+enum SalesInvoiceStatus {
+  DRAFT
+  POSTED
+  PARTIALLY_PAID
+  PAID
+  CANCELLED
+}
+
+/// فواتير المبيعات
+model SalesInvoice {
+  id                  String             @id @default(cuid())
+  invoiceNumber       String             @unique
+  invoiceDate         DateTime
+  dueDate             DateTime?
+  status              SalesInvoiceStatus
+  
+  customerId          String
+  customer            Customer           @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  
+  salesOrderId        String?
+  salesOrder          SalesOrder?        @relation(fields: [salesOrderId], references: [id], onDelete: SetNull)
+  
+  subtotal            Decimal            @default(0) @db.Decimal(15, 2)
+  taxAmount           Decimal            @default(0) @db.Decimal(15, 2)
+  discountAmount      Decimal            @default(0) @db.Decimal(15, 2)
+  totalAmount         Decimal            @default(0) @db.Decimal(15, 2)
+  paidAmount          Decimal            @default(0) @db.Decimal(15, 2)
+  remainingAmount     Decimal            @default(0) @db.Decimal(15, 2)
+  
+  notes               String?
+  
+  // Multi-Entity Support
+  holdingId           String?
+  unitId              String?
+  projectId           String?
+  
+  // Accounting Integration
+  journalEntryId      String?
+  journalEntry        JournalEntry?      @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+  
+  // Relations
+  lines               SalesInvoiceLine[]
+  returns             SalesReturn[]
+  
+  // Audit Trail
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  postedAt            DateTime?
+  postedBy            String?
+  
+  @@map("sales_invoices")
+  @@index([invoiceNumber])
+  @@index([invoiceDate])
+  @@index([status])
+  @@index([customerId])
+  @@index([salesOrderId])
+  @@index([journalEntryId])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([projectId])
+}
+
+/// سطور فواتير المبيعات
+model SalesInvoiceLine {
+  id                String        @id @default(cuid())
+  
+  salesInvoiceId    String
+  salesInvoice      SalesInvoice  @relation(fields: [salesInvoiceId], references: [id], onDelete: Cascade)
+  
+  lineNumber        Int
+  
+  itemId            String
+  item              Item          @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  
+  warehouseId       String
+  warehouse         Warehouse     @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+  
+  description       String?
+  quantity          Decimal       @db.Decimal(10, 2)
+  unitPrice         Decimal       @db.Decimal(15, 2)
+  taxRate           Decimal       @default(15) @db.Decimal(5, 2)
+  discountRate      Decimal       @default(0) @db.Decimal(5, 2)
+  
+  // Computed Fields
+  lineTotal         Decimal       @db.Decimal(15, 2)
+  taxAmount         Decimal       @db.Decimal(15, 2)
+  discountAmount    Decimal       @db.Decimal(15, 2)
+  netAmount         Decimal       @db.Decimal(15, 2)
+  
+  // Audit Trail
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  @@map("sales_invoice_lines")
+  @@unique([salesInvoiceId, lineNumber])
+  @@index([salesInvoiceId])
+  @@index([itemId])
+  @@index([warehouseId])
+}
+
+enum SalesReturnStatus {
+  DRAFT
+  POSTED
+  CANCELLED
+}
+
+/// مرتجعات المبيعات
+model SalesReturn {
+  id                String            @id @default(cuid())
+  returnNumber      String            @unique
+  returnDate        DateTime
+  status            SalesReturnStatus
+  
+  customerId        String
+  customer          Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  
+  salesInvoiceId    String
+  salesInvoice      SalesInvoice      @relation(fields: [salesInvoiceId], references: [id], onDelete: Restrict)
+  
+  totalAmount       Decimal           @default(0) @db.Decimal(15, 2)
+  
+  reason            String?
+  notes             String?
+  
+  // Multi-Entity Support
+  holdingId         String?
+  unitId            String?
+  
+  // Accounting Integration
+  journalEntryId    String?
+  journalEntry      JournalEntry?     @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+  
+  // Relations
+  lines             SalesReturnLine[]
+  
+  // Audit Trail
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  
+  @@map("sales_returns")
+  @@index([returnNumber])
+  @@index([returnDate])
+  @@index([status])
+  @@index([customerId])
+  @@index([salesInvoiceId])
+  @@index([journalEntryId])
+  @@index([holdingId])
+  @@index([unitId])
+}
+
+/// سطور مرتجعات المبيعات
+model SalesReturnLine {
+  id              String      @id @default(cuid())
+  
+  salesReturnId   String
+  salesReturn     SalesReturn @relation(fields: [salesReturnId], references: [id], onDelete: Cascade)
+  
+  lineNumber      Int
+  
+  itemId          String
+  
+  warehouseId     String
+  
+  description     String?
+  quantity        Decimal     @db.Decimal(10, 2)
+  unitPrice       Decimal     @db.Decimal(15, 2)
+  taxRate         Decimal     @default(15) @db.Decimal(5, 2)
+  
+  // Computed Fields
+  lineTotal       Decimal     @db.Decimal(15, 2)
+  taxAmount       Decimal     @db.Decimal(15, 2)
+  netAmount       Decimal     @db.Decimal(15, 2)
+  
+  // Audit Trail
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@map("sales_return_lines")
+  @@unique([salesReturnId, lineNumber])
+  @@index([salesReturnId])
+  @@index([itemId])
+  @@index([warehouseId])
 }
