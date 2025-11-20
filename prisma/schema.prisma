@@ -29,6 +29,10 @@ model Holding {
   // العلاقات
   units       Unit[]
   users       User[]
+  departments Department[]
+  workLocations WorkLocation[]
+  employees   Employee[]
+  payrollPeriods PayrollPeriod[]
   
   // التدقيق (Audit Trail)
   createdAt   DateTime @default(now())
@@ -58,6 +62,10 @@ model Unit {
   // العلاقات
   projects    Project[]
   users       User[]
+  departments Department[]
+  workLocations WorkLocation[]
+  employees   Employee[]
+  payrollPeriods PayrollPeriod[]
   
   // التدقيق (Audit Trail)
   createdAt   DateTime @default(now())
@@ -100,6 +108,8 @@ model Project {
   
   // العلاقات
   users       User[]
+  departments Department[]
+  employees   Employee[]
   
   // التدقيق (Audit Trail)
   createdAt   DateTime      @default(now())
@@ -346,6 +356,11 @@ model Account {
   itemsAsPurchaseAccount  Item[] @relation("ItemPurchaseAccount")
   itemsAsInventoryAccount Item[] @relation("ItemInventoryAccount")
   
+  // HR Relations
+  allowanceTypes AllowanceType[]
+  deductionTypes DeductionType[]
+  bonusTypes     BonusType[]
+  
   // التدقيق (Audit Trail)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
@@ -465,6 +480,9 @@ model JournalEntry {
   salesInvoices    SalesInvoice[]
   salesReturns     SalesReturn[]
   
+  // Payroll Relations
+  payrollPeriods   PayrollPeriod[]
+  
   // التدقيق (Audit Trail)
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
@@ -552,6 +570,7 @@ model CostCenter {
   
   // العلاقات
   journalEntryLines JournalEntryLine[]
+  departments       Department[]
   
   // التدقيق (Audit Trail)
   createdAt   DateTime @default(now())
@@ -1738,3 +1757,966 @@ model SalesReturnLine {
   @@index([itemId])
   @@index([warehouseId])
 }
+
+// ============================================================================
+// 6. HR & PAYROLL SYSTEM (نظام الموارد البشرية والرواتب)
+// ============================================================================
+
+// ============================================================================
+// 6.1 HR ENUMS
+// ============================================================================
+
+/// الجنس
+enum Gender {
+  MALE
+  FEMALE
+}
+
+/// الحالة الاجتماعية
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+/// حالة التوظيف
+enum EmploymentStatus {
+  ACTIVE
+  ON_LEAVE
+  SUSPENDED
+  TERMINATED
+  RESIGNED
+  RETIRED
+}
+
+/// نوع التوظيف
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  TEMPORARY
+  INTERN
+}
+
+/// المستوى الوظيفي
+enum PositionLevel {
+  ENTRY
+  JUNIOR
+  INTERMEDIATE
+  SENIOR
+  LEAD
+  MANAGER
+  DIRECTOR
+  EXECUTIVE
+}
+
+/// فئة الوظيفة
+enum PositionCategory {
+  TECHNICAL
+  ADMINISTRATIVE
+  SALES
+  OPERATIONS
+  FINANCE
+  HR
+  LEGAL
+  OTHER
+}
+
+/// نوع المستند
+enum DocumentType {
+  PASSPORT
+  NATIONAL_ID
+  DRIVING_LICENSE
+  WORK_PERMIT
+  VISA
+  CERTIFICATE
+  CONTRACT
+  OTHER
+}
+
+/// نوع العقد
+enum ContractType {
+  PERMANENT
+  FIXED_TERM
+  PROBATION
+  TEMPORARY
+}
+
+/// حالة العقد
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+/// حالة الحضور
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EARLY_LEAVE
+  ON_LEAVE
+  HOLIDAY
+  WEEKEND
+}
+
+/// طريقة التسجيل
+enum CheckMethod {
+  BIOMETRIC
+  MOBILE_APP
+  WEB
+  MANUAL
+}
+
+/// حالة الطلب
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+/// حالة فترة الرواتب
+enum PayrollPeriodStatus {
+  DRAFT
+  PROCESSING
+  PROCESSED
+  APPROVED
+  PAID
+  CLOSED
+}
+
+/// حالة سطر الراتب
+enum PayrollItemStatus {
+  PENDING
+  PROCESSED
+  PAID
+}
+
+/// طريقة الدفع
+enum PaymentMethod {
+  BANK_TRANSFER
+  CASH
+  CHEQUE
+}
+
+/// نوع الحساب
+enum CalculationType {
+  FIXED_AMOUNT
+  PERCENTAGE
+  FORMULA
+}
+
+
+// ============================================================================
+// 6.2 EMPLOYEE MANAGEMENT MODELS
+// ============================================================================
+
+/// الأقسام
+model Department {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  nameEn      String
+  nameAr      String
+  parentId    String?
+  managerId   String?
+  costCenterId String?
+  holdingId   String?
+  unitId      String?
+  projectId   String?
+  description String?
+  isActive    Boolean  @default(true)
+  
+  // Relations
+  parent      Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Department[] @relation("DepartmentHierarchy")
+  manager     Employee?    @relation("DepartmentManager", fields: [managerId], references: [id], onDelete: SetNull)
+  costCenter  CostCenter?  @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
+  holding     Holding?     @relation(fields: [holdingId], references: [id], onDelete: Cascade)
+  unit        Unit?        @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  project     Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  employees   Employee[]   @relation("EmployeeDepartment")
+  
+  // Audit
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  
+  @@map("departments")
+  @@index([code])
+  @@index([parentId])
+  @@index([managerId])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([isActive])
+}
+
+/// الوظائف
+model Position {
+  id          String           @id @default(cuid())
+  code        String           @unique
+  titleEn     String
+  titleAr     String
+  level       PositionLevel
+  category    PositionCategory
+  minSalary   Decimal?         @db.Decimal(15, 2)
+  maxSalary   Decimal?         @db.Decimal(15, 2)
+  description String?          @db.Text
+  requirements String?         @db.Text
+  isActive    Boolean          @default(true)
+  
+  // Relations
+  employees   Employee[]
+  
+  // Audit
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  
+  @@map("positions")
+  @@index([code])
+  @@index([level])
+  @@index([category])
+  @@index([isActive])
+}
+
+/// مواقع العمل
+model WorkLocation {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  nameEn      String
+  nameAr      String
+  address     String?  @db.Text
+  city        String?
+  country     String?
+  latitude    Decimal? @db.Decimal(10, 8)
+  longitude   Decimal? @db.Decimal(11, 8)
+  radius      Int?
+  holdingId   String?
+  unitId      String?
+  isActive    Boolean  @default(true)
+  
+  // Relations
+  holding     Holding?   @relation(fields: [holdingId], references: [id], onDelete: Cascade)
+  unit        Unit?      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  employees   Employee[]
+  
+  // Audit
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  
+  @@map("work_locations")
+  @@index([code])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([isActive])
+}
+
+/// الموظفون
+model Employee {
+  id                      String           @id @default(cuid())
+  code                    String           @unique
+  firstName               String
+  middleName              String?
+  lastName                String
+  firstNameAr             String
+  middleNameAr            String?
+  lastNameAr              String
+  nationalId              String?          @unique
+  passportNumber          String?          @unique
+  dateOfBirth             DateTime         @db.Date
+  gender                  Gender
+  maritalStatus           MaritalStatus
+  nationality             String?
+  email                   String?          @unique
+  phone                   String?
+  mobile                  String?
+  address                 String?          @db.Text
+  city                    String?
+  country                 String?
+  postalCode              String?
+  hireDate                DateTime         @db.Date
+  terminationDate         DateTime?        @db.Date
+  employmentStatus        EmploymentStatus
+  employmentType          EmploymentType
+  probationEndDate        DateTime?        @db.Date
+  departmentId            String?
+  positionId              String?
+  managerId               String?
+  workLocationId          String?
+  bankName                String?
+  bankAccountNumber       String?
+  bankIBAN                String?
+  emergencyContactName    String?
+  emergencyContactPhone   String?
+  emergencyContactRelation String?
+  holdingId               String?
+  unitId                  String?
+  projectId               String?
+  notes                   String?          @db.Text
+  isActive                Boolean          @default(true)
+  
+  // Relations
+  department              Department?      @relation("EmployeeDepartment", fields: [departmentId], references: [id], onDelete: SetNull)
+  position                Position?        @relation(fields: [positionId], references: [id], onDelete: SetNull)
+  manager                 Employee?        @relation("EmployeeManager", fields: [managerId], references: [id], onDelete: SetNull)
+  subordinates            Employee[]       @relation("EmployeeManager")
+  workLocation            WorkLocation?    @relation(fields: [workLocationId], references: [id], onDelete: SetNull)
+  holding                 Holding?         @relation(fields: [holdingId], references: [id], onDelete: Cascade)
+  unit                    Unit?            @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  project                 Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Reverse relations
+  managedDepartments      Department[]     @relation("DepartmentManager")
+  documents               EmployeeDocument[]
+  contracts               EmployeeContract[]
+  attendanceRecords       AttendanceRecord[]
+  shifts                  EmployeeShift[]
+  overtimeRequests        OvertimeRequest[]
+  leaveBalances           LeaveBalance[]
+  leaveRequests           LeaveRequest[]
+  payrollItems            PayrollItem[]
+  employeeAllowances      EmployeeAllowance[]
+  employeeDeductions      EmployeeDeduction[]
+  loanRequests            LoanRequest[]
+  
+  // Audit
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  createdBy               String?
+  updatedBy               String?
+  
+  @@map("employees")
+  @@index([code])
+  @@index([nationalId])
+  @@index([email])
+  @@index([departmentId])
+  @@index([positionId])
+  @@index([managerId])
+  @@index([employmentStatus])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([hireDate])
+  @@index([isActive])
+}
+
+/// مستندات الموظفين
+model EmployeeDocument {
+  id             String       @id @default(cuid())
+  employeeId     String
+  documentType   DocumentType
+  documentNumber String?
+  title          String
+  issueDate      DateTime?    @db.Date
+  expiryDate     DateTime?    @db.Date
+  filePath       String?
+  fileSize       Int?
+  mimeType       String?
+  notes          String?      @db.Text
+  
+  // Relations
+  employee       Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  // Audit
+  createdAt      DateTime @default(now())
+  createdBy      String?
+  
+  @@map("employee_documents")
+  @@index([employeeId])
+  @@index([documentType])
+  @@index([expiryDate])
+}
+
+/// عقود الموظفين
+model EmployeeContract {
+  id                  String         @id @default(cuid())
+  employeeId          String
+  contractNumber      String         @unique
+  contractType        ContractType
+  startDate           DateTime       @db.Date
+  endDate             DateTime?      @db.Date
+  basicSalary         Decimal        @db.Decimal(15, 2)
+  currency            String         @default("SAR")
+  workingHoursPerDay  Decimal?       @db.Decimal(4, 2)
+  workingDaysPerWeek  Int?
+  annualLeaveDays     Int?
+  probationPeriodDays Int?
+  noticePeriodDays    Int?
+  filePath            String?
+  status              ContractStatus
+  notes               String?        @db.Text
+  isActive            Boolean        @default(true)
+  
+  // Relations
+  employee            Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  // Audit
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  
+  @@map("employee_contracts")
+  @@index([employeeId])
+  @@index([contractNumber])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([isActive])
+}
+
+
+// ============================================================================
+// 6.3 ATTENDANCE MANAGEMENT MODELS
+// ============================================================================
+
+/// الورديات
+model Shift {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  nameEn        String
+  nameAr        String
+  startTime     DateTime @db.Time
+  endTime       DateTime @db.Time
+  workingHours  Decimal  @db.Decimal(4, 2)
+  breakMinutes  Int      @default(0)
+  graceMinutes  Int      @default(0)
+  isOvernight   Boolean  @default(false)
+  color         String?
+  isActive      Boolean  @default(true)
+  
+  // Relations
+  employeeShifts      EmployeeShift[]
+  attendanceRecords   AttendanceRecord[]
+  
+  // Audit
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  
+  @@map("shifts")
+  @@index([code])
+  @@index([isActive])
+}
+
+/// ربط الموظفين بالورديات
+model EmployeeShift {
+  id            String   @id @default(cuid())
+  employeeId    String
+  shiftId       String
+  effectiveDate DateTime @db.Date
+  endDate       DateTime? @db.Date
+  isActive      Boolean  @default(true)
+  
+  // Relations
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  shift         Shift    @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  
+  // Audit
+  createdAt     DateTime @default(now())
+  createdBy     String?
+  
+  @@map("employee_shifts")
+  @@index([employeeId])
+  @@index([shiftId])
+  @@index([effectiveDate])
+  @@index([isActive])
+}
+
+/// سجلات الحضور
+model AttendanceRecord {
+  id                  String           @id @default(cuid())
+  employeeId          String
+  date                DateTime         @db.Date
+  checkInTime         DateTime?
+  checkOutTime        DateTime?
+  checkInLocation     String?
+  checkOutLocation    String?
+  checkInLatitude     Decimal?         @db.Decimal(10, 8)
+  checkInLongitude    Decimal?         @db.Decimal(11, 8)
+  checkOutLatitude    Decimal?         @db.Decimal(10, 8)
+  checkOutLongitude   Decimal?         @db.Decimal(11, 8)
+  checkInMethod       CheckMethod?
+  checkOutMethod      CheckMethod?
+  workingHours        Decimal?         @db.Decimal(5, 2)
+  overtimeHours       Decimal?         @db.Decimal(5, 2)
+  lateMinutes         Int?
+  earlyLeaveMinutes   Int?
+  status              AttendanceStatus
+  shiftId             String?
+  notes               String?          @db.Text
+  approvedBy          String?
+  approvedAt          DateTime?
+  
+  // Relations
+  employee            Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  shift               Shift?           @relation(fields: [shiftId], references: [id], onDelete: SetNull)
+  
+  // Audit
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@map("attendance_records")
+  @@unique([employeeId, date])
+  @@index([employeeId, date])
+  @@index([date])
+  @@index([status])
+  @@index([shiftId])
+}
+
+/// طلبات العمل الإضافي
+model OvertimeRequest {
+  id              String        @id @default(cuid())
+  requestNumber   String        @unique
+  employeeId      String
+  date            DateTime      @db.Date
+  startTime       DateTime      @db.Time
+  endTime         DateTime      @db.Time
+  hours           Decimal       @db.Decimal(5, 2)
+  reason          String        @db.Text
+  status          RequestStatus
+  requestedAt     DateTime
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectionReason String?       @db.Text
+  
+  // Relations
+  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("overtime_requests")
+  @@index([employeeId])
+  @@index([status])
+  @@index([date])
+  @@index([requestNumber])
+}
+
+
+// ============================================================================
+// 6.4 LEAVE MANAGEMENT MODELS
+// ============================================================================
+
+/// أنواع الإجازات
+model LeaveType {
+  id                String   @id @default(cuid())
+  code              String   @unique
+  nameEn            String
+  nameAr            String
+  isPaid            Boolean  @default(true)
+  maxDaysPerYear    Int?
+  requiresApproval  Boolean  @default(true)
+  canCarryForward   Boolean  @default(false)
+  color             String?
+  description       String?  @db.Text
+  isActive          Boolean  @default(true)
+  
+  // Relations
+  leaveBalances     LeaveBalance[]
+  leaveRequests     LeaveRequest[]
+  
+  // Audit
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  
+  @@map("leave_types")
+  @@index([code])
+  @@index([isActive])
+}
+
+/// أرصدة الإجازات
+model LeaveBalance {
+  id              String    @id @default(cuid())
+  employeeId      String
+  leaveTypeId     String
+  year            Int
+  entitlement     Decimal   @db.Decimal(5, 2)
+  used            Decimal   @default(0) @db.Decimal(5, 2)
+  balance         Decimal   @db.Decimal(5, 2)
+  carriedForward  Decimal   @default(0) @db.Decimal(5, 2)
+  
+  // Relations
+  employee        Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType       LeaveType @relation(fields: [leaveTypeId], references: [id], onDelete: Cascade)
+  
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("leave_balances")
+  @@unique([employeeId, leaveTypeId, year])
+  @@index([employeeId])
+  @@index([leaveTypeId])
+  @@index([year])
+}
+
+/// طلبات الإجازات
+model LeaveRequest {
+  id              String        @id @default(cuid())
+  requestNumber   String        @unique
+  employeeId      String
+  leaveTypeId     String
+  startDate       DateTime      @db.Date
+  endDate         DateTime      @db.Date
+  days            Decimal       @db.Decimal(5, 2)
+  reason          String?       @db.Text
+  status          RequestStatus
+  requestedAt     DateTime
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectionReason String?       @db.Text
+  
+  // Relations
+  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType       LeaveType     @relation(fields: [leaveTypeId], references: [id], onDelete: Cascade)
+  
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("leave_requests")
+  @@index([employeeId])
+  @@index([leaveTypeId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@index([requestNumber])
+}
+
+
+// ============================================================================
+// 6.5 PAYROLL MANAGEMENT MODELS
+// ============================================================================
+
+/// فترات الرواتب
+model PayrollPeriod {
+  id                String              @id @default(cuid())
+  periodNumber      String              @unique
+  year              Int
+  month             Int
+  startDate         DateTime            @db.Date
+  endDate           DateTime            @db.Date
+  paymentDate       DateTime?           @db.Date
+  status            PayrollPeriodStatus
+  totalEmployees    Int                 @default(0)
+  totalGrossPay     Decimal             @default(0) @db.Decimal(15, 2)
+  totalDeductions   Decimal             @default(0) @db.Decimal(15, 2)
+  totalNetPay       Decimal             @default(0) @db.Decimal(15, 2)
+  processedAt       DateTime?
+  processedBy       String?
+  approvedAt        DateTime?
+  approvedBy        String?
+  journalEntryId    String?
+  holdingId         String?
+  unitId            String?
+  notes             String?             @db.Text
+  
+  // Relations
+  journalEntry      JournalEntry?       @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+  holding           Holding?            @relation(fields: [holdingId], references: [id], onDelete: Cascade)
+  unit              Unit?               @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  payrollItems      PayrollItem[]
+  
+  // Audit
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("payroll_periods")
+  @@unique([year, month, holdingId, unitId])
+  @@index([periodNumber])
+  @@index([year, month])
+  @@index([status])
+  @@index([holdingId])
+  @@index([unitId])
+}
+
+/// سطور الرواتب
+model PayrollItem {
+  id               String            @id @default(cuid())
+  payrollPeriodId  String
+  employeeId       String
+  basicSalary      Decimal           @db.Decimal(15, 2)
+  allowances       Decimal           @default(0) @db.Decimal(15, 2)
+  overtimePay      Decimal           @default(0) @db.Decimal(15, 2)
+  bonuses          Decimal           @default(0) @db.Decimal(15, 2)
+  grossPay         Decimal           @db.Decimal(15, 2)
+  deductions       Decimal           @default(0) @db.Decimal(15, 2)
+  netPay           Decimal           @db.Decimal(15, 2)
+  workingDays      Int?
+  absentDays       Int               @default(0)
+  overtimeHours    Decimal           @default(0) @db.Decimal(5, 2)
+  status           PayrollItemStatus
+  paidAt           DateTime?
+  paymentMethod    PaymentMethod?
+  paymentReference String?
+  notes            String?           @db.Text
+  
+  // Relations
+  payrollPeriod    PayrollPeriod     @relation(fields: [payrollPeriodId], references: [id], onDelete: Cascade)
+  employee         Employee          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  payrollAllowances PayrollAllowance[]
+  payrollDeductions PayrollDeduction[]
+  payrollBonuses    PayrollBonus[]
+  
+  // Audit
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@map("payroll_items")
+  @@unique([payrollPeriodId, employeeId])
+  @@index([payrollPeriodId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+/// بدلات الرواتب
+model PayrollAllowance {
+  id              String   @id @default(cuid())
+  payrollItemId   String
+  allowanceTypeId String
+  amount          Decimal  @db.Decimal(15, 2)
+  notes           String?  @db.Text
+  
+  // Relations
+  payrollItem     PayrollItem    @relation(fields: [payrollItemId], references: [id], onDelete: Cascade)
+  allowanceType   AllowanceType  @relation(fields: [allowanceTypeId], references: [id], onDelete: Cascade)
+  
+  // Audit
+  createdAt       DateTime @default(now())
+  
+  @@map("payroll_allowances")
+  @@index([payrollItemId])
+  @@index([allowanceTypeId])
+}
+
+/// خصومات الرواتب
+model PayrollDeduction {
+  id              String   @id @default(cuid())
+  payrollItemId   String
+  deductionTypeId String
+  amount          Decimal  @db.Decimal(15, 2)
+  notes           String?  @db.Text
+  
+  // Relations
+  payrollItem     PayrollItem    @relation(fields: [payrollItemId], references: [id], onDelete: Cascade)
+  deductionType   DeductionType  @relation(fields: [deductionTypeId], references: [id], onDelete: Cascade)
+  
+  // Audit
+  createdAt       DateTime @default(now())
+  
+  @@map("payroll_deductions")
+  @@index([payrollItemId])
+  @@index([deductionTypeId])
+}
+
+/// مكافآت الرواتب
+model PayrollBonus {
+  id            String   @id @default(cuid())
+  payrollItemId String
+  bonusTypeId   String
+  amount        Decimal  @db.Decimal(15, 2)
+  notes         String?  @db.Text
+  
+  // Relations
+  payrollItem   PayrollItem @relation(fields: [payrollItemId], references: [id], onDelete: Cascade)
+  bonusType     BonusType   @relation(fields: [bonusTypeId], references: [id], onDelete: Cascade)
+  
+  // Audit
+  createdAt     DateTime @default(now())
+  
+  @@map("payroll_bonuses")
+  @@index([payrollItemId])
+  @@index([bonusTypeId])
+}
+
+
+// ============================================================================
+// 6.6 DEDUCTIONS & BENEFITS MODELS
+// ============================================================================
+
+/// أنواع البدلات
+model AllowanceType {
+  id                String          @id @default(cuid())
+  code              String          @unique
+  nameEn            String
+  nameAr            String
+  calculationType   CalculationType
+  defaultAmount     Decimal?        @db.Decimal(15, 2)
+  defaultPercentage Decimal?        @db.Decimal(5, 2)
+  isTaxable         Boolean         @default(true)
+  accountId         String?
+  description       String?         @db.Text
+  isActive          Boolean         @default(true)
+  
+  // Relations
+  account           Account?        @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  employeeAllowances EmployeeAllowance[]
+  payrollAllowances  PayrollAllowance[]
+  
+  // Audit
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  
+  @@map("allowance_types")
+  @@index([code])
+  @@index([isActive])
+}
+
+/// أنواع الخصومات
+model DeductionType {
+  id                String          @id @default(cuid())
+  code              String          @unique
+  nameEn            String
+  nameAr            String
+  calculationType   CalculationType
+  defaultAmount     Decimal?        @db.Decimal(15, 2)
+  defaultPercentage Decimal?        @db.Decimal(5, 2)
+  isStatutory       Boolean         @default(false)
+  accountId         String?
+  description       String?         @db.Text
+  isActive          Boolean         @default(true)
+  
+  // Relations
+  account           Account?        @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  employeeDeductions EmployeeDeduction[]
+  payrollDeductions  PayrollDeduction[]
+  
+  // Audit
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  
+  @@map("deduction_types")
+  @@index([code])
+  @@index([isActive])
+}
+
+/// أنواع المكافآت
+model BonusType {
+  id                String          @id @default(cuid())
+  code              String          @unique
+  nameEn            String
+  nameAr            String
+  calculationType   CalculationType
+  defaultAmount     Decimal?        @db.Decimal(15, 2)
+  defaultPercentage Decimal?        @db.Decimal(5, 2)
+  isTaxable         Boolean         @default(true)
+  accountId         String?
+  description       String?         @db.Text
+  isActive          Boolean         @default(true)
+  
+  // Relations
+  account           Account?        @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  payrollBonuses    PayrollBonus[]
+  
+  // Audit
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  
+  @@map("bonus_types")
+  @@index([code])
+  @@index([isActive])
+}
+
+/// بدلات الموظفين الثابتة
+model EmployeeAllowance {
+  id              String        @id @default(cuid())
+  employeeId      String
+  allowanceTypeId String
+  amount          Decimal?      @db.Decimal(15, 2)
+  percentage      Decimal?      @db.Decimal(5, 2)
+  effectiveDate   DateTime      @db.Date
+  endDate         DateTime?     @db.Date
+  isActive        Boolean       @default(true)
+  
+  // Relations
+  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  allowanceType   AllowanceType @relation(fields: [allowanceTypeId], references: [id], onDelete: Cascade)
+  
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  
+  @@map("employee_allowances")
+  @@index([employeeId])
+  @@index([allowanceTypeId])
+  @@index([effectiveDate])
+  @@index([isActive])
+}
+
+/// خصومات الموظفين الثابتة
+model EmployeeDeduction {
+  id              String        @id @default(cuid())
+  employeeId      String
+  deductionTypeId String
+  amount          Decimal?      @db.Decimal(15, 2)
+  percentage      Decimal?      @db.Decimal(5, 2)
+  effectiveDate   DateTime      @db.Date
+  endDate         DateTime?     @db.Date
+  isActive        Boolean       @default(true)
+  
+  // Relations
+  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  deductionType   DeductionType @relation(fields: [deductionTypeId], references: [id], onDelete: Cascade)
+  
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  
+  @@map("employee_deductions")
+  @@index([employeeId])
+  @@index([deductionTypeId])
+  @@index([effectiveDate])
+  @@index([isActive])
+}
+
+/// طلبات السلف
+model LoanRequest {
+  id               String        @id @default(cuid())
+  requestNumber    String        @unique
+  employeeId       String
+  amount           Decimal       @db.Decimal(15, 2)
+  installments     Int
+  installmentAmount Decimal      @db.Decimal(15, 2)
+  startDate        DateTime      @db.Date
+  reason           String        @db.Text
+  status           RequestStatus
+  paidInstallments Int           @default(0)
+  remainingAmount  Decimal?      @db.Decimal(15, 2)
+  requestedAt      DateTime
+  approvedBy       String?
+  approvedAt       DateTime?
+  rejectionReason  String?       @db.Text
+  
+  // Relations
+  employee         Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  // Audit
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@map("loan_requests")
+  @@index([employeeId])
+  @@index([status])
+  @@index([requestNumber])
+}
+
