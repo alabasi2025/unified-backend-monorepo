@@ -12,6 +12,10 @@ import { ProjectsModule } from './projects/projects.module';
 import { CustomersModule } from './customers/customers.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { ItemsModule } from './items/items.module';
+import { AccountsModule } from './accounts/accounts.module';
+import { JournalEntriesModule } from './journal-entries/journal-entries.module';
+import { CostCentersModule } from './cost-centers/cost-centers.module';
+import { FiscalYearsModule } from './fiscal-years/fiscal-years.module';
 
 @Module({
   imports: [
@@ -25,7 +29,11 @@ import { ItemsModule } from './items/items.module';
     ProjectsModule,
     CustomersModule,
     SuppliersModule,
-    ItemsModule
+    ItemsModule,
+    AccountsModule,
+    JournalEntriesModule,
+    CostCentersModule,
+    FiscalYearsModule
   ],
   controllers: [AppController],
   providers: [AppService],
