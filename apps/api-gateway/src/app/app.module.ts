@@ -19,6 +19,7 @@ import { FiscalYearsModule } from './fiscal-years/fiscal-years.module';
 import { FiscalPeriodsModule } from './fiscal-periods/fiscal-periods.module';
 import { WarehousesModule } from '../modules/warehouses/warehouses.module';
 import { StockMovementsModule } from '../modules/stock-movements/stock-movements.module';
+import { GenesModule } from '../modules/genes/genes.module';
 
 @Module({
   imports: [
@@ -39,7 +40,8 @@ import { StockMovementsModule } from '../modules/stock-movements/stock-movements
     FiscalYearsModule,
     FiscalPeriodsModule,
     WarehousesModule,
-    StockMovementsModule
+    StockMovementsModule,
+    GenesModule
   ],
   controllers: [AppController],
   providers: [AppService],
