@@ -1,0 +1,309 @@
+// SEMOP - Prisma Schema
+// Smart Enterprise Management & Operations Platform
+// Version: 0.2.0
+// Date: 2025-11-20
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// 1. MULTI-ENTITY SYSTEM (نظام الكيانات المتعددة)
+// ============================================================================
+
+/// الشركة القابضة - المستوى الأول في الهيكل الهرمي
+model Holding {
+  id          String   @id @default(cuid())
+  code        String   @unique /// كود فريد للشركة (مثل: HOLD001)
+  nameAr      String   /// الاسم بالعربية
+  nameEn      String   /// الاسم بالإنجليزية
+  description String?  /// وصف الشركة
+  logo        String?  /// رابط شعار الشركة
+  isActive    Boolean  @default(true) /// هل الشركة نشطة؟
+  
+  // العلاقات
+  units       Unit[]
+  users       User[]
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  
+  @@map("holdings")
+  @@index([code])
+  @@index([isActive])
+}
+
+/// الوحدة - المستوى الثاني في الهيكل الهرمي
+model Unit {
+  id          String   @id @default(cuid())
+  code        String   @unique /// كود فريد للوحدة (مثل: UNIT001)
+  nameAr      String   /// الاسم بالعربية
+  nameEn      String   /// الاسم بالإنجليزية
+  description String?  /// وصف الوحدة
+  type        UnitType /// نوع الوحدة (فرع، قسم، شعبة، إلخ)
+  isActive    Boolean  @default(true) /// هل الوحدة نشطة؟
+  
+  // العلاقات الهرمية
+  holdingId   String
+  holding     Holding  @relation(fields: [holdingId], references: [id], onDelete: Cascade)
+  
+  // العلاقات
+  projects    Project[]
+  users       User[]
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  
+  @@map("units")
+  @@index([code])
+  @@index([holdingId])
+  @@index([type])
+  @@index([isActive])
+}
+
+/// أنواع الوحدات
+enum UnitType {
+  BRANCH        /// فرع
+  DEPARTMENT    /// قسم
+  DIVISION      /// شعبة
+  SUBSIDIARY    /// شركة تابعة
+  OTHER         /// أخرى
+}
+
+/// المشروع - المستوى الثالث في الهيكل الهرمي
+model Project {
+  id          String        @id @default(cuid())
+  code        String        @unique /// كود فريد للمشروع (مثل: PROJ001)
+  nameAr      String        /// الاسم بالعربية
+  nameEn      String        /// الاسم بالإنجليزية
+  description String?       /// وصف المشروع
+  status      ProjectStatus /// حالة المشروع
+  startDate   DateTime?     /// تاريخ البدء
+  endDate     DateTime?     /// تاريخ الانتهاء المتوقع
+  budget      Decimal?      @db.Decimal(15, 2) /// الميزانية
+  isActive    Boolean       @default(true) /// هل المشروع نشط؟
+  
+  // العلاقات الهرمية
+  unitId      String
+  unit        Unit          @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  
+  // العلاقات
+  users       User[]
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  
+  @@map("projects")
+  @@index([code])
+  @@index([unitId])
+  @@index([status])
+  @@index([isActive])
+}
+
+/// حالات المشروع
+enum ProjectStatus {
+  PLANNING      /// تخطيط
+  IN_PROGRESS   /// قيد التنفيذ
+  ON_HOLD       /// معلق
+  COMPLETED     /// مكتمل
+  CANCELLED     /// ملغي
+}
+
+// ============================================================================
+// 2. IDENTITY & ACCESS MANAGEMENT (نظام الهوية والصلاحيات)
+// ============================================================================
+
+/// المستخدم
+model User {
+  id              String    @id @default(cuid())
+  username        String    @unique /// اسم المستخدم
+  email           String    @unique /// البريد الإلكتروني
+  passwordHash    String    /// كلمة المرور المشفرة (bcrypt)
+  firstName       String    /// الاسم الأول
+  lastName        String    /// الاسم الأخير
+  phone           String?   /// رقم الهاتف
+  avatar          String?   /// رابط صورة المستخدم
+  isActive        Boolean   @default(true) /// هل المستخدم نشط؟
+  isEmailVerified Boolean   @default(false) /// هل البريد مُفعّل؟
+  lastLoginAt     DateTime? /// آخر تسجيل دخول
+  
+  // العلاقات مع الكيانات (Multi-Entity Support)
+  // المستخدم يمكن أن ينتمي لـ Holding أو Unit أو Project
+  holdingId       String?
+  holding         Holding?  @relation(fields: [holdingId], references: [id], onDelete: SetNull)
+  
+  unitId          String?
+  unit            Unit?     @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  
+  projectId       String?
+  project         Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  // العلاقات مع الأدوار
+  userRoles       UserRole[]
+  
+  // التدقيق (Audit Trail)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  
+  @@map("users")
+  @@index([email])
+  @@index([username])
+  @@index([holdingId])
+  @@index([unitId])
+  @@index([projectId])
+  @@index([isActive])
+}
+
+/// الدور (Role)
+model Role {
+  id          String   @id @default(cuid())
+  code        String   @unique /// كود الدور (مثل: SUPER_ADMIN)
+  nameAr      String   /// الاسم بالعربية
+  nameEn      String   /// الاسم بالإنجليزية
+  description String?  /// وصف الدور
+  isSystem    Boolean  @default(false) /// هل هو دور نظام (لا يمكن حذفه)
+  isActive    Boolean  @default(true) /// هل الدور نشط؟
+  
+  // العلاقات
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("roles")
+  @@index([code])
+  @@index([isSystem])
+  @@index([isActive])
+}
+
+/// الصلاحية (Permission)
+model Permission {
+  id          String   @id @default(cuid())
+  code        String   @unique /// كود الصلاحية (مثل: USER_CREATE)
+  nameAr      String   /// الاسم بالعربية
+  nameEn      String   /// الاسم بالإنجليزية
+  description String?  /// وصف الصلاحية
+  module      String   /// اسم الوحدة (مثل: users, inventory)
+  action      String   /// الإجراء (create, read, update, delete)
+  
+  // العلاقات
+  rolePermissions RolePermission[]
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("permissions")
+  @@unique([module, action])
+  @@index([code])
+  @@index([module])
+}
+
+/// ربط المستخدم بالدور (Many-to-Many)
+model UserRole {
+  id        String   @id @default(cuid())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  roleId    String
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  // التدقيق (Audit Trail)
+  assignedAt DateTime @default(now())
+  assignedBy String?
+  
+  @@map("user_roles")
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+}
+
+/// ربط الدور بالصلاحية (Many-to-Many)
+model RolePermission {
+  id           String     @id @default(cuid())
+  
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  
+  // التدقيق (Audit Trail)
+  assignedAt   DateTime   @default(now())
+  assignedBy   String?
+  
+  @@map("role_permissions")
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+// ============================================================================
+// 3. CONFIGURATION SYSTEM (نظام التكوين)
+// ============================================================================
+
+/// التكوين (Configuration)
+model Configuration {
+  id          String          @id @default(cuid())
+  key         String          /// مفتاح التكوين (مثل: currency, timezone)
+  value       String          /// القيمة (JSON string)
+  dataType    ConfigDataType  /// نوع البيانات
+  scope       ConfigScope     /// نطاق التكوين
+  
+  // العلاقات مع الكيانات (اختياري حسب scope)
+  holdingId   String?
+  unitId      String?
+  projectId   String?
+  
+  // الوصف
+  nameAr      String
+  nameEn      String
+  description String?
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  
+  @@map("configurations")
+  @@unique([key, scope, holdingId, unitId, projectId])
+  @@index([key])
+  @@index([scope])
+}
+
+/// أنواع بيانات التكوين
+enum ConfigDataType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+  DATE
+}
+
+/// نطاق التكوين
+enum ConfigScope {
+  SYSTEM      /// على مستوى النظام
+  HOLDING     /// على مستوى الشركة القابضة
+  UNIT        /// على مستوى الوحدة
+  PROJECT     /// على مستوى المشروع
+}
