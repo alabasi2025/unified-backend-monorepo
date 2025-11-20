@@ -1,0 +1,32 @@
+import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
+import { CustomersService } from './customers.service';
+
+@Controller('customers')
+export class CustomersController {
+  constructor(private readonly customersService: CustomersService) {}
+
+  @Get()
+  findAll() {
+    return this.customersService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.customersService.findOne(id);
+  }
+
+  @Post()
+  create(@Body() createDto: any) {
+    return this.customersService.create(createDto);
+  }
+
+  @Patch(':id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: any) {
+    return this.customersService.update(id, updateDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.customersService.remove(id);
+  }
+}

@@ -4,9 +4,29 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { RolesModule } from './roles/roles.module';
+import { PermissionsModule } from './permissions/permissions.module';
+import { HoldingsModule } from './holdings/holdings.module';
+import { UnitsModule } from './units/units.module';
+import { ProjectsModule } from './projects/projects.module';
+import { CustomersModule } from './customers/customers.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
+import { ItemsModule } from './items/items.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, DashboardModule],
+  imports: [
+    AuthModule,
+    UsersModule,
+    DashboardModule,
+    RolesModule,
+    PermissionsModule,
+    HoldingsModule,
+    UnitsModule,
+    ProjectsModule,
+    CustomersModule,
+    SuppliersModule,
+    ItemsModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
