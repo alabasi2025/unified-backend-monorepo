@@ -16,6 +16,9 @@ import { AccountsModule } from './accounts/accounts.module';
 import { JournalEntriesModule } from './journal-entries/journal-entries.module';
 import { CostCentersModule } from './cost-centers/cost-centers.module';
 import { FiscalYearsModule } from './fiscal-years/fiscal-years.module';
+import { FiscalPeriodsModule } from './fiscal-periods/fiscal-periods.module';
+import { WarehousesModule } from '../modules/warehouses/warehouses.module';
+import { StockMovementsModule } from '../modules/stock-movements/stock-movements.module';
 
 @Module({
   imports: [
@@ -33,7 +36,10 @@ import { FiscalYearsModule } from './fiscal-years/fiscal-years.module';
     AccountsModule,
     JournalEntriesModule,
     CostCentersModule,
-    FiscalYearsModule
+    FiscalYearsModule,
+    FiscalPeriodsModule,
+    WarehousesModule,
+    StockMovementsModule
   ],
   controllers: [AppController],
   providers: [AppService],
