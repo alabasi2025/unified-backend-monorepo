@@ -12,16 +12,6 @@ import { ProjectsModule } from './projects/projects.module';
 import { CustomersModule } from './customers/customers.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { ItemsModule } from './items/items.module';
-import { AccountsModule } from './accounts/accounts.module';
-import { JournalEntriesModule } from './journal-entries/journal-entries.module';
-import { CostCentersModule } from './cost-centers/cost-centers.module';
-import { FiscalYearsModule } from './fiscal-years/fiscal-years.module';
-import { FiscalPeriodsModule } from './fiscal-periods/fiscal-periods.module';
-import { WarehousesModule } from '../modules/warehouses/warehouses.module';
-import { StockMovementsModule } from '../modules/stock-movements/stock-movements.module';
-import { GenesModule } from '../modules/genes/genes.module';
-import { DocumentationModule } from '../modules/documentation/documentation.module';
-import { TasksModule } from '../modules/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -35,17 +25,7 @@ import { TasksModule } from '../modules/tasks/tasks.module';
     ProjectsModule,
     CustomersModule,
     SuppliersModule,
-    ItemsModule,
-    AccountsModule,
-    JournalEntriesModule,
-    CostCentersModule,
-    FiscalYearsModule,
-    FiscalPeriodsModule,
-    WarehousesModule,
-    StockMovementsModule,
-    GenesModule,
-    DocumentationModule,
-    TasksModule
+    ItemsModule
   ],
   controllers: [AppController],
   providers: [AppService],
