@@ -21,6 +21,7 @@ import { WarehousesModule } from '../modules/warehouses/warehouses.module';
 import { StockMovementsModule } from '../modules/stock-movements/stock-movements.module';
 import { GenesModule } from '../modules/genes/genes.module';
 import { DocumentationModule } from '../modules/documentation/documentation.module';
+import { TasksModule } from '../modules/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -43,7 +44,8 @@ import { DocumentationModule } from '../modules/documentation/documentation.modu
     WarehousesModule,
     StockMovementsModule,
     GenesModule,
-    DocumentationModule
+    DocumentationModule,
+    TasksModule
   ],
   controllers: [AppController],
   providers: [AppService],
