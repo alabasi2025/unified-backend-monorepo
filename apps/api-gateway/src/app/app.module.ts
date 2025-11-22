@@ -12,7 +12,6 @@ import { ProjectsModule } from './projects/projects.module';
 import { CustomersModule } from './customers/customers.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { ItemsModule } from './items/items.module';
-import { DocumentationModule } from '../modules/documentation/documentation.module';
 import { SmartNotebookModule } from '../modules/smart-notebook/smart-notebook.module';
 import { ReportsModule } from '../modules/reports/reports.module';
 
@@ -29,7 +28,6 @@ import { ReportsModule } from '../modules/reports/reports.module';
     CustomersModule,
     SuppliersModule,
     ItemsModule,
-    DocumentationModule,
     SmartNotebookModule,
     ReportsModule,
   ],
