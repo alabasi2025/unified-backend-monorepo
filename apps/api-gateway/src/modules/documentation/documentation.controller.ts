@@ -74,3 +74,24 @@ export class DocumentationController {
     }
   }
 }
+
+  /**
+   * Import old documentation into Reports Library
+   */
+  @Get('import/migrate-to-reports')
+  async importToReports(@Res() res: Response) {
+    try {
+      const result = await this.documentationService.importToReports();
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Documentation imported successfully',
+        ...result,
+      });
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Failed to import documentation',
+        error: error.message,
+      });
+    }
+  }

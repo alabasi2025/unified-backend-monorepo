@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
 @Injectable()
 export class DocumentationService {
   private readonly docsPath = process.cwd(); // Current working directory
+
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Get list of all available documentation files
@@ -117,3 +120,101 @@ export class DocumentationService {
     }
   }
 }
+
+  /**
+   * Import old documentation files into Reports Library
+   */
+  async importToReports() {
+    const documents = [
+      {
+        title: '📚 دفتر التوثيق الشامل لنظام SEMOP',
+        filename: 'docs/COMPREHENSIVE_DOCUMENTATION.md',
+        summary: 'التوثيق الكامل والشامل - البنية المعمارية، قاعدة البيانات، Smart Notebook، نظام الخرائط، APIs، دليل المطورين، النشر والصيانة',
+        type: 'DEVELOPER_GUIDE',
+      },
+      {
+        title: '📋 ملخص التوثيق التنفيذي',
+        filename: 'docs/DOCUMENTATION_SUMMARY.md',
+        summary: 'ملخص تنفيذي سريع للتوثيق الشامل',
+        type: 'EXECUTIVE_SUMMARY',
+      },
+      {
+        title: 'دليل بناء النظام - SEMOP Master Blueprint',
+        filename: 'SEMOP_MASTER_BLUEPRINT.md',
+        summary: 'المخطط الرئيسي للنظام - البنية المعمارية التفصيلية والأنظمة الفرعية',
+        type: 'ARCHITECTURE',
+      },
+      {
+        title: '🗺️ دليل نظام الخرائط الشامل',
+        filename: 'docs/maps-system-guide.md',
+        summary: 'دليل مفصل لنظام الخرائط الأوفلاين - البنية، الميزات، التكامل، والاستخدام',
+        type: 'USER_GUIDE',
+      },
+      {
+        title: '🔧 تقرير Prisma 7 Migration',
+        filename: 'PRISMA_7_MIGRATION_REPORT.md',
+        summary: 'تقرير تقني: حل مشكلة Prisma 7 Driver Adapter في Smart Notebook',
+        type: 'TECHNICAL_REPORT',
+      },
+    ];
+
+    let successCount = 0;
+    let errorCount = 0;
+    const errors = [];
+
+    for (const doc of documents) {
+      try {
+        // Read file content
+        const content = await this.getDocumentContent(doc.filename);
+
+        // Check if document already exists
+        const existing = await this.prisma.report.findFirst({
+          where: { title: doc.title },
+        });
+
+        if (existing) {
+          // Update existing document
+          await this.prisma.report.update({
+            where: { id: existing.id },
+            data: {
+              content,
+              summary: doc.summary,
+              type: doc.type as any,
+              format: 'MARKDOWN',
+              status: 'PUBLISHED',
+              updatedAt: new Date(),
+            },
+          });
+        } else {
+          // Create new document
+          await this.prisma.report.create({
+            data: {
+              title: doc.title,
+              content,
+              summary: doc.summary,
+              type: doc.type as any,
+              format: 'MARKDOWN',
+              status: 'PUBLISHED',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          });
+        }
+
+        successCount++;
+      } catch (error) {
+        errorCount++;
+        errors.push({
+          title: doc.title,
+          error: error.message,
+        });
+      }
+    }
+
+    return {
+      successCount,
+      errorCount,
+      total: documents.length,
+      errors,
+    };
+  }
