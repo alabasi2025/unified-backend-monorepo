@@ -18,7 +18,7 @@ import {
   LinkToTaskDto,
   CreateTaskFromChatDto,
 } from './dto/chat-logs.dto';
-import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../../app/auth/guards/jwt-auth.guard';
 
 @Controller('api/smart-notebook/chat-logs')
 @UseGuards(JwtAuthGuard)

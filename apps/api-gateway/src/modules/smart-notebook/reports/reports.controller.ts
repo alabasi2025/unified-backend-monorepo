@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import { CreateReportDto, UpdateReportDto, FilterReportsDto, ImportReportDto } from './dto/reports.dto';
-import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../../app/auth/guards/jwt-auth.guard';
 
 @Controller('api/smart-notebook/reports')
 @UseGuards(JwtAuthGuard)

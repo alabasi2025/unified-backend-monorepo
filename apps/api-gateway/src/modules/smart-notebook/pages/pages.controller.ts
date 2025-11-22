@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request } from '@nestjs/common';
 import { PagesService } from './pages.service';
 import { CreatePageDto, UpdatePageDto, FilterPagesDto } from './dto/pages.dto';
-import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../../app/auth/guards/jwt-auth.guard';
 
 @Controller('api/smart-notebook/pages')
 @UseGuards(JwtAuthGuard)

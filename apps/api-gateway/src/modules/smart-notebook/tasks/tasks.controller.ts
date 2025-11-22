@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto, UpdateTaskDto, FilterTasksDto, ChangeStatusDto } from './dto/tasks.dto';
-import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../../app/auth/guards/jwt-auth.guard';
 
 @Controller('api/smart-notebook/tasks')
 @UseGuards(JwtAuthGuard)

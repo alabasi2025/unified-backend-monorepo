@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { IdeasService } from './ideas.service';
 import { CreateIdeaDto, UpdateIdeaDto, FilterIdeasDto, ChangeStatusDto } from './dto/ideas.dto';
-import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../../app/auth/guards/jwt-auth.guard';
 
 @Controller('api/smart-notebook/ideas')
 @UseGuards(JwtAuthGuard)
