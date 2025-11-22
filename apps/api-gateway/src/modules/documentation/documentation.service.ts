@@ -4,7 +4,7 @@ import * as path from 'path';
 
 @Injectable()
 export class DocumentationService {
-  private readonly docsPath = path.join(process.cwd(), '../../');
+  private readonly docsPath = process.cwd(); // Current working directory
 
   /**
    * Get list of all available documentation files
