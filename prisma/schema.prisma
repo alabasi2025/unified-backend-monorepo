@@ -1738,3 +1738,418 @@ model SalesReturnLine {
   @@index([itemId])
   @@index([warehouseId])
 }
+
+
+// ============================================================================
+// SMART DOCUMENTATION NOTEBOOK (دفتر التوثيق الذكي)
+// ============================================================================
+
+/// صفحات التوثيق - النظام الأساسي لجميع أنواع المحتوى
+model DocumentationPage {
+  id          String   @id @default(cuid())
+  slug        String   @unique /// معرف فريد للصفحة (URL-friendly)
+  title       String   /// عنوان الصفحة
+  content     String   @db.Text /// المحتوى (Markdown)
+  summary     String?  /// ملخص قصير
+  
+  // التنظيم الهرمي
+  parentId    String?
+  parent      DocumentationPage?  @relation("PageHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    DocumentationPage[] @relation("PageHierarchy")
+  order       Int      @default(0) /// ترتيب الصفحة ضمن المستوى
+  
+  // التصنيف
+  type        PageType /// نوع الصفحة
+  category    String   /// التصنيف الرئيسي
+  tags        String[] /// وسوم للبحث والتصنيف
+  
+  // الحالة والنشر
+  status      PageStatus @default(DRAFT) /// حالة الصفحة
+  isPublished Boolean  @default(false) /// هل منشورة؟
+  isFavorite  Boolean  @default(false) /// مميزة بنجمة؟
+  version     String   @default("1.0.0") /// رقم الإصدار
+  
+  // الإحصائيات
+  viewCount   Int      @default(0) /// عدد المشاهدات
+  
+  // العلاقات
+  tasks       Task[]
+  ideas       Idea[]
+  chatLogs    ChatLog[]
+  reports     Report[]
+  links       PageLink[] @relation("FromPage")
+  linkedFrom  PageLink[] @relation("ToPage")
+  history     PageHistory[]
+  comments    PageComment[]
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+  updatedBy   String?
+  
+  @@map("documentation_pages")
+  @@index([slug])
+  @@index([type])
+  @@index([category])
+  @@index([status])
+  @@index([isPublished])
+  @@index([isFavorite])
+  @@index([parentId])
+  @@index([createdAt])
+}
+
+/// أنواع الصفحات
+enum PageType {
+  GUIDE          /// دليل
+  DOCUMENTATION  /// توثيق تقني
+  TASK           /// مهمة
+  REPORT         /// تقرير
+  IDEA           /// فكرة
+  CHAT           /// محادثة
+  NOTE           /// ملاحظة
+  REFERENCE      /// مرجع
+}
+
+/// حالات الصفحة
+enum PageStatus {
+  DRAFT          /// مسودة
+  REVIEW         /// قيد المراجعة
+  PUBLISHED      /// منشورة
+  ARCHIVED       /// مؤرشفة
+}
+
+// ============================================================================
+// IDEAS BANK (بنك الأفكار)
+// ============================================================================
+
+/// الأفكار - تسجيل الأفكار العشوائية وتتبعها
+model Idea {
+  id          String   @id @default(cuid())
+  title       String   /// عنوان الفكرة
+  description String?  @db.Text /// وصف تفصيلي
+  
+  // التصنيف
+  status      IdeaStatus @default(NEW) /// حالة الفكرة
+  priority    Priority   @default(MEDIUM) /// الأولوية
+  category    IdeaCategory /// التصنيف
+  tags        String[]   /// وسوم
+  
+  // الربط بالأنظمة
+  relatedSystem String?  /// النظام المرتبط (maps, accounting, etc.)
+  
+  // التحويل لمهمة
+  convertedToTaskId String? @unique /// إذا تم تحويلها لمهمة
+  convertedToTask   Task?   @relation("IdeaToTask", fields: [convertedToTaskId], references: [id])
+  convertedAt       DateTime? /// تاريخ التحويل
+  
+  // الربط بصفحة
+  pageId      String?
+  page        DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  
+  // الملاحظات
+  notes       String?  @db.Text /// ملاحظات إضافية
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+  updatedBy   String?
+  
+  @@map("ideas")
+  @@index([status])
+  @@index([priority])
+  @@index([category])
+  @@index([relatedSystem])
+  @@index([createdAt])
+}
+
+/// حالات الفكرة
+enum IdeaStatus {
+  NEW            /// جديدة
+  UNDER_REVIEW   /// قيد الدراسة
+  ACCEPTED       /// مقبولة
+  REJECTED       /// مرفوضة
+  CONVERTED      /// محولة لمهمة
+  ARCHIVED       /// مؤرشفة
+}
+
+/// تصنيفات الأفكار
+enum IdeaCategory {
+  FEATURE        /// ميزة جديدة
+  IMPROVEMENT    /// تحسين
+  BUG_FIX        /// إصلاح خطأ
+  RESEARCH       /// بحث
+  OPTIMIZATION   /// تحسين أداء
+  UI_UX          /// واجهة المستخدم
+  DOCUMENTATION  /// توثيق
+  OTHER          /// أخرى
+}
+
+// ============================================================================
+// CHAT LOGS (سجل المحادثات)
+// ============================================================================
+
+/// سجل المحادثات مع Manus
+model ChatLog {
+  id          String   @id @default(cuid())
+  title       String   /// عنوان المحادثة
+  summary     String?  /// ملخص المحادثة
+  content     String   @db.Text /// المحادثة الكاملة (JSON أو Text)
+  
+  // الإحصائيات
+  messageCount Int     @default(0) /// عدد الرسائل
+  
+  // التصنيف
+  topic       ChatTopic /// موضوع المحادثة
+  tags        String[]  /// وسوم
+  isFavorite  Boolean   @default(false) /// مميزة بنجمة؟
+  
+  // الربط
+  pageId      String?
+  page        DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  
+  // المهام المرتبطة
+  relatedTasks Task[]
+  
+  // الملاحظات
+  notes       String?  @db.Text /// ملاحظات على المحادثة
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+  
+  @@map("chat_logs")
+  @@index([topic])
+  @@index([isFavorite])
+  @@index([createdAt])
+}
+
+/// مواضيع المحادثات
+enum ChatTopic {
+  DEVELOPMENT    /// تطوير
+  BUG_FIX        /// إصلاح أخطاء
+  PLANNING       /// تخطيط
+  DISCUSSION     /// نقاش
+  SUPPORT        /// دعم
+  RESEARCH       /// بحث
+  REVIEW         /// مراجعة
+  OTHER          /// أخرى
+}
+
+// ============================================================================
+// REPORTS LIBRARY (مكتبة التقارير)
+// ============================================================================
+
+/// التقارير - مكتبة لحفظ وتنظيم التقارير
+model Report {
+  id          String   @id @default(cuid())
+  title       String   /// عنوان التقرير
+  content     String   @db.Text /// محتوى التقرير (Markdown)
+  summary     String?  /// ملخص التقرير
+  
+  // التصنيف
+  type        ReportType /// نوع التقرير
+  category    String     /// التصنيف
+  tags        String[]   /// وسوم
+  
+  // المصدر
+  sourceRepo  String?    /// المستودع المصدر
+  sourceFile  String?    /// اسم الملف الأصلي
+  sourcePath  String?    /// المسار الكامل
+  importedAt  DateTime?  /// تاريخ الاستيراد
+  
+  // البيانات الوصفية
+  fileSize    Int?       /// حجم الملف (بايت)
+  version     String?    /// رقم الإصدار
+  
+  // الربط
+  pageId      String?
+  page        DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+  updatedBy   String?
+  
+  @@map("reports")
+  @@index([type])
+  @@index([category])
+  @@index([sourceRepo])
+  @@index([importedAt])
+  @@index([createdAt])
+}
+
+/// أنواع التقارير
+enum ReportType {
+  ACHIEVEMENT    /// إنجاز
+  PHASE          /// مرحلة
+  UPDATE         /// تحديث
+  ANALYSIS       /// تحليل
+  SUMMARY        /// ملخص
+  TECHNICAL      /// تقني
+  BUSINESS       /// عمل
+  OTHER          /// أخرى
+}
+
+// ============================================================================
+// TASKS MANAGEMENT (إدارة المهام)
+// ============================================================================
+
+/// المهام - نظام إدارة المهام الذكي
+model Task {
+  id          String   @id @default(cuid())
+  title       String   /// عنوان المهمة
+  description String?  @db.Text /// وصف تفصيلي
+  
+  // الحالة والأولوية
+  status      TaskStatus @default(TODO) /// حالة المهمة
+  priority    Priority   @default(MEDIUM) /// الأولوية
+  
+  // التواريخ
+  dueDate     DateTime?  /// تاريخ الاستحقاق
+  startDate   DateTime?  /// تاريخ البدء
+  completedAt DateTime?  /// تاريخ الإنجاز
+  
+  // المصدر
+  sourceType  TaskSource? /// مصدر المهمة
+  sourceId    String?     /// معرف المصدر
+  
+  // الربط بالفكرة (إذا كانت من فكرة)
+  fromIdea    Idea?      @relation("IdeaToTask")
+  
+  // الربط بالصفحة
+  pageId      String?
+  page        DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  
+  // الربط بالمحادثات
+  chatLogId   String?
+  chatLog     ChatLog?   @relation(fields: [chatLogId], references: [id], onDelete: SetNull)
+  
+  // المهام الفرعية
+  parentTaskId String?
+  parentTask   Task?     @relation("TaskHierarchy", fields: [parentTaskId], references: [id], onDelete: Cascade)
+  subTasks     Task[]    @relation("TaskHierarchy")
+  
+  // الملاحظات
+  notes       String?  @db.Text /// ملاحظات
+  tags        String[] /// وسوم
+  
+  // المسؤول
+  assignedTo  String?  /// معرف المستخدم المسؤول
+  
+  // التدقيق (Audit Trail)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+  updatedBy   String?
+  
+  @@map("tasks")
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([assignedTo])
+  @@index([sourceType])
+  @@index([pageId])
+  @@index([chatLogId])
+  @@index([parentTaskId])
+  @@index([createdAt])
+}
+
+/// حالات المهمة
+enum TaskStatus {
+  TODO           /// قائمة المهام
+  IN_PROGRESS    /// قيد التنفيذ
+  REVIEW         /// قيد المراجعة
+  DONE           /// مكتملة
+  BLOCKED        /// محظورة
+  CANCELLED      /// ملغاة
+}
+
+/// مصادر المهام
+enum TaskSource {
+  MANUAL         /// يدوية
+  IDEA           /// من فكرة
+  CHAT           /// من محادثة
+  REPORT         /// من تقرير
+  PAGE           /// من صفحة
+}
+
+/// الأولويات
+enum Priority {
+  LOW            /// منخفضة
+  MEDIUM         /// متوسطة
+  HIGH           /// عالية
+  URGENT         /// عاجلة
+}
+
+// ============================================================================
+// SUPPORTING MODELS (نماذج داعمة)
+// ============================================================================
+
+/// روابط بين الصفحات
+model PageLink {
+  id          String   @id @default(cuid())
+  
+  fromPageId  String
+  fromPage    DocumentationPage @relation("FromPage", fields: [fromPageId], references: [id], onDelete: Cascade)
+  
+  toPageId    String
+  toPage      DocumentationPage @relation("ToPage", fields: [toPageId], references: [id], onDelete: Cascade)
+  
+  linkType    String?  /// نوع الرابط (related, reference, etc.)
+  
+  createdAt   DateTime @default(now())
+  createdBy   String
+  
+  @@map("page_links")
+  @@unique([fromPageId, toPageId])
+  @@index([fromPageId])
+  @@index([toPageId])
+}
+
+/// تاريخ التعديلات على الصفحات
+model PageHistory {
+  id          String   @id @default(cuid())
+  
+  pageId      String
+  page        DocumentationPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  content     String   @db.Text /// المحتوى في هذا الإصدار
+  version     String   /// رقم الإصدار
+  changeNote  String?  /// ملاحظة التغيير
+  
+  createdAt   DateTime @default(now())
+  createdBy   String
+  
+  @@map("page_history")
+  @@index([pageId])
+  @@index([createdAt])
+}
+
+/// تعليقات على الصفحات
+model PageComment {
+  id          String   @id @default(cuid())
+  
+  pageId      String
+  page        DocumentationPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  content     String   @db.Text /// محتوى التعليق
+  
+  // التعليقات المتداخلة
+  parentId    String?
+  parent      PageComment?  @relation("CommentHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     PageComment[] @relation("CommentHierarchy")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+  updatedBy   String?
+  
+  @@map("page_comments")
+  @@index([pageId])
+  @@index([parentId])
+  @@index([createdAt])
+}
