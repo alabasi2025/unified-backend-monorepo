@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
@@ -119,7 +119,6 @@ export class DocumentationService {
       throw new Error('Maps System Guide not found');
     }
   }
-}
 
   /**
    * Import old documentation files into Reports Library
@@ -218,3 +217,4 @@ export class DocumentationService {
       errors,
     };
   }
+}

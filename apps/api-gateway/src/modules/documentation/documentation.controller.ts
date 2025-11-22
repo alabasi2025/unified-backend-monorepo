@@ -73,7 +73,6 @@ export class DocumentationController {
       });
     }
   }
-}
 
   /**
    * Import old documentation into Reports Library
@@ -95,3 +94,4 @@ export class DocumentationController {
       });
     }
   }
+}
