@@ -80,7 +80,7 @@ export class DocumentationService {
    * Get Maps System Guide
    */
   async getMapsSystemGuide(): Promise<string> {
-    const filePath = '/unified-frontend-monorepo/docs/maps-system-guide.md';
+    const filePath = path.join(this.docsPath, 'docs/maps-system-guide.md');
     try {
       const content = await fs.readFile(filePath, 'utf-8');
       return content;
