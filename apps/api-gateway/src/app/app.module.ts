@@ -14,6 +14,7 @@ import { SuppliersModule } from './suppliers/suppliers.module';
 import { ItemsModule } from './items/items.module';
 import { DocumentationModule } from '../modules/documentation/documentation.module';
 import { SmartNotebookModule } from '../modules/smart-notebook/smart-notebook.module';
+import { ReportsModule } from '../modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { SmartNotebookModule } from '../modules/smart-notebook/smart-notebook.mo
     ItemsModule,
     DocumentationModule,
     SmartNotebookModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
