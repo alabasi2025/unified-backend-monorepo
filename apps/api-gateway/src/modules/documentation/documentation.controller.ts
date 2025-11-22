@@ -53,4 +53,24 @@ export class DocumentationController {
       });
     }
   }
+
+  /**
+   * Get Maps System Guide
+   */
+  @Get('maps/system-guide')
+  async getMapsSystemGuide(@Res() res: Response) {
+    try {
+      const content = await this.documentationService.getMapsSystemGuide();
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        filename: 'maps-system-guide.md',
+        content,
+      });
+    } catch (error) {
+      return res.status(HttpStatus.NOT_FOUND).json({
+        success: false,
+        message: 'Maps System Guide not found',
+      });
+    }
+  }
 }

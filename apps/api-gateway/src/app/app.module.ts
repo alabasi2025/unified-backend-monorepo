@@ -12,6 +12,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { CustomersModule } from './customers/customers.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { ItemsModule } from './items/items.module';
+import { DocumentationModule } from '../modules/documentation/documentation.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { ItemsModule } from './items/items.module';
     ProjectsModule,
     CustomersModule,
     SuppliersModule,
-    ItemsModule
+    ItemsModule,
+    DocumentationModule
   ],
   controllers: [AppController],
   providers: [AppService],

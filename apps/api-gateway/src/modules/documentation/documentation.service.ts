@@ -24,6 +24,18 @@ export class DocumentationService {
         sections: 11,
       },
       {
+        id: 'maps-system-guide',
+        title: '🗺️ دليل نظام الخرائط الشامل',
+        filename: 'maps-system-guide.md',
+        description: 'دليل مفصل لنظام الخرائط الأوفلاين - البنية والميزات والتكامل',
+        category: 'architecture',
+        icon: 'pi-map',
+        version: '1.6.0',
+        lastUpdated: '2025-11-21',
+        pages: 25,
+        sections: 10,
+      },
+      {
         id: 'user-guide',
         title: 'دليل المستخدم',
         filename: 'USER_GUIDE.md',
@@ -62,5 +74,18 @@ export class DocumentationService {
    */
   async getMasterBlueprint(): Promise<string> {
     return this.getDocumentContent('SEMOP_MASTER_BLUEPRINT.md');
+  }
+
+  /**
+   * Get Maps System Guide
+   */
+  async getMapsSystemGuide(): Promise<string> {
+    const filePath = '/unified-frontend-monorepo/docs/maps-system-guide.md';
+    try {
+      const content = await fs.readFile(filePath, 'utf-8');
+      return content;
+    } catch (error) {
+      throw new Error('Maps System Guide not found');
+    }
   }
 }
