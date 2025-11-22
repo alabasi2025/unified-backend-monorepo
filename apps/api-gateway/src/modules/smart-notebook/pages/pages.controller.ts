@@ -52,4 +52,9 @@ export class PagesController {
   publish(@Param('id') id: string, @Request() req) {
     return this.pagesService.publish(id, req.user.id);
   }
+
+  @Post('import-documentation')
+  importDocumentation(@Request() req) {
+    return this.pagesService.importDocumentation(req.user.id);
+  }
 }

@@ -130,4 +130,101 @@ export class PagesService {
       byStatus: byStatus.reduce((acc, i) => ({ ...acc, [i.status]: i._count }), {}),
     };
   }
+
+  async importDocumentation(userId: string) {
+    const { readFileSync } = await import('fs');
+    const { join } = await import('path');
+
+    const DOCS = [
+      {
+        slug: 'comprehensive-documentation',
+        title: '📚 دفتر التوثيق الشامل لنظام SEMOP',
+        filename: 'docs/COMPREHENSIVE_DOCUMENTATION.md',
+        description: 'التوثيق الكامل والشامل - البنية المعمارية، قاعدة البيانات، Smart Notebook، نظام الخرائط، APIs، دليل المطورين، النشر والصيانة',
+        category: 'DOCUMENTATION',
+        type: 'GUIDE',
+        version: '1.0.0',
+      },
+      {
+        slug: 'documentation-summary',
+        title: '📋 ملخص التوثيق التنفيذي',
+        filename: 'docs/DOCUMENTATION_SUMMARY.md',
+        description: 'ملخص تنفيذي سريع للتوثيق الشامل',
+        category: 'DOCUMENTATION',
+        type: 'DOCUMENTATION',
+        version: '1.0.0',
+      },
+      {
+        slug: 'maps-system-guide',
+        title: '🗺️ دليل نظام الخرائط الشامل',
+        filename: 'docs/maps-system-guide.md',
+        description: 'دليل مفصل لنظام الخرائط الأوفلاين - البنية، الميزات، التكامل، والاستخدام',
+        category: 'MAPS',
+        type: 'GUIDE',
+        version: '1.6.0',
+      },
+      {
+        slug: 'prisma-migration-report',
+        title: '🔧 تقرير Prisma 7 Migration',
+        filename: 'PRISMA_7_MIGRATION_REPORT.md',
+        description: 'تقرير تقني: حل مشكلة Prisma 7 Driver Adapter في Smart Notebook',
+        category: 'TECHNICAL',
+        type: 'REPORT',
+        version: '1.0.0',
+      },
+    ];
+
+    const results = [];
+    const basePath = process.cwd();
+
+    for (const doc of DOCS) {
+      try {
+        const filePath = join(basePath, doc.filename);
+        const content = readFileSync(filePath, 'utf-8');
+
+        const existing = await this.prisma.documentationPage.findUnique({
+          where: { slug: doc.slug },
+        });
+
+        if (existing) {
+          await this.prisma.documentationPage.update({
+            where: { slug: doc.slug },
+            data: {
+              title: doc.title,
+              content,
+              summary: doc.description,
+              type: doc.type as any,
+              category: doc.category,
+              version: doc.version,
+              isPublished: true,
+              status: 'PUBLISHED',
+              updatedBy: userId,
+            },
+          });
+          results.push({ slug: doc.slug, action: 'updated', title: doc.title });
+        } else {
+          await this.prisma.documentationPage.create({
+            data: {
+              slug: doc.slug,
+              title: doc.title,
+              content,
+              summary: doc.description,
+              type: doc.type as any,
+              category: doc.category,
+              version: doc.version,
+              isPublished: true,
+              status: 'PUBLISHED',
+              createdBy: userId,
+              tags: [],
+            },
+          });
+          results.push({ slug: doc.slug, action: 'created', title: doc.title });
+        }
+      } catch (error) {
+        results.push({ slug: doc.slug, action: 'error', error: error.message });
+      }
+    }
+
+    return { success: true, results };
+  }
 }
