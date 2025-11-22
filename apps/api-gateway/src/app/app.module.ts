@@ -13,7 +13,7 @@ import { CustomersModule } from './customers/customers.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { ItemsModule } from './items/items.module';
 import { DocumentationModule } from '../modules/documentation/documentation.module';
-import { SmartNotebookModule } from '../modules/smart-notebook/smart-notebook.module';
+// import { SmartNotebookModule } from '../modules/smart-notebook/smart-notebook.module'; // Temporarily disabled
 
 @Module({
   imports: [
@@ -29,7 +29,7 @@ import { SmartNotebookModule } from '../modules/smart-notebook/smart-notebook.mo
     SuppliersModule,
     ItemsModule,
     DocumentationModule,
-    SmartNotebookModule
+    // SmartNotebookModule // Temporarily disabled
   ],
   controllers: [AppController],
   providers: [AppService],
