@@ -1953,6 +1953,8 @@ model Report {
   type        ReportType /// نوع التقرير
   category    String     /// التصنيف
   tags        String[]   /// وسوم
+  status      ReportStatus @default(DRAFT) /// حالة التقرير
+  format      ReportFormat @default(MARKDOWN) /// صيغة التقرير
   
   // المصدر
   sourceRepo  String?    /// المستودع المصدر
@@ -1991,7 +1993,29 @@ enum ReportType {
   SUMMARY        /// ملخص
   TECHNICAL      /// تقني
   BUSINESS       /// عمل
+  DOCUMENTATION  /// توثيق
+  USER_GUIDE     /// دليل المستخدم
+  DEVELOPER_GUIDE /// دليل المطور
+  ARCHITECTURE   /// بنية معمارية
+  SYSTEM_GUIDE   /// دليل نظام
+  COMPREHENSIVE  /// شامل
   OTHER          /// أخرى
+}
+
+/// حالة التقرير
+enum ReportStatus {
+  DRAFT      /// مسودة
+  PUBLISHED  /// منشور
+  ARCHIVED   /// مؤرشف
+}
+
+/// صيغة التقرير
+enum ReportFormat {
+  MARKDOWN   /// Markdown
+  PDF        /// PDF
+  HTML       /// HTML
+  JSON       /// JSON
+  TEXT       /// نص عادي
 }
 
 // ============================================================================

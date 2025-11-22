@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEnum, IsArray, IsInt, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ReportType } from '@prisma/client';
+import { ReportType, ReportStatus, ReportFormat } from '@prisma/client';
 
 export class CreateReportDto {
   @IsString()
@@ -39,6 +39,14 @@ export class CreateReportDto {
   @IsOptional()
   @IsString()
   pageId?: string;
+
+  @IsOptional()
+  @IsEnum(ReportStatus)
+  status?: ReportStatus;
+
+  @IsOptional()
+  @IsEnum(ReportFormat)
+  format?: ReportFormat;
 }
 
 export class UpdateReportDto {
@@ -74,6 +82,14 @@ export class UpdateReportDto {
   @IsOptional()
   @IsString()
   pageId?: string;
+
+  @IsOptional()
+  @IsEnum(ReportStatus)
+  status?: ReportStatus;
+
+  @IsOptional()
+  @IsEnum(ReportFormat)
+  format?: ReportFormat;
 }
 
 export class FilterReportsDto {
@@ -92,6 +108,14 @@ export class FilterReportsDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @IsOptional()
+  @IsEnum(ReportStatus)
+  status?: ReportStatus;
+
+  @IsOptional()
+  @IsEnum(ReportFormat)
+  format?: ReportFormat;
 
   @IsOptional()
   @Type(() => Number)
@@ -135,4 +159,12 @@ export class ImportReportDto {
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
+
+  @IsOptional()
+  @IsEnum(ReportStatus)
+  status?: ReportStatus;
+
+  @IsOptional()
+  @IsEnum(ReportFormat)
+  format?: ReportFormat;
 }

@@ -81,6 +81,8 @@ export class ReportsService {
       category,
       sourceRepo,
       search,
+      status,
+      format,
       page = 1,
       limit = 20,
       sortBy = 'createdAt',
@@ -92,6 +94,8 @@ export class ReportsService {
     if (type) where.type = type;
     if (category) where.category = category;
     if (sourceRepo) where.sourceRepo = sourceRepo;
+    if (status) where.status = status;
+    if (format) where.format = format;
 
     if (search) {
       where.OR = [
