@@ -16,7 +16,6 @@ export class TasksService {
       include: {
         page: { select: { id: true, title: true, slug: true } },
         chatLog: { select: { id: true, title: true } },
-        fromIdea: { select: { id: true, title: true } },
         parentTask: { select: { id: true, title: true } },
       },
     });
@@ -55,9 +54,7 @@ export class TasksService {
         include: {
           page: { select: { id: true, title: true, slug: true } },
           chatLog: { select: { id: true, title: true } },
-          fromIdea: { select: { id: true, title: true } },
-          parentTask: { select: { id: true, title: true } },
-          subTasks: { select: { id: true, title: true, status: true } },
+              subTasks: { select: { id: true, title: true, status: true } },
         },
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * limit,
@@ -75,7 +72,6 @@ export class TasksService {
       include: {
         page: true,
         chatLog: true,
-        fromIdea: true,
         parentTask: true,
         subTasks: true,
       },
