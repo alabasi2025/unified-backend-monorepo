@@ -36,7 +36,6 @@ model Holding {
   createdBy   String?
   updatedBy   String?
   
-  @@map("holdings")
   @@index([code])
   @@index([isActive])
 }
@@ -65,7 +64,6 @@ model Unit {
   createdBy   String?
   updatedBy   String?
   
-  @@map("units")
   @@index([code])
   @@index([holdingId])
   @@index([type])
@@ -107,7 +105,6 @@ model Project {
   createdBy   String?
   updatedBy   String?
   
-  @@map("projects")
   @@index([code])
   @@index([unitId])
   @@index([status])
@@ -161,7 +158,6 @@ model User {
   createdBy       String?
   updatedBy       String?
   
-  @@map("users")
   @@index([email])
   @@index([username])
   @@index([holdingId])
@@ -188,7 +184,6 @@ model Role {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  @@map("roles")
   @@index([code])
   @@index([isSystem])
   @@index([isActive])
@@ -211,7 +206,6 @@ model Permission {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  @@map("permissions")
   @@unique([module, action])
   @@index([code])
   @@index([module])
@@ -231,7 +225,6 @@ model UserRole {
   assignedAt DateTime @default(now())
   assignedBy String?
   
-  @@map("user_roles")
   @@unique([userId, roleId])
   @@index([userId])
   @@index([roleId])
@@ -251,7 +244,6 @@ model RolePermission {
   assignedAt   DateTime   @default(now())
   assignedBy   String?
   
-  @@map("role_permissions")
   @@unique([roleId, permissionId])
   @@index([roleId])
   @@index([permissionId])
@@ -285,7 +277,6 @@ model Configuration {
   createdBy   String?
   updatedBy   String?
   
-  @@map("configurations")
   @@unique([key, scope, holdingId, unitId, projectId])
   @@index([key])
   @@index([scope])
@@ -352,7 +343,6 @@ model Account {
   createdBy        String?
   updatedBy        String?
   
-  @@map("accounts")
   @@index([code])
   @@index([accountType])
   @@index([parentId])
@@ -396,7 +386,6 @@ model AccountBalance {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   
-  @@map("account_balances")
   @@unique([accountId, fiscalYearId])
   @@index([accountId])
   @@index([fiscalYearId])
@@ -414,7 +403,6 @@ model AccountHierarchy {
   
   depth      Int     /// عمق العلاقة (0 للحساب نفسه، 1 للأب المباشر، إلخ)
   
-  @@map("account_hierarchy")
   @@index([accountId, ancestorId])
   @@index([accountId])
   @@index([ancestorId])
@@ -471,7 +459,6 @@ model JournalEntry {
   createdBy    String?
   updatedBy    String?
   
-  @@map("journal_entries")
   @@index([entryNumber])
   @@index([entryDate])
   @@index([status])
@@ -520,7 +507,6 @@ model JournalEntryLine {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   
-  @@map("journal_entry_lines")
   @@unique([journalEntryId, lineNumber])
   @@index([journalEntryId])
   @@index([accountId])
@@ -559,7 +545,6 @@ model CostCenter {
   createdBy   String?
   updatedBy   String?
   
-  @@map("cost_centers")
   @@index([code])
   @@index([parentId])
   @@index([holdingId])
@@ -597,7 +582,6 @@ model FiscalYear {
   createdBy   String?
   updatedBy   String?
   
-  @@map("fiscal_years")
   @@index([code])
   @@index([startDate])
   @@index([endDate])
@@ -631,7 +615,6 @@ model FiscalPeriod {
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
   
-  @@map("fiscal_periods")
   @@unique([fiscalYearId, periodNumber])
   @@index([fiscalYearId])
   @@index([status])
@@ -668,7 +651,6 @@ model SupplierCategory {
   createdBy   String?
   updatedBy   String?
   
-  @@map("supplier_categories")
   @@index([code])
   @@index([isActive])
 }
@@ -710,7 +692,6 @@ model Supplier {
   createdBy           String?
   updatedBy           String?
   
-  @@map("suppliers")
   @@index([code])
   @@index([taxNumber])
   @@index([email])
@@ -745,7 +726,6 @@ model SupplierAddress {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   
-  @@map("supplier_addresses")
   @@index([supplierId])
   @@index([addressType])
   @@index([isPrimary])
@@ -768,7 +748,6 @@ model SupplierContact {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  @@map("supplier_contacts")
   @@index([supplierId])
   @@index([isPrimary])
 }
@@ -796,7 +775,6 @@ model CustomerCategory {
   createdBy           String?
   updatedBy           String?
   
-  @@map("customer_categories")
   @@index([code])
   @@index([isActive])
 }
@@ -838,7 +816,6 @@ model Customer {
   createdBy           String?
   updatedBy           String?
   
-  @@map("customers")
   @@index([code])
   @@index([taxNumber])
   @@index([email])
@@ -867,7 +844,6 @@ model CustomerAddress {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   
-  @@map("customer_addresses")
   @@index([customerId])
   @@index([addressType])
   @@index([isPrimary])
@@ -890,7 +866,6 @@ model CustomerContact {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  @@map("customer_contacts")
   @@index([customerId])
   @@index([isPrimary])
 }
@@ -922,7 +897,6 @@ model ItemCategory {
   createdBy   String?
   updatedBy   String?
   
-  @@map("item_categories")
   @@index([code])
   @@index([parentId])
   @@index([isActive])
@@ -992,7 +966,6 @@ model Item {
   createdBy           String?
   updatedBy           String?
   
-  @@map("items")
   @@index([code])
   @@index([barcode])
   @@index([itemType])
@@ -1034,7 +1007,6 @@ model Warehouse {
   createdBy       String?
   updatedBy       String?
   
-  @@map("warehouses")
   @@index([code])
   @@index([holdingId])
   @@index([unitId])
@@ -1058,7 +1030,6 @@ model StockLevel {
   // Audit Trail
   updatedAt           DateTime @updatedAt
   
-  @@map("stock_levels")
   @@unique([itemId, warehouseId])
   @@index([itemId])
   @@index([warehouseId])
@@ -1104,7 +1075,6 @@ model StockMovement {
   createdAt               DateTime          @default(now())
   createdBy               String?
   
-  @@map("stock_movements")
   @@index([movementNumber])
   @@index([movementDate])
   @@index([movementType])
@@ -1142,7 +1112,6 @@ model StockCount {
   completedAt     DateTime?
   completedBy     String?
   
-  @@map("stock_counts")
   @@index([countNumber])
   @@index([countDate])
   @@index([status])
@@ -1169,7 +1138,6 @@ model StockCountLine {
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
   
-  @@map("stock_count_lines")
   @@index([stockCountId])
   @@index([itemId])
 }
@@ -1222,7 +1190,6 @@ model PurchaseOrder {
   approvedAt            DateTime?
   approvedBy            String?
   
-  @@map("purchase_orders")
   @@index([orderNumber])
   @@index([orderDate])
   @@index([status])
@@ -1262,7 +1229,6 @@ model PurchaseOrderLine {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   
-  @@map("purchase_order_lines")
   @@unique([purchaseOrderId, lineNumber])
   @@index([purchaseOrderId])
   @@index([itemId])
@@ -1321,7 +1287,6 @@ model PurchaseInvoice {
   postedAt                DateTime?
   postedBy                String?
   
-  @@map("purchase_invoices")
   @@index([invoiceNumber])
   @@index([invoiceDate])
   @@index([status])
@@ -1364,7 +1329,6 @@ model PurchaseInvoiceLine {
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
   
-  @@map("purchase_invoice_lines")
   @@unique([purchaseInvoiceId, lineNumber])
   @@index([purchaseInvoiceId])
   @@index([itemId])
@@ -1412,7 +1376,6 @@ model PurchaseReturn {
   createdBy           String?
   updatedBy           String?
   
-  @@map("purchase_returns")
   @@index([returnNumber])
   @@index([returnDate])
   @@index([status])
@@ -1450,7 +1413,6 @@ model PurchaseReturnLine {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   
-  @@map("purchase_return_lines")
   @@unique([purchaseReturnId, lineNumber])
   @@index([purchaseReturnId])
   @@index([itemId])
@@ -1505,7 +1467,6 @@ model SalesOrder {
   approvedAt            DateTime?
   approvedBy            String?
   
-  @@map("sales_orders")
   @@index([orderNumber])
   @@index([orderDate])
   @@index([status])
@@ -1545,7 +1506,6 @@ model SalesOrderLine {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   
-  @@map("sales_order_lines")
   @@unique([salesOrderId, lineNumber])
   @@index([salesOrderId])
   @@index([itemId])
@@ -1603,7 +1563,6 @@ model SalesInvoice {
   postedAt            DateTime?
   postedBy            String?
   
-  @@map("sales_invoices")
   @@index([invoiceNumber])
   @@index([invoiceDate])
   @@index([status])
@@ -1646,7 +1605,6 @@ model SalesInvoiceLine {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   
-  @@map("sales_invoice_lines")
   @@unique([salesInvoiceId, lineNumber])
   @@index([salesInvoiceId])
   @@index([itemId])
@@ -1694,7 +1652,6 @@ model SalesReturn {
   createdBy         String?
   updatedBy         String?
   
-  @@map("sales_returns")
   @@index([returnNumber])
   @@index([returnDate])
   @@index([status])
@@ -1732,7 +1689,6 @@ model SalesReturnLine {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   
-  @@map("sales_return_lines")
   @@unique([salesReturnId, lineNumber])
   @@index([salesReturnId])
   @@index([itemId])
@@ -1788,7 +1744,6 @@ model DocumentationPage {
   createdBy   String
   updatedBy   String?
   
-  @@map("documentation_pages")
   @@index([slug])
   @@index([type])
   @@index([category])
@@ -1842,6 +1797,9 @@ model Idea {
   
   // العلاقات
   conversationId  String?         /// المحادثة المصدر
+  convertedToTaskId String?
+  convertedToTask   Task?     @relation("IdeaConversion", fields: [convertedToTaskId], references: [id], onDelete: SetNull)
+
   conversation    Conversation?   @relation(fields: [conversationId], references: [id], onDelete: SetNull)
   
   tasks           Task[]          /// المهام المحولة من هذه الفكرة
@@ -1865,7 +1823,6 @@ model Idea {
   updatedBy       String?
   reviewedBy      String?         /// من راجع الفكرة
   
-  @@map("ideas")
   @@index([status])
   @@index([category])
   @@index([priority])
@@ -1873,6 +1830,7 @@ model Idea {
   @@index([conversationId])
   @@index([relatedSystem])
   @@index([createdAt])
+  @@map("ideas")
 }
 
 /// حالات الفكرة
@@ -1934,7 +1892,6 @@ model ChatLog {
   updatedAt   DateTime @updatedAt
   createdBy   String
   
-  @@map("chat_logs")
   @@index([topic])
   @@index([isFavorite])
   @@index([createdAt])
@@ -1990,12 +1947,12 @@ model Report {
   createdBy   String
   updatedBy   String?
   
-  @@map("reports")
   @@index([type])
   @@index([category])
   @@index([sourceRepo])
   @@index([importedAt])
   @@index([createdAt])
+  @@map("reports")
 }
 
 /// أنواع التقارير
@@ -2057,6 +2014,14 @@ model Task {
   // العلاقات
   ideaId            String?         /// الفكرة المصدر
   idea              Idea?           @relation(fields: [ideaId], references: [id], onDelete: SetNull)
+  convertedFromIdeas Idea[]   @relation("IdeaConversion")
+
+  // Smart Notebook Integration
+  conversationId    String?
+  conversation      Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  sourceType        String?
+  sourceId          String?
+
   
   achievementReports TaskAchievement[] /// تقارير الإنجاز المرتبطة
   
@@ -2090,7 +2055,6 @@ model Task {
   createdBy         String
   updatedBy         String?
   
-  @@map("tasks")
   @@index([status])
   @@index([priority])
   @@index([assignee])
@@ -2100,6 +2064,7 @@ model Task {
   @@index([chatLogId])
   @@index([parentTaskId])
   @@index([createdAt])
+  @@map("tasks")
 }
 
 /// حالات المهمة
@@ -2149,7 +2114,6 @@ model PageLink {
   createdAt   DateTime @default(now())
   createdBy   String
   
-  @@map("page_links")
   @@unique([fromPageId, toPageId])
   @@index([fromPageId])
   @@index([toPageId])
@@ -2169,7 +2133,6 @@ model PageHistory {
   createdAt   DateTime @default(now())
   createdBy   String
   
-  @@map("page_history")
   @@index([pageId])
   @@index([createdAt])
 }
@@ -2193,7 +2156,6 @@ model PageComment {
   createdBy   String
   updatedBy   String?
   
-  @@map("page_comments")
   @@index([pageId])
   @@index([parentId])
   @@index([createdAt])
@@ -2216,6 +2178,7 @@ model Conversation {
   sourceRepo          String?             /// المستودع المصدر
   category            ConversationCategory /// الفئة
   status              ConversationStatus  /// الحالة
+  isFavorite          Boolean             @default(false) /// مفضلة
   extractedIdeasCount Int                 @default(0) /// عدد الأفكار المستخلصة
   
   // البيانات الوصفية
@@ -2227,6 +2190,8 @@ model Conversation {
   ideas               Idea[]              /// الأفكار المستخلصة
   
   // التواريخ
+  tasks             Task[]
+
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
   archivedAt          DateTime?           /// تاريخ الأرشفة
@@ -2236,7 +2201,6 @@ model Conversation {
   createdBy           String
   updatedBy           String?
   
-  @@map("conversations")
   @@index([status])
   @@index([category])
   @@index([createdAt])
@@ -2279,7 +2243,6 @@ model IdeaRelation {
   createdAt   DateTime @default(now())
   createdBy   String
   
-  @@map("idea_relations")
   @@unique([fromIdeaId, toIdeaId])
   @@index([fromIdeaId])
   @@index([toIdeaId])
@@ -2308,7 +2271,7 @@ model AchievementReport {
   processedConversations Int               @default(0) /// المحادثات المعالجة
   
   // المحتوى
-  content                String            @db.Text /// محتوى التقرير
+  content                String?           @db.Text /// محتوى التقرير
   summary                String?           @db.Text /// ملخص تنفيذي
   recommendations        String?           @db.Text /// التوصيات
   highlights             String?           @db.Text /// أبرز الإنجازات
@@ -2329,7 +2292,6 @@ model AchievementReport {
   // التدقيق
   createdBy              String
   
-  @@map("achievement_reports")
   @@index([type])
   @@index([startDate])
   @@index([endDate])
@@ -2361,7 +2323,6 @@ model TaskAchievement {
   
   createdAt DateTime          @default(now())
   
-  @@map("task_achievements")
   @@unique([taskId, reportId])
   @@index([taskId])
   @@index([reportId])
@@ -2414,7 +2375,6 @@ model TaskProgressReport {
   createdBy              String
   updatedBy              String?
   
-  @@map("task_progress_reports")
   @@index([system])
   @@index([project])
   @@index([overallProgress])
@@ -2429,7 +2389,7 @@ model TaskProgressReport {
 model NotebookPage {
   id                     String            @id @default(cuid())
   title                  String            /// عنوان الصفحة
-  content                String            @db.Text /// المحتوى (Markdown)
+  content                String?           @db.Text /// المحتوى (Markdown)
   
   // التنظيم
   section                String?           /// القسم/المجلد
@@ -2460,7 +2420,6 @@ model NotebookPage {
   stickyNotes            StickyNote[]
   timelineEvents         TimelineEvent[]
   
-  @@map("notebook_pages")
   @@index([section])
   @@index([createdBy])
   @@index([isPinned])
@@ -2470,7 +2429,7 @@ model NotebookPage {
 /// الملصقات - ملاحظات سريعة مثل Sticky Notes
 model StickyNote {
   id                     String            @id @default(cuid())
-  content                String            @db.Text /// المحتوى
+  content                String?           @db.Text /// المحتوى
   
   // التنسيق
   color                  String            @default("yellow") /// اللون
@@ -2495,7 +2454,6 @@ model StickyNote {
   // التدقيق
   createdBy              String
   
-  @@map("sticky_notes")
   @@index([pageId])
   @@index([createdBy])
   @@index([isDismissed])
@@ -2527,7 +2485,6 @@ model TimelineEvent {
   // التدقيق
   createdBy              String
   
-  @@map("timeline_events")
   @@index([eventType])
   @@index([conversationId])
   @@index([ideaId])
@@ -2544,6 +2501,7 @@ enum TimelineEventType {
   IDEA_EXTRACTED         /// فكرة استُخلصت
   IDEA_APPROVED          /// فكرة اعتُمدت
   IDEA_REJECTED          /// فكرة رُفضت
+  IDEA_CONVERTED         /// فكرة حُولت إلى مهمة
   
   TASK_CREATED           /// مهمة أُنشئت
   TASK_STARTED           /// مهمة بدأت
@@ -2551,10 +2509,8 @@ enum TimelineEventType {
   TASK_BLOCKED           /// مهمة حُظرت
   TASK_COMPLETED         /// مهمة أُنجزت
   
-  NOTE_CREATED           /// ملاحظة أُنشئت
-  NOTE_UPDATED           /// ملاحظة حُدثت
+  PAGE_CREATED           /// صفحة أُنشئت
+  PAGE_UPDATED           /// صفحة حُدثت
   
-  REPORT_GENERATED       /// تقرير وُلّد
-  
-  OTHER                  /// حدث آخر
+  NOTE_ADDED             /// ملاحظة أُضيفت
 }

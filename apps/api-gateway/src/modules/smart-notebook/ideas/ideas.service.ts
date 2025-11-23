@@ -13,7 +13,7 @@ export class IdeasService {
   async create(createIdeaDto: CreateIdeaDto, userId: string) {
     const idea = await this.prisma.idea.create({
       data: {
-        ...createIdeaDto,
+        ...createIdeaDto as any,
         createdBy: userId,
       },
       include: {
@@ -270,7 +270,7 @@ export class IdeasService {
 
     // Create timeline event
     const eventTypeMap = {
-      [IdeaStatus.ACCEPTED]: 'IDEA_APPROVED',
+      [IdeaStatus.APPROVED]: 'IDEA_APPROVED',
       [IdeaStatus.REJECTED]: 'IDEA_REJECTED',
     };
 
@@ -306,7 +306,7 @@ export class IdeasService {
       this.prisma.idea.count(),
       this.prisma.idea.count({ where: { status: IdeaStatus.NEW } }),
       this.prisma.idea.count({ where: { status: IdeaStatus.UNDER_REVIEW } }),
-      this.prisma.idea.count({ where: { status: IdeaStatus.ACCEPTED } }),
+      this.prisma.idea.count({ where: { status: IdeaStatus.APPROVED } }),
       this.prisma.idea.count({ where: { status: IdeaStatus.REJECTED } }),
       this.prisma.idea.count({ where: { status: IdeaStatus.CONVERTED } }),
       this.prisma.idea.groupBy({

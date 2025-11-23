@@ -40,6 +40,10 @@ export class CreateIdeaDto {
 
   @IsOptional()
   @IsString()
+  conversationId?: string;
+
+  @IsOptional()
+  @IsString()
   notes?: string;
 }
 
@@ -76,6 +80,10 @@ export class UpdateIdeaDto {
   @IsOptional()
   @IsString()
   pageId?: string;
+
+  @IsOptional()
+  @IsString()
+  conversationId?: string;
 
   @IsOptional()
   @IsString()

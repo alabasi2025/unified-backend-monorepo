@@ -107,7 +107,7 @@ export class NotificationsService {
             gte: new Date(),
           },
           status: {
-            in: ['PENDING', 'IN_PROGRESS'],
+            in: ['NEW', 'IN_PROGRESS'],
           },
         },
         orderBy: { dueDate: 'asc' },

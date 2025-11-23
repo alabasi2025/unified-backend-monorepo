@@ -4,6 +4,7 @@
   "dependencies": {
     "@nestjs/common": "11.1.9",
     "@nestjs/core": "11.1.9",
+    "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/platform-express": "11.1.9",
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",

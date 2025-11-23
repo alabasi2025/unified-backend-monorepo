@@ -10,7 +10,7 @@ export class TasksService {
   async create(createTaskDto: CreateTaskDto, userId: string) {
     const task = await this.prisma.task.create({
       data: {
-        ...createTaskDto,
+        ...createTaskDto as any,
         createdBy: userId,
       },
       include: {

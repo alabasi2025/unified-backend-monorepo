@@ -8,7 +8,7 @@ export class TimelineService {
 
   async create(createDto: CreateTimelineEventDto) {
     return this.prisma.timelineEvent.create({
-      data: createDto,
+      data: createDto as any,
     });
   }
 
