@@ -104,14 +104,14 @@ export class TasksService {
   async changeStatus(id: string, status: TaskStatus, userId: string) {
     const task = await this.findOne(id);
     const data: any = { status, updatedBy: userId };
-    if (status === TaskStatus.DONE) data.completedAt = new Date();
+    if (status === TaskStatus.COMPLETED) data.completedAt = new Date();
     
     const updatedTask = await this.prisma.task.update({ where: { id }, data });
 
     // Create timeline event
     const eventTypeMap = {
       [TaskStatus.IN_PROGRESS]: 'TASK_STARTED',
-      [TaskStatus.DONE]: 'TASK_COMPLETED',
+      [TaskStatus.COMPLETED]: 'TASK_COMPLETED',
       [TaskStatus.BLOCKED]: 'TASK_BLOCKED',
     };
 
@@ -137,8 +137,8 @@ export class TasksService {
       this.prisma.task.count(),
       this.prisma.task.groupBy({ by: ['status'], _count: true }),
       this.prisma.task.groupBy({ by: ['priority'], _count: true }),
-      this.prisma.task.count({ where: { dueDate: { lt: new Date() }, status: { not: TaskStatus.DONE } } }),
-      this.prisma.task.count({ where: { status: TaskStatus.DONE } }),
+      this.prisma.task.count({ where: { dueDate: { lt: new Date() }, status: { not: TaskStatus.COMPLETED } } }),
+      this.prisma.task.count({ where: { status: TaskStatus.COMPLETED } }),
     ]);
 
     return {
