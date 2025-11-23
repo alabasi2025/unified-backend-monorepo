@@ -16,6 +16,8 @@ import { SmartNotebookModule } from '../modules/smart-notebook/smart-notebook.mo
 import { ReportsModule } from '../modules/reports/reports.module';
 import { SearchModule } from '../modules/search/search.module';
 import { NotificationsModule } from '../modules/notifications/notifications.module';
+import { ConversationsModule } from '../conversations/conversations.module';
+import { AchievementReportsModule } from '../achievement-reports/achievement-reports.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { NotificationsModule } from '../modules/notifications/notifications.modu
     ReportsModule,
     SearchModule,
     NotificationsModule,
+    ConversationsModule,
+    AchievementReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
