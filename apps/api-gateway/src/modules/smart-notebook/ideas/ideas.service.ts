@@ -11,7 +11,7 @@ export class IdeasService {
    * إنشاء فكرة جديدة
    */
   async create(createIdeaDto: CreateIdeaDto, userId: string) {
-    return this.prisma.idea.create({
+    const idea = await this.prisma.idea.create({
       data: {
         ...createIdeaDto,
         createdBy: userId,
@@ -26,6 +26,21 @@ export class IdeasService {
         },
       },
     });
+
+    // Create timeline event
+    if (createIdeaDto.conversationId) {
+      await this.prisma.timelineEvent.create({
+        data: {
+          eventType: 'IDEA_EXTRACTED',
+          title: `فكرة جديدة: ${idea.title}`,
+          ideaId: idea.id,
+          conversationId: createIdeaDto.conversationId,
+          createdBy: userId,
+        },
+      });
+    }
+
+    return idea;
   }
 
   /**
@@ -207,6 +222,32 @@ export class IdeasService {
       },
     });
 
+    // Create timeline events
+    await Promise.all([
+      // Idea converted event
+      this.prisma.timelineEvent.create({
+        data: {
+          eventType: 'IDEA_CONVERTED',
+          title: `تحويل فكرة إلى مهمة: ${idea.title}`,
+          ideaId: idea.id,
+          taskId: task.id,
+          conversationId: idea.conversationId,
+          createdBy: userId,
+        },
+      }),
+      // Task created event
+      this.prisma.timelineEvent.create({
+        data: {
+          eventType: 'TASK_CREATED',
+          title: `مهمة جديدة من فكرة: ${task.title}`,
+          taskId: task.id,
+          ideaId: idea.id,
+          conversationId: idea.conversationId,
+          createdBy: userId,
+        },
+      }),
+    ]);
+
     return {
       idea: await this.findOne(id),
       task,
@@ -217,15 +258,35 @@ export class IdeasService {
    * تغيير حالة الفكرة
    */
   async changeStatus(id: string, status: IdeaStatus, userId: string) {
-    await this.findOne(id); // Check if exists
+    const idea = await this.findOne(id); // Check if exists
 
-    return this.prisma.idea.update({
+    const updatedIdea = await this.prisma.idea.update({
       where: { id },
       data: {
         status,
         updatedBy: userId,
       },
     });
+
+    // Create timeline event
+    const eventTypeMap = {
+      [IdeaStatus.ACCEPTED]: 'IDEA_APPROVED',
+      [IdeaStatus.REJECTED]: 'IDEA_REJECTED',
+    };
+
+    if (eventTypeMap[status]) {
+      await this.prisma.timelineEvent.create({
+        data: {
+          eventType: eventTypeMap[status],
+          title: `تغيير حالة الفكرة: ${idea.title}`,
+          ideaId: idea.id,
+          conversationId: idea.conversationId,
+          createdBy: userId,
+        },
+      });
+    }
+
+    return updatedIdea;
   }
 
   /**

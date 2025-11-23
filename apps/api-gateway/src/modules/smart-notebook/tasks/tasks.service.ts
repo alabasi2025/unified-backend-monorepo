@@ -8,7 +8,7 @@ export class TasksService {
   constructor(private prisma: PrismaService) {}
 
   async create(createTaskDto: CreateTaskDto, userId: string) {
-    return this.prisma.task.create({
+    const task = await this.prisma.task.create({
       data: {
         ...createTaskDto,
         createdBy: userId,
@@ -20,6 +20,20 @@ export class TasksService {
         parentTask: { select: { id: true, title: true } },
       },
     });
+
+    // Create timeline event
+    await this.prisma.timelineEvent.create({
+      data: {
+        eventType: 'TASK_CREATED',
+        title: `مهمة جديدة: ${task.title}`,
+        taskId: task.id,
+        ideaId: task.sourceType === 'IDEA' ? task.sourceId : null,
+        conversationId: task.conversationId,
+        createdBy: userId,
+      },
+    });
+
+    return task;
   }
 
   async findAll(filter: FilterTasksDto) {
@@ -88,9 +102,34 @@ export class TasksService {
   }
 
   async changeStatus(id: string, status: TaskStatus, userId: string) {
+    const task = await this.findOne(id);
     const data: any = { status, updatedBy: userId };
     if (status === TaskStatus.DONE) data.completedAt = new Date();
-    return this.prisma.task.update({ where: { id }, data });
+    
+    const updatedTask = await this.prisma.task.update({ where: { id }, data });
+
+    // Create timeline event
+    const eventTypeMap = {
+      [TaskStatus.IN_PROGRESS]: 'TASK_STARTED',
+      [TaskStatus.DONE]: 'TASK_COMPLETED',
+      [TaskStatus.BLOCKED]: 'TASK_BLOCKED',
+    };
+
+    if (eventTypeMap[status]) {
+      await this.prisma.timelineEvent.create({
+        data: {
+          eventType: eventTypeMap[status],
+          title: `تغيير حالة المهمة: ${task.title}`,
+          taskId: task.id,
+          ideaId: task.sourceType === 'IDEA' ? task.sourceId : null,
+          conversationId: task.conversationId,
+          metadata: { oldStatus: task.status, newStatus: status },
+          createdBy: userId,
+        },
+      });
+    }
+
+    return updatedTask;
   }
 
   async getStatistics() {
