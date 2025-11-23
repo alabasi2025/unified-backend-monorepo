@@ -1,25 +1,29 @@
 -- Smart Notebook Enhancements Migration
 -- Date: 2025-11-23
--- Description: Add new models and fields for Smart Notebook system
+-- Description: Add new models for Smart Notebook system (safe migration)
 
 -- Create TimelineEventType enum
-CREATE TYPE "TimelineEventType" AS ENUM (
-  'CONVERSATION_CREATED',
-  'IDEA_EXTRACTED',
-  'IDEA_APPROVED',
-  'IDEA_REJECTED',
-  'IDEA_CONVERTED',
-  'TASK_CREATED',
-  'TASK_STARTED',
-  'TASK_COMPLETED',
-  'TASK_BLOCKED',
-  'PAGE_CREATED',
-  'PAGE_UPDATED',
-  'NOTE_ADDED'
-);
+DO $$ BEGIN
+    CREATE TYPE "TimelineEventType" AS ENUM (
+      'CONVERSATION_CREATED',
+      'IDEA_EXTRACTED',
+      'IDEA_APPROVED',
+      'IDEA_REJECTED',
+      'IDEA_CONVERTED',
+      'TASK_CREATED',
+      'TASK_STARTED',
+      'TASK_COMPLETED',
+      'TASK_BLOCKED',
+      'PAGE_CREATED',
+      'PAGE_UPDATED',
+      'NOTE_ADDED'
+    );
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Create Conversation table
-CREATE TABLE "Conversation" (
+CREATE TABLE IF NOT EXISTS "Conversation" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
@@ -38,7 +42,7 @@ CREATE TABLE "Conversation" (
 );
 
 -- Create AchievementReport table
-CREATE TABLE "AchievementReport" (
+CREATE TABLE IF NOT EXISTS "AchievementReport" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
@@ -56,7 +60,7 @@ CREATE TABLE "AchievementReport" (
 );
 
 -- Create TaskProgressReport table
-CREATE TABLE "TaskProgressReport" (
+CREATE TABLE IF NOT EXISTS "TaskProgressReport" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
@@ -76,7 +80,7 @@ CREATE TABLE "TaskProgressReport" (
 );
 
 -- Create NotebookPage table
-CREATE TABLE "NotebookPage" (
+CREATE TABLE IF NOT EXISTS "NotebookPage" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
@@ -94,7 +98,7 @@ CREATE TABLE "NotebookPage" (
 );
 
 -- Create StickyNote table
-CREATE TABLE "StickyNote" (
+CREATE TABLE IF NOT EXISTS "StickyNote" (
     "id" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "color" TEXT NOT NULL DEFAULT 'YELLOW',
@@ -109,7 +113,7 @@ CREATE TABLE "StickyNote" (
 );
 
 -- Create TimelineEvent table
-CREATE TABLE "TimelineEvent" (
+CREATE TABLE IF NOT EXISTS "TimelineEvent" (
     "id" TEXT NOT NULL,
     "eventType" "TimelineEventType" NOT NULL,
     "title" TEXT NOT NULL,
@@ -125,38 +129,78 @@ CREATE TABLE "TimelineEvent" (
     CONSTRAINT "TimelineEvent_pkey" PRIMARY KEY ("id")
 );
 
--- Add new fields to Idea table
-ALTER TABLE "Idea" ADD COLUMN IF NOT EXISTS "conversationId" TEXT;
-ALTER TABLE "Idea" ADD COLUMN IF NOT EXISTS "rating" INTEGER;
-ALTER TABLE "Idea" ADD COLUMN IF NOT EXISTS "estimatedValue" INTEGER;
-ALTER TABLE "Idea" ADD COLUMN IF NOT EXISTS "estimatedEffort" INTEGER;
-ALTER TABLE "Idea" ADD COLUMN IF NOT EXISTS "convertedToTaskId" TEXT;
-ALTER TABLE "Idea" ADD COLUMN IF NOT EXISTS "convertedAt" TIMESTAMP(3);
+-- Add new fields to Idea table (only if table exists)
+DO $$ 
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'Idea') THEN
+        ALTER TABLE "Idea" ADD COLUMN IF NOT EXISTS "conversationId" TEXT;
+        ALTER TABLE "Idea" ADD COLUMN IF NOT EXISTS "rating" INTEGER;
+        ALTER TABLE "Idea" ADD COLUMN IF NOT EXISTS "estimatedValue" INTEGER;
+        ALTER TABLE "Idea" ADD COLUMN IF NOT EXISTS "estimatedEffort" INTEGER;
+        ALTER TABLE "Idea" ADD COLUMN IF NOT EXISTS "convertedToTaskId" TEXT;
+        ALTER TABLE "Idea" ADD COLUMN IF NOT EXISTS "convertedAt" TIMESTAMP(3);
+    END IF;
+END $$;
 
--- Add new fields to Task table (if not exists)
-ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "conversationId" TEXT;
-ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "sourceType" TEXT;
-ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "sourceId" TEXT;
+-- Add new fields to Task table (only if table exists)
+DO $$ 
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'Task') THEN
+        ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "conversationId" TEXT;
+        ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "sourceType" TEXT;
+        ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "sourceId" TEXT;
+    END IF;
+END $$;
 
 -- Create indexes
-CREATE INDEX "Conversation_status_idx" ON "Conversation"("status");
-CREATE INDEX "Conversation_category_idx" ON "Conversation"("category");
-CREATE INDEX "Conversation_createdAt_idx" ON "Conversation"("createdAt");
+CREATE INDEX IF NOT EXISTS "Conversation_status_idx" ON "Conversation"("status");
+CREATE INDEX IF NOT EXISTS "Conversation_category_idx" ON "Conversation"("category");
+CREATE INDEX IF NOT EXISTS "Conversation_createdAt_idx" ON "Conversation"("createdAt");
 
-CREATE INDEX "TimelineEvent_eventType_idx" ON "TimelineEvent"("eventType");
-CREATE INDEX "TimelineEvent_conversationId_idx" ON "TimelineEvent"("conversationId");
-CREATE INDEX "TimelineEvent_ideaId_idx" ON "TimelineEvent"("ideaId");
-CREATE INDEX "TimelineEvent_taskId_idx" ON "TimelineEvent"("taskId");
-CREATE INDEX "TimelineEvent_eventDate_idx" ON "TimelineEvent"("eventDate");
+CREATE INDEX IF NOT EXISTS "TimelineEvent_eventType_idx" ON "TimelineEvent"("eventType");
+CREATE INDEX IF NOT EXISTS "TimelineEvent_conversationId_idx" ON "TimelineEvent"("conversationId");
+CREATE INDEX IF NOT EXISTS "TimelineEvent_ideaId_idx" ON "TimelineEvent"("ideaId");
+CREATE INDEX IF NOT EXISTS "TimelineEvent_taskId_idx" ON "TimelineEvent"("taskId");
+CREATE INDEX IF NOT EXISTS "TimelineEvent_eventDate_idx" ON "TimelineEvent"("eventDate");
 
-CREATE INDEX "Idea_conversationId_idx" ON "Idea"("conversationId");
-CREATE INDEX "Task_conversationId_idx" ON "Task"("conversationId");
+-- Add foreign keys (only if tables exist)
+DO $$ 
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'Idea') THEN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'Idea_conversationId_fkey') THEN
+            ALTER TABLE "Idea" ADD CONSTRAINT "Idea_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+        CREATE INDEX IF NOT EXISTS "Idea_conversationId_idx" ON "Idea"("conversationId");
+    END IF;
+    
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'Task') THEN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'Task_conversationId_fkey') THEN
+            ALTER TABLE "Task" ADD CONSTRAINT "Task_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+        CREATE INDEX IF NOT EXISTS "Task_conversationId_idx" ON "Task"("conversationId");
+    END IF;
+END $$;
 
--- Add foreign keys
-ALTER TABLE "Idea" ADD CONSTRAINT "Idea_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "Task" ADD CONSTRAINT "Task_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
-ALTER TABLE "TimelineEvent" ADD CONSTRAINT "TimelineEvent_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "TimelineEvent" ADD CONSTRAINT "TimelineEvent_ideaId_fkey" FOREIGN KEY ("ideaId") REFERENCES "Idea"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "TimelineEvent" ADD CONSTRAINT "TimelineEvent_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "TimelineEvent" ADD CONSTRAINT "TimelineEvent_pageId_fkey" FOREIGN KEY ("pageId") REFERENCES "NotebookPage"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- Add TimelineEvent foreign keys
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'TimelineEvent_conversationId_fkey') THEN
+        ALTER TABLE "TimelineEvent" ADD CONSTRAINT "TimelineEvent_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+    END IF;
+    
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'Idea') THEN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'TimelineEvent_ideaId_fkey') THEN
+            ALTER TABLE "TimelineEvent" ADD CONSTRAINT "TimelineEvent_ideaId_fkey" FOREIGN KEY ("ideaId") REFERENCES "Idea"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+    END IF;
+    
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'Task') THEN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'TimelineEvent_taskId_fkey') THEN
+            ALTER TABLE "TimelineEvent" ADD CONSTRAINT "TimelineEvent_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'TimelineEvent_pageId_fkey') THEN
+        ALTER TABLE "TimelineEvent" ADD CONSTRAINT "TimelineEvent_pageId_fkey" FOREIGN KEY ("pageId") REFERENCES "NotebookPage"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+    END IF;
+END $$;
