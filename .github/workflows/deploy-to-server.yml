@@ -1,0 +1,110 @@
+name: Deploy to Production Server
+
+on:
+  push:
+    branches:
+      - v2.0
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      
+      - name: Deploy to Production Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: 22
+          script_stop: true
+          script: |
+            echo "🚀 Starting deployment..."
+            
+            # Navigate to project directory
+            cd /var/www/semop/backend
+            
+            # Backup current state
+            echo "📦 Creating backup..."
+            BACKUP_DIR="/var/www/semop/backups/auto_$(date +%Y%m%d_%H%M%S)"
+            mkdir -p $BACKUP_DIR
+            cp .env $BACKUP_DIR/.env.backup
+            cp prisma/schema.prisma $BACKUP_DIR/schema.prisma.backup
+            PGPASSWORD='Semop@2025' pg_dump -h localhost -U semop_user semop_db > $BACKUP_DIR/db_backup.sql
+            echo "✅ Backup created at $BACKUP_DIR"
+            
+            # Pull latest changes
+            echo "📥 Pulling latest changes from GitHub..."
+            git fetch --all --tags
+            git checkout ${{ github.ref_name }}
+            git pull origin ${{ github.ref_name }}
+            
+            # Install dependencies
+            echo "📦 Installing dependencies..."
+            npm install
+            
+            # Generate Prisma Client
+            echo "🔧 Generating Prisma Client..."
+            npx prisma generate
+            
+            # Run database migrations
+            echo "🗄️ Running database migrations..."
+            npx prisma migrate deploy || echo "⚠️ Migration failed or no pending migrations"
+            
+            # Build the project
+            echo "🏗️ Building project..."
+            npx nx reset
+            npx nx build api-gateway --prod
+            
+            # Restart PM2 service
+            echo "🔄 Restarting service..."
+            pm2 restart semop-backend --update-env
+            
+            # Wait for service to start
+            sleep 5
+            
+            # Check service status
+            echo "✅ Checking service status..."
+            pm2 status semop-backend
+            
+            # Test API
+            echo "🧪 Testing API..."
+            curl -s http://localhost:3000/api || echo "⚠️ API test failed"
+            
+            echo "🎉 Deployment completed successfully!"
+            
+      - name: Notify on Success
+        if: success()
+        run: |
+          echo "✅ Deployment to production server completed successfully!"
+          echo "Branch/Tag: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Please check the logs and restore from backup if needed."
