@@ -14,6 +14,8 @@ import { SuppliersModule } from './suppliers/suppliers.module';
 import { ItemsModule } from './items/items.module';
 import { SmartNotebookModule } from '../modules/smart-notebook/smart-notebook.module';
 import { ReportsModule } from '../modules/reports/reports.module';
+import { SearchModule } from '../modules/search/search.module';
+import { NotificationsModule } from '../modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { ReportsModule } from '../modules/reports/reports.module';
     ItemsModule,
     SmartNotebookModule,
     ReportsModule,
+    SearchModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
