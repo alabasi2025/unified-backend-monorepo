@@ -18,6 +18,7 @@ import { SearchModule } from '../modules/search/search.module';
 import { NotificationsModule } from '../modules/notifications/notifications.module';
 import { ConversationsModule } from '../conversations/conversations.module';
 import { AchievementReportsModule } from '../achievement-reports/achievement-reports.module';
+import { TaskProgressReportsModule } from '../task-progress-reports/task-progress-reports.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AchievementReportsModule } from '../achievement-reports/achievement-rep
     NotificationsModule,
     ConversationsModule,
     AchievementReportsModule,
+    TaskProgressReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -2366,3 +2366,57 @@ model TaskAchievement {
   @@index([taskId])
   @@index([reportId])
 }
+
+// ============================================================================
+// TASK PROGRESS REPORTS (تقارير سير المهام)
+// ============================================================================
+
+/// تقارير سير المهام - تتبع تقدم مجموعة مهام مرتبطة بنظام أو مشروع
+model TaskProgressReport {
+  id                     String            @id @default(cuid())
+  title                  String            /// عنوان التقرير
+  description            String?           @db.Text /// وصف التقرير
+  
+  // التصنيف
+  system                 String?           /// النظام المرتبط (maps, accounting, etc.)
+  project                String?           /// المشروع
+  category               String?           /// الفئة
+  
+  // الإحصائيات
+  totalTasks             Int               @default(0) /// إجمالي المهام
+  completedTasks         Int               @default(0) /// المهام المنجزة
+  inProgressTasks        Int               @default(0) /// المهام قيد التنفيذ
+  blockedTasks           Int               @default(0) /// المهام المحظورة
+  pendingTasks           Int               @default(0) /// المهام المعلقة
+  
+  overallProgress        Float             @default(0) /// نسبة الإنجاز الكلية (0-100)
+  
+  // تفاصيل التقدم
+  completedTasksList     String[]          /// قائمة المهام المنجزة (IDs)
+  inProgressTasksList    String[]          /// قائمة المهام قيد التنفيذ (IDs)
+  blockedTasksList       String[]          /// قائمة المهام المحظورة (IDs)
+  pendingTasksList       String[]          /// قائمة المهام المعلقة (IDs)
+  
+  // التحليل
+  summary                String?           @db.Text /// ملخص التقدم
+  achievements           String?           @db.Text /// الإنجازات
+  challenges             String?           @db.Text /// التحديات والمعوقات
+  nextSteps              String?           @db.Text /// الخطوات التالية
+  recommendations        String?           @db.Text /// التوصيات
+  
+  // التواريخ
+  startDate              DateTime?         /// تاريخ البدء
+  targetDate             DateTime?         /// التاريخ المستهدف للإنجاز
+  lastUpdated            DateTime          @default(now()) /// آخر تحديث
+  createdAt              DateTime          @default(now())
+  
+  // التدقيق
+  createdBy              String
+  updatedBy              String?
+  
+  @@map("task_progress_reports")
+  @@index([system])
+  @@index([project])
+  @@index([overallProgress])
+  @@index([createdAt])
+}
