@@ -1823,67 +1823,81 @@ enum PageStatus {
 // IDEAS BANK (بنك الأفكار)
 // ============================================================================
 
-/// الأفكار - تسجيل الأفكار العشوائية وتتبعها
+/// الأفكار - بنك الأفكار في نظام الدفتر الذكي
 model Idea {
-  id          String   @id @default(cuid())
-  title       String   /// عنوان الفكرة
-  description String?  @db.Text /// وصف تفصيلي
+  id              String          @id @default(cuid())
+  title           String          /// عنوان الفكرة
+  description     String          @db.Text /// وصف تفصيلي
+  category        IdeaCategory    /// الفئة
+  priority        Priority        @default(MEDIUM) /// الأولوية
+  rating          Int             @default(0) /// التقييم (1-5)
+  status          IdeaStatus      @default(NEW) /// الحالة
   
-  // التصنيف
-  status      IdeaStatus @default(NEW) /// حالة الفكرة
-  priority    Priority   @default(MEDIUM) /// الأولوية
-  category    IdeaCategory /// التصنيف
-  tags        String[]   /// وسوم
+  // البيانات الإضافية
+  estimatedEffort String?         /// الجهد المتوقع
+  expectedValue   String?         /// القيمة المتوقعة
+  notes           String?         @db.Text /// ملاحظات إضافية
+  tags            String[]        /// وسوم
+  relatedSystem   String?         /// النظام المرتبط (maps, accounting, etc.)
   
-  // الربط بالأنظمة
-  relatedSystem String?  /// النظام المرتبط (maps, accounting, etc.)
+  // العلاقات
+  conversationId  String?         /// المحادثة المصدر
+  conversation    Conversation?   @relation(fields: [conversationId], references: [id], onDelete: SetNull)
   
-  // التحويل لمهمة
-  convertedToTaskId String? @unique /// إذا تم تحويلها لمهمة
-  convertedToTask   Task?   @relation("IdeaToTask", fields: [convertedToTaskId], references: [id])
-  convertedAt       DateTime? /// تاريخ التحويل
+  tasks           Task[]          /// المهام المحولة من هذه الفكرة
   
-  // الربط بصفحة
-  pageId      String?
-  page        DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  // الأفكار المرتبطة (Many-to-Many Self-Relation)
+  relatedIdeas    IdeaRelation[]  @relation("IdeaFrom")
+  relatedBy       IdeaRelation[]  @relation("IdeaTo")
   
-  // الملاحظات
-  notes       String?  @db.Text /// ملاحظات إضافية
+  // الربط بصفحة التوثيق
+  pageId          String?
+  page            DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
   
-  // التدقيق (Audit Trail)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String
-  updatedBy   String?
+  // التواريخ
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  reviewedAt      DateTime?       /// تاريخ المراجعة
+  convertedAt     DateTime?       /// تاريخ التحويل لمهمة
+  
+  // التدقيق
+  createdBy       String
+  updatedBy       String?
+  reviewedBy      String?         /// من راجع الفكرة
   
   @@map("ideas")
   @@index([status])
-  @@index([priority])
   @@index([category])
+  @@index([priority])
+  @@index([rating])
+  @@index([conversationId])
   @@index([relatedSystem])
   @@index([createdAt])
 }
 
 /// حالات الفكرة
 enum IdeaStatus {
-  NEW            /// جديدة
-  UNDER_REVIEW   /// قيد الدراسة
-  ACCEPTED       /// مقبولة
-  REJECTED       /// مرفوضة
-  CONVERTED      /// محولة لمهمة
-  ARCHIVED       /// مؤرشفة
+  NEW               /// جديدة
+  UNDER_REVIEW      /// قيد المراجعة
+  APPROVED          /// معتمدة
+  CONVERTED         /// محولة لمهمة
+  REJECTED          /// مرفوضة
+  ON_HOLD           /// معلقة
 }
 
 /// تصنيفات الأفكار
 enum IdeaCategory {
-  FEATURE        /// ميزة جديدة
-  IMPROVEMENT    /// تحسين
-  BUG_FIX        /// إصلاح خطأ
-  RESEARCH       /// بحث
-  OPTIMIZATION   /// تحسين أداء
-  UI_UX          /// واجهة المستخدم
-  DOCUMENTATION  /// توثيق
-  OTHER          /// أخرى
+  INFRASTRUCTURE    /// بنية تحتية
+  FEATURE           /// ميزة جديدة
+  IMPROVEMENT       /// تحسين
+  BUG_FIX           /// إصلاح
+  DOCUMENTATION     /// توثيق
+  OPTIMIZATION      /// تحسين أداء
+  SECURITY          /// أمان
+  UI_UX             /// واجهة المستخدم
+  DATABASE          /// قاعدة بيانات
+  API               /// واجهة برمجية
+  OTHER             /// أخرى
 }
 
 // ============================================================================
@@ -2022,60 +2036,66 @@ enum ReportFormat {
 // TASKS MANAGEMENT (إدارة المهام)
 // ============================================================================
 
-/// المهام - نظام إدارة المهام الذكي
+/// المهام - نظام إدارة المهام في الدفتر الذكي
 model Task {
-  id          String   @id @default(cuid())
-  title       String   /// عنوان المهمة
-  description String?  @db.Text /// وصف تفصيلي
+  id                String          @id @default(cuid())
+  title             String          /// عنوان المهمة
+  description       String          @db.Text /// وصف تفصيلي
+  status            TaskStatus      @default(NEW) /// الحالة
+  priority          Priority        @default(MEDIUM) /// الأولوية
+  progress          Int             @default(0) /// نسبة الإنجاز (0-100)
   
-  // الحالة والأولوية
-  status      TaskStatus @default(TODO) /// حالة المهمة
-  priority    Priority   @default(MEDIUM) /// الأولوية
+  // المسؤولية
+  assignee          String?         /// المسؤول
+  assigneeEmail     String?         /// بريد المسؤول
+  team              String?         /// الفريق المسؤول
   
-  // التواريخ
-  dueDate     DateTime?  /// تاريخ الاستحقاق
-  startDate   DateTime?  /// تاريخ البدء
-  completedAt DateTime?  /// تاريخ الإنجاز
+  // التقدير
+  estimatedHours    Int?            /// الساعات المتوقعة
+  actualHours       Int?            /// الساعات الفعلية
   
-  // المصدر
-  sourceType  TaskSource? /// مصدر المهمة
-  sourceId    String?     /// معرف المصدر
+  // العلاقات
+  ideaId            String?         /// الفكرة المصدر
+  idea              Idea?           @relation(fields: [ideaId], references: [id], onDelete: SetNull)
   
-  // الربط بالفكرة (إذا كانت من فكرة)
-  fromIdea    Idea?      @relation("IdeaToTask")
+  achievementReports TaskAchievement[] /// تقارير الإنجاز المرتبطة
   
   // الربط بالصفحة
-  pageId      String?
-  page        DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  pageId            String?
+  page              DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
   
   // الربط بالمحادثات
-  chatLogId   String?
-  chatLog     ChatLog?   @relation(fields: [chatLogId], references: [id], onDelete: SetNull)
+  chatLogId         String?
+  chatLog           ChatLog?   @relation(fields: [chatLogId], references: [id], onDelete: SetNull)
   
   // المهام الفرعية
-  parentTaskId String?
-  parentTask   Task?     @relation("TaskHierarchy", fields: [parentTaskId], references: [id], onDelete: Cascade)
-  subTasks     Task[]    @relation("TaskHierarchy")
+  parentTaskId      String?
+  parentTask        Task?     @relation("TaskHierarchy", fields: [parentTaskId], references: [id], onDelete: Cascade)
+  subTasks          Task[]    @relation("TaskHierarchy")
   
-  // الملاحظات
-  notes       String?  @db.Text /// ملاحظات
-  tags        String[] /// وسوم
+  // التواريخ
+  startDate         DateTime?       /// تاريخ البدء
+  dueDate           DateTime?       /// الموعد النهائي
+  completedDate     DateTime?       /// تاريخ الإنجاز الفعلي
   
-  // المسؤول
-  assignedTo  String?  /// معرف المستخدم المسؤول
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
   
-  // التدقيق (Audit Trail)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String
-  updatedBy   String?
+  // ملاحظات
+  notes             String?         @db.Text /// ملاحظات التنفيذ
+  blockers          String?         @db.Text /// المعوقات
+  tags              String[]        /// وسوم
+  
+  // التدقيق
+  createdBy         String
+  updatedBy         String?
   
   @@map("tasks")
   @@index([status])
   @@index([priority])
+  @@index([assignee])
   @@index([dueDate])
-  @@index([assignedTo])
-  @@index([sourceType])
+  @@index([ideaId])
   @@index([pageId])
   @@index([chatLogId])
   @@index([parentTaskId])
@@ -2084,12 +2104,13 @@ model Task {
 
 /// حالات المهمة
 enum TaskStatus {
-  TODO           /// قائمة المهام
-  IN_PROGRESS    /// قيد التنفيذ
-  REVIEW         /// قيد المراجعة
-  DONE           /// مكتملة
-  BLOCKED        /// محظورة
-  CANCELLED      /// ملغاة
+  NEW               /// جديدة
+  IN_PROGRESS       /// قيد التنفيذ
+  COMPLETED         /// مكتملة
+  ON_HOLD           /// معلقة
+  CANCELLED         /// ملغاة
+  BLOCKED           /// محظورة
+  REVIEW            /// قيد المراجعة
 }
 
 /// مصادر المهام
@@ -2176,4 +2197,172 @@ model PageComment {
   @@index([pageId])
   @@index([parentId])
   @@index([createdAt])
+}
+
+
+// ============================================================================
+// CONVERSATIONS (المحادثات)
+// ============================================================================
+
+/// المحادثات - نقطة البداية لدورة حياة المعرفة
+model Conversation {
+  id                  String              @id @default(cuid())
+  title               String              /// عنوان المحادثة
+  content             String              @db.Text /// المحتوى الكامل
+  summary             String?             @db.Text /// ملخص المحادثة
+  source              String?             /// المصدر (ملف، محادثة، إلخ)
+  sourceFile          String?             /// اسم الملف المصدر
+  sourcePath          String?             /// المسار الكامل للملف
+  sourceRepo          String?             /// المستودع المصدر
+  category            ConversationCategory /// الفئة
+  status              ConversationStatus  /// الحالة
+  extractedIdeasCount Int                 @default(0) /// عدد الأفكار المستخلصة
+  
+  // البيانات الوصفية
+  fileSize            Int?                /// حجم الملف (بايت)
+  linesCount          Int?                /// عدد الأسطر
+  wordsCount          Int?                /// عدد الكلمات
+  
+  // العلاقات
+  ideas               Idea[]              /// الأفكار المستخلصة
+  
+  // التواريخ
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  archivedAt          DateTime?           /// تاريخ الأرشفة
+  completedAt         DateTime?           /// تاريخ الاكتمال
+  
+  // التدقيق
+  createdBy           String
+  updatedBy           String?
+  
+  @@map("conversations")
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+  @@index([sourceRepo])
+}
+
+/// أنواع المحادثات
+enum ConversationCategory {
+  ARCHITECTURE      /// بنية معمارية
+  FEATURE           /// ميزة جديدة
+  IMPROVEMENT       /// تحسين
+  BUG_FIX           /// إصلاح خطأ
+  DOCUMENTATION     /// توثيق
+  PLANNING          /// تخطيط
+  GUIDE             /// دليل
+  REPORT            /// تقرير
+  OTHER             /// أخرى
+}
+
+/// حالات المحادثة
+enum ConversationStatus {
+  ACTIVE            /// نشط
+  EXTRACTING        /// قيد الاستخلاص
+  COMPLETED         /// مكتمل
+  ARCHIVED          /// أرشيف
+}
+
+/// ربط الأفكار ببعضها (Many-to-Many)
+model IdeaRelation {
+  id          String   @id @default(cuid())
+  
+  fromIdeaId  String
+  fromIdea    Idea     @relation("IdeaFrom", fields: [fromIdeaId], references: [id], onDelete: Cascade)
+  
+  toIdeaId    String
+  toIdea      Idea     @relation("IdeaTo", fields: [toIdeaId], references: [id], onDelete: Cascade)
+  
+  relationType String? /// نوع العلاقة (related, depends_on, blocks, etc.)
+  
+  createdAt   DateTime @default(now())
+  createdBy   String
+  
+  @@map("idea_relations")
+  @@unique([fromIdeaId, toIdeaId])
+  @@index([fromIdeaId])
+  @@index([toIdeaId])
+}
+
+// ============================================================================
+// ACHIEVEMENT REPORTS (تقارير الإنجاز)
+// ============================================================================
+
+/// تقارير الإنجاز - المرحلة الرابعة من دورة حياة المعرفة
+model AchievementReport {
+  id                     String            @id @default(cuid())
+  title                  String            /// عنوان التقرير
+  type                   AchievementReportType /// نوع التقرير
+  period                 String            /// الفترة (يومي، أسبوعي، شهري)
+  
+  // الإحصائيات
+  totalTasks             Int               @default(0) /// إجمالي المهام
+  completedTasks         Int               @default(0) /// المهام المنجزة
+  progressPercentage     Float             @default(0) /// نسبة الإنجاز
+  
+  totalIdeas             Int               @default(0) /// إجمالي الأفكار
+  convertedIdeas         Int               @default(0) /// الأفكار المحولة
+  
+  totalConversations     Int               @default(0) /// إجمالي المحادثات
+  processedConversations Int               @default(0) /// المحادثات المعالجة
+  
+  // المحتوى
+  content                String            @db.Text /// محتوى التقرير
+  summary                String?           @db.Text /// ملخص تنفيذي
+  recommendations        String?           @db.Text /// التوصيات
+  highlights             String?           @db.Text /// أبرز الإنجازات
+  challenges             String?           @db.Text /// التحديات
+  
+  // البيانات الإضافية
+  team                   String?           /// الفريق
+  project                String?           /// المشروع
+  
+  // العلاقات
+  tasks                  TaskAchievement[] /// المهام المرتبطة
+  
+  // التواريخ
+  startDate              DateTime          /// بداية الفترة
+  endDate                DateTime          /// نهاية الفترة
+  createdAt              DateTime          @default(now())
+  
+  // التدقيق
+  createdBy              String
+  
+  @@map("achievement_reports")
+  @@index([type])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([team])
+  @@index([project])
+}
+
+/// أنواع تقارير الإنجاز
+enum AchievementReportType {
+  DAILY             /// يومي
+  WEEKLY            /// أسبوعي
+  MONTHLY           /// شهري
+  QUARTERLY         /// ربع سنوي
+  YEARLY            /// سنوي
+  PROJECT           /// مشروع
+  TEAM              /// فريق
+  CUSTOM            /// مخصص
+}
+
+/// ربط المهام بتقارير الإنجاز (Many-to-Many)
+model TaskAchievement {
+  id        String            @id @default(cuid())
+  
+  taskId    String
+  task      Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  reportId  String
+  report    AchievementReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime          @default(now())
+  
+  @@map("task_achievements")
+  @@unique([taskId, reportId])
+  @@index([taskId])
+  @@index([reportId])
 }
