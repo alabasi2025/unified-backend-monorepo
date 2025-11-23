@@ -2420,3 +2420,141 @@ model TaskProgressReport {
   @@index([overallProgress])
   @@index([createdAt])
 }
+
+// ============================================================================
+// UNIFIED NOTEBOOK (الدفتر الشامل المتكامل)
+// ============================================================================
+
+/// صفحات الدفتر - ملاحظات حرة مثل OneNote
+model NotebookPage {
+  id                     String            @id @default(cuid())
+  title                  String            /// عنوان الصفحة
+  content                String            @db.Text /// المحتوى (Markdown)
+  
+  // التنظيم
+  section                String?           /// القسم/المجلد
+  tags                   String[]          /// الوسوم
+  color                  String?           /// لون الصفحة
+  icon                   String?           /// أيقونة الصفحة
+  
+  // الربط
+  conversationId         String?           /// ربط بمحادثة
+  ideaId                 String?           /// ربط بفكرة
+  taskId                 String?           /// ربط بمهمة
+  
+  // الحالة
+  isPinned               Boolean           @default(false) /// مثبتة
+  isArchived             Boolean           @default(false) /// مؤرشفة
+  isFavorite             Boolean           @default(false) /// مفضلة
+  
+  // التواريخ
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  lastViewedAt           DateTime?         /// آخر مشاهدة
+  
+  // التدقيق
+  createdBy              String
+  updatedBy              String?
+  
+  // العلاقات
+  stickyNotes            StickyNote[]
+  timelineEvents         TimelineEvent[]
+  
+  @@map("notebook_pages")
+  @@index([section])
+  @@index([createdBy])
+  @@index([isPinned])
+  @@index([createdAt])
+}
+
+/// الملصقات - ملاحظات سريعة مثل Sticky Notes
+model StickyNote {
+  id                     String            @id @default(cuid())
+  content                String            @db.Text /// المحتوى
+  
+  // التنسيق
+  color                  String            @default("yellow") /// اللون
+  position               Json?             /// الموقع على الشاشة {x, y}
+  size                   Json?             /// الحجم {width, height}
+  
+  // الربط
+  pageId                 String?           /// ربط بصفحة دفتر
+  page                   NotebookPage?     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  conversationId         String?           /// ربط بمحادثة
+  ideaId                 String?           /// ربط بفكرة
+  taskId                 String?           /// ربط بمهمة
+  
+  // الحالة
+  isDismissed            Boolean           @default(false) /// تم إخفاؤها
+  
+  // التواريخ
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  
+  // التدقيق
+  createdBy              String
+  
+  @@map("sticky_notes")
+  @@index([pageId])
+  @@index([createdBy])
+  @@index([isDismissed])
+}
+
+/// الخط الزمني - تتبع تطور الأشياء
+model TimelineEvent {
+  id                     String            @id @default(cuid())
+  
+  // نوع الحدث
+  eventType              TimelineEventType /// نوع الحدث
+  title                  String            /// عنوان الحدث
+  description            String?           @db.Text /// وصف الحدث
+  
+  // الربط بالكيانات
+  conversationId         String?           /// المحادثة
+  ideaId                 String?           /// الفكرة
+  taskId                 String?           /// المهمة
+  pageId                 String?           /// صفحة الدفتر
+  page                   NotebookPage?     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  // البيانات الإضافية
+  metadata               Json?             /// بيانات إضافية
+  
+  // التواريخ
+  eventDate              DateTime          @default(now()) /// تاريخ الحدث
+  createdAt              DateTime          @default(now())
+  
+  // التدقيق
+  createdBy              String
+  
+  @@map("timeline_events")
+  @@index([eventType])
+  @@index([conversationId])
+  @@index([ideaId])
+  @@index([taskId])
+  @@index([eventDate])
+  @@index([createdBy])
+}
+
+enum TimelineEventType {
+  CONVERSATION_CREATED   /// محادثة أُنشئت
+  CONVERSATION_UPDATED   /// محادثة حُدثت
+  CONVERSATION_ARCHIVED  /// محادثة أُرشفت
+  
+  IDEA_EXTRACTED         /// فكرة استُخلصت
+  IDEA_APPROVED          /// فكرة اعتُمدت
+  IDEA_REJECTED          /// فكرة رُفضت
+  
+  TASK_CREATED           /// مهمة أُنشئت
+  TASK_STARTED           /// مهمة بدأت
+  TASK_PROGRESS          /// تقدم في المهمة
+  TASK_BLOCKED           /// مهمة حُظرت
+  TASK_COMPLETED         /// مهمة أُنجزت
+  
+  NOTE_CREATED           /// ملاحظة أُنشئت
+  NOTE_UPDATED           /// ملاحظة حُدثت
+  
+  REPORT_GENERATED       /// تقرير وُلّد
+  
+  OTHER                  /// حدث آخر
+}
