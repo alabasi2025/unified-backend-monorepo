@@ -19,6 +19,7 @@ import { NotificationsModule } from '../modules/notifications/notifications.modu
 import { ConversationsModule } from '../conversations/conversations.module';
 import { AchievementReportsModule } from '../achievement-reports/achievement-reports.module';
 import { TaskProgressReportsModule } from '../task-progress-reports/task-progress-reports.module';
+import { UnifiedNotebookModule } from '../unified-notebook/unified-notebook.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { TaskProgressReportsModule } from '../task-progress-reports/task-progres
     ConversationsModule,
     AchievementReportsModule,
     TaskProgressReportsModule,
+    UnifiedNotebookModule,
   ],
   controllers: [AppController],
   providers: [AppService],
