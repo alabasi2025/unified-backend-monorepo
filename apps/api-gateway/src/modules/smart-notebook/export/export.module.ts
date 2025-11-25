@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ExportController } from './controller';
-import { ExportService } from './service';
-import { PrismaModule } from '../prisma/prisma.module'; // افتراض وجود PrismaModule
+import { ExportController } from './export.controller';
+import { ExportService } from './export.service';
+import { PrismaModule } from '../../../prisma/prisma.module'; // افتراض وجود PrismaModule
 
 /**
  * وحدة التصدير (ExportModule)

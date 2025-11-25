@@ -2,7 +2,7 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, IsBoolean, IsUUID } from 'class-validator';
-import { CreateArchiveDto } from './dto-create';
+import { CreateArchiveDto } from './create-archive.dto';
 
 /**
  * @description DTO لتحديث سجل أرشفة موجود.

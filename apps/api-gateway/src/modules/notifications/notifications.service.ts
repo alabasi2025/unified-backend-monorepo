@@ -50,7 +50,6 @@ export class NotificationsService {
     try {
       const importantChats = await this.prisma.conversation.findMany({
         where: {
-          isFavorite: true,
           createdAt: {
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
           },
@@ -107,7 +106,7 @@ export class NotificationsService {
             gte: new Date(),
           },
           status: {
-            in: ['PENDING', 'IN_PROGRESS'],
+            in: ['NEW', 'IN_PROGRESS'],
           },
         },
         orderBy: { dueDate: 'asc' },

@@ -13,7 +13,14 @@ export class IdeasService {
   async create(createIdeaDto: CreateIdeaDto, userId: string) {
     const idea = await this.prisma.idea.create({
       data: {
-        ...createIdeaDto,
+        title: createIdeaDto.title,
+        description: createIdeaDto.description,
+        category: createIdeaDto.category,
+        priority: createIdeaDto.priority,
+        tags: createIdeaDto.tags,
+        relatedSystem: createIdeaDto.relatedSystem,
+        pageId: createIdeaDto.pageId,
+        notes: createIdeaDto.notes,
         createdBy: userId,
       },
       include: {
@@ -28,13 +35,13 @@ export class IdeasService {
     });
 
     // Create timeline event
-    if (createIdeaDto.conversationId) {
+    if (idea.conversationId) {
       await this.prisma.timelineEvent.create({
         data: {
           eventType: 'IDEA_EXTRACTED',
           title: `فكرة جديدة: ${idea.title}`,
           ideaId: idea.id,
-          conversationId: createIdeaDto.conversationId,
+          conversationId: idea.conversationId,
           createdBy: userId,
         },
       });
@@ -84,12 +91,13 @@ export class IdeasService {
               slug: true,
             },
           },
-          convertedToTask: {
+          tasks: {
             select: {
               id: true,
               title: true,
               status: true,
             },
+            take: 1,
           },
         },
         orderBy: { [sortBy]: sortOrder },
@@ -125,16 +133,17 @@ export class IdeasService {
             content: true,
           },
         },
-        convertedToTask: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            status: true,
-            priority: true,
-            dueDate: true,
+          tasks: {
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              status: true,
+              priority: true,
+              dueDate: true,
+            },
+            take: 1,
           },
-        },
       },
     });
 
@@ -165,12 +174,13 @@ export class IdeasService {
             slug: true,
           },
         },
-        convertedToTask: {
+        tasks: {
           select: {
             id: true,
             title: true,
             status: true,
           },
+          take: 1,
         },
       },
     });
@@ -203,8 +213,6 @@ export class IdeasService {
         title: idea.title,
         description: idea.description || '',
         priority: idea.priority,
-        sourceType: 'IDEA',
-        sourceId: idea.id,
         pageId: idea.pageId,
         tags: idea.tags,
         createdBy: userId,
@@ -216,7 +224,6 @@ export class IdeasService {
       where: { id },
       data: {
         status: IdeaStatus.CONVERTED,
-        convertedToTaskId: task.id,
         convertedAt: new Date(),
         updatedBy: userId,
       },
@@ -227,7 +234,7 @@ export class IdeasService {
       // Idea converted event
       this.prisma.timelineEvent.create({
         data: {
-          eventType: 'IDEA_CONVERTED',
+          eventType: 'TASK_CREATED',
           title: `تحويل فكرة إلى مهمة: ${idea.title}`,
           ideaId: idea.id,
           taskId: task.id,
@@ -270,7 +277,7 @@ export class IdeasService {
 
     // Create timeline event
     const eventTypeMap = {
-      [IdeaStatus.ACCEPTED]: 'IDEA_APPROVED',
+      [IdeaStatus.APPROVED]: 'IDEA_APPROVED',
       [IdeaStatus.REJECTED]: 'IDEA_REJECTED',
     };
 
@@ -306,7 +313,7 @@ export class IdeasService {
       this.prisma.idea.count(),
       this.prisma.idea.count({ where: { status: IdeaStatus.NEW } }),
       this.prisma.idea.count({ where: { status: IdeaStatus.UNDER_REVIEW } }),
-      this.prisma.idea.count({ where: { status: IdeaStatus.ACCEPTED } }),
+      this.prisma.idea.count({ where: { status: IdeaStatus.APPROVED } }),
       this.prisma.idea.count({ where: { status: IdeaStatus.REJECTED } }),
       this.prisma.idea.count({ where: { status: IdeaStatus.CONVERTED } }),
       this.prisma.idea.groupBy({

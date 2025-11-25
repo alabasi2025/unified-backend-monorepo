@@ -11,9 +11,9 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { ExportService } from './service';
-import { CreateExportJobDto } from './dto-create';
-import { ExportJobResponseDto } from './dto-response';
+import { ExportService } from './export.service';
+import { CreateExportJobDto } from './dto/dto-create';
+import { ExportJobResponseDto } from './dto/dto-response';
 
 // افتراض وجود Guard للتحقق من المصادقة واستخراج معرف المستخدم
 // import { JwtAuthGuard } from '../auth/jwt-auth.guard';
