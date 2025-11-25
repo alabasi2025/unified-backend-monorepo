@@ -18,109 +18,109 @@ datasource db {
 
 /// الشركة القابضة - المستوى الأول في الهيكل الهرمي
 model Holding {
-  id          String   @id @default(cuid())
-  code        String   @unique /// كود فريد للشركة (مثل: HOLD001)
-  nameAr      String   /// الاسم بالعربية
-  nameEn      String   /// الاسم بالإنجليزية
-  description String?  /// وصف الشركة
-  logo        String?  /// رابط شعار الشركة
-  isActive    Boolean  @default(true) /// هل الشركة نشطة؟
-  
+  id          String  @id @default(cuid())
+  code        String  @unique /// كود فريد للشركة (مثل: HOLD001)
+  nameAr      String /// الاسم بالعربية
+  nameEn      String /// الاسم بالإنجليزية
+  description String? /// وصف الشركة
+  logo        String? /// رابط شعار الشركة
+  isActive    Boolean @default(true) /// هل الشركة نشطة؟
+
   // العلاقات
-  units       Unit[]
-  users       User[]
-  
+  units Unit[]
+  users User[]
+
   // التدقيق (Audit Trail)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  
-  @@map("holdings")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([isActive])
+  @@map("holdings")
 }
 
 /// الوحدة - المستوى الثاني في الهيكل الهرمي
 model Unit {
   id          String   @id @default(cuid())
   code        String   @unique /// كود فريد للوحدة (مثل: UNIT001)
-  nameAr      String   /// الاسم بالعربية
-  nameEn      String   /// الاسم بالإنجليزية
-  description String?  /// وصف الوحدة
+  nameAr      String /// الاسم بالعربية
+  nameEn      String /// الاسم بالإنجليزية
+  description String? /// وصف الوحدة
   type        UnitType /// نوع الوحدة (فرع، قسم، شعبة، إلخ)
   isActive    Boolean  @default(true) /// هل الوحدة نشطة؟
-  
+
   // العلاقات الهرمية
-  holdingId   String
-  holding     Holding  @relation(fields: [holdingId], references: [id], onDelete: Cascade)
-  
+  holdingId String
+  holding   Holding @relation(fields: [holdingId], references: [id], onDelete: Cascade)
+
   // العلاقات
-  projects    Project[]
-  users       User[]
-  
+  projects Project[]
+  users    User[]
+
   // التدقيق (Audit Trail)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  
-  @@map("units")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([holdingId])
   @@index([type])
   @@index([isActive])
+  @@map("units")
 }
 
 /// أنواع الوحدات
 enum UnitType {
-  BRANCH        /// فرع
-  DEPARTMENT    /// قسم
-  DIVISION      /// شعبة
-  SUBSIDIARY    /// شركة تابعة
-  OTHER         /// أخرى
+  BRANCH /// فرع
+  DEPARTMENT /// قسم
+  DIVISION /// شعبة
+  SUBSIDIARY /// شركة تابعة
+  OTHER /// أخرى
 }
 
 /// المشروع - المستوى الثالث في الهيكل الهرمي
 model Project {
   id          String        @id @default(cuid())
   code        String        @unique /// كود فريد للمشروع (مثل: PROJ001)
-  nameAr      String        /// الاسم بالعربية
-  nameEn      String        /// الاسم بالإنجليزية
-  description String?       /// وصف المشروع
+  nameAr      String /// الاسم بالعربية
+  nameEn      String /// الاسم بالإنجليزية
+  description String? /// وصف المشروع
   status      ProjectStatus /// حالة المشروع
-  startDate   DateTime?     /// تاريخ البدء
-  endDate     DateTime?     /// تاريخ الانتهاء المتوقع
+  startDate   DateTime? /// تاريخ البدء
+  endDate     DateTime? /// تاريخ الانتهاء المتوقع
   budget      Decimal?      @db.Decimal(15, 2) /// الميزانية
   isActive    Boolean       @default(true) /// هل المشروع نشط؟
-  
+
   // العلاقات الهرمية
-  unitId      String
-  unit        Unit          @relation(fields: [unitId], references: [id], onDelete: Cascade)
-  
+  unitId String
+  unit   Unit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
   // العلاقات
-  users       User[]
-  
+  users User[]
+
   // التدقيق (Audit Trail)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  
-  @@map("projects")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([unitId])
   @@index([status])
   @@index([isActive])
+  @@map("projects")
 }
 
 /// حالات المشروع
 enum ProjectStatus {
-  PLANNING      /// تخطيط
-  IN_PROGRESS   /// قيد التنفيذ
-  ON_HOLD       /// معلق
-  COMPLETED     /// مكتمل
-  CANCELLED     /// ملغي
+  PLANNING /// تخطيط
+  IN_PROGRESS /// قيد التنفيذ
+  ON_HOLD /// معلق
+  COMPLETED /// مكتمل
+  CANCELLED /// ملغي
 }
 
 // ============================================================================
@@ -132,129 +132,129 @@ model User {
   id              String    @id @default(cuid())
   username        String    @unique /// اسم المستخدم
   email           String    @unique /// البريد الإلكتروني
-  passwordHash    String    /// كلمة المرور المشفرة (bcrypt)
-  firstName       String    /// الاسم الأول
-  lastName        String    /// الاسم الأخير
-  phone           String?   /// رقم الهاتف
-  avatar          String?   /// رابط صورة المستخدم
+  passwordHash    String /// كلمة المرور المشفرة (bcrypt)
+  firstName       String /// الاسم الأول
+  lastName        String /// الاسم الأخير
+  phone           String? /// رقم الهاتف
+  avatar          String? /// رابط صورة المستخدم
   isActive        Boolean   @default(true) /// هل المستخدم نشط؟
   isEmailVerified Boolean   @default(false) /// هل البريد مُفعّل؟
   lastLoginAt     DateTime? /// آخر تسجيل دخول
-  
+
   // العلاقات مع الكيانات (Multi-Entity Support)
   // المستخدم يمكن أن ينتمي لـ Holding أو Unit أو Project
-  holdingId       String?
-  holding         Holding?  @relation(fields: [holdingId], references: [id], onDelete: SetNull)
-  
-  unitId          String?
-  unit            Unit?     @relation(fields: [unitId], references: [id], onDelete: SetNull)
-  
-  projectId       String?
-  project         Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  
+  holdingId String?
+  holding   Holding? @relation(fields: [holdingId], references: [id], onDelete: SetNull)
+
+  unitId String?
+  unit   Unit?   @relation(fields: [unitId], references: [id], onDelete: SetNull)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
   // العلاقات مع الأدوار
-  userRoles       UserRole[]
-  
+  userRoles UserRole[]
+
   // التدقيق (Audit Trail)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  
-  @@map("users")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([email])
   @@index([username])
   @@index([holdingId])
   @@index([unitId])
   @@index([projectId])
   @@index([isActive])
+  @@map("users")
 }
 
 /// الدور (Role)
 model Role {
-  id          String   @id @default(cuid())
-  code        String   @unique /// كود الدور (مثل: SUPER_ADMIN)
-  nameAr      String   /// الاسم بالعربية
-  nameEn      String   /// الاسم بالإنجليزية
-  description String?  /// وصف الدور
-  isSystem    Boolean  @default(false) /// هل هو دور نظام (لا يمكن حذفه)
-  isActive    Boolean  @default(true) /// هل الدور نشط؟
-  
+  id          String  @id @default(cuid())
+  code        String  @unique /// كود الدور (مثل: SUPER_ADMIN)
+  nameAr      String /// الاسم بالعربية
+  nameEn      String /// الاسم بالإنجليزية
+  description String? /// وصف الدور
+  isSystem    Boolean @default(false) /// هل هو دور نظام (لا يمكن حذفه)
+  isActive    Boolean @default(true) /// هل الدور نشط؟
+
   // العلاقات
   userRoles       UserRole[]
   rolePermissions RolePermission[]
-  
+
   // التدقيق (Audit Trail)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("roles")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([code])
   @@index([isSystem])
   @@index([isActive])
+  @@map("roles")
 }
 
 /// الصلاحية (Permission)
 model Permission {
-  id          String   @id @default(cuid())
-  code        String   @unique /// كود الصلاحية (مثل: USER_CREATE)
-  nameAr      String   /// الاسم بالعربية
-  nameEn      String   /// الاسم بالإنجليزية
-  description String?  /// وصف الصلاحية
-  module      String   /// اسم الوحدة (مثل: users, inventory)
-  action      String   /// الإجراء (create, read, update, delete)
-  
+  id          String  @id @default(cuid())
+  code        String  @unique /// كود الصلاحية (مثل: USER_CREATE)
+  nameAr      String /// الاسم بالعربية
+  nameEn      String /// الاسم بالإنجليزية
+  description String? /// وصف الصلاحية
+  module      String /// اسم الوحدة (مثل: users, inventory)
+  action      String /// الإجراء (create, read, update, delete)
+
   // العلاقات
   rolePermissions RolePermission[]
-  
+
   // التدقيق (Audit Trail)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("permissions")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([module, action])
   @@index([code])
   @@index([module])
+  @@map("permissions")
 }
 
 /// ربط المستخدم بالدور (Many-to-Many)
 model UserRole {
-  id        String   @id @default(cuid())
-  
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  roleId    String
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
   // التدقيق (Audit Trail)
   assignedAt DateTime @default(now())
   assignedBy String?
-  
-  @@map("user_roles")
+
   @@unique([userId, roleId])
   @@index([userId])
   @@index([roleId])
+  @@map("user_roles")
 }
 
 /// ربط الدور بالصلاحية (Many-to-Many)
 model RolePermission {
-  id           String     @id @default(cuid())
-  
-  roleId       String
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  
+  id String @id @default(cuid())
+
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
   permissionId String
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-  
+
   // التدقيق (Audit Trail)
-  assignedAt   DateTime   @default(now())
-  assignedBy   String?
-  
-  @@map("role_permissions")
+  assignedAt DateTime @default(now())
+  assignedBy String?
+
   @@unique([roleId, permissionId])
   @@index([roleId])
   @@index([permissionId])
+  @@map("role_permissions")
 }
 
 // ============================================================================
@@ -263,32 +263,32 @@ model RolePermission {
 
 /// التكوين (Configuration)
 model Configuration {
-  id          String          @id @default(cuid())
-  key         String          /// مفتاح التكوين (مثل: currency, timezone)
-  value       String          /// القيمة (JSON string)
-  dataType    ConfigDataType  /// نوع البيانات
-  scope       ConfigScope     /// نطاق التكوين
-  
+  id       String         @id @default(cuid())
+  key      String /// مفتاح التكوين (مثل: currency, timezone)
+  value    String /// القيمة (JSON string)
+  dataType ConfigDataType /// نوع البيانات
+  scope    ConfigScope /// نطاق التكوين
+
   // العلاقات مع الكيانات (اختياري حسب scope)
-  holdingId   String?
-  unitId      String?
-  projectId   String?
-  
+  holdingId String?
+  unitId    String?
+  projectId String?
+
   // الوصف
   nameAr      String
   nameEn      String
   description String?
-  
+
   // التدقيق (Audit Trail)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  
-  @@map("configurations")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@unique([key, scope, holdingId, unitId, projectId])
   @@index([key])
   @@index([scope])
+  @@map("configurations")
 }
 
 /// أنواع بيانات التكوين
@@ -302,10 +302,10 @@ enum ConfigDataType {
 
 /// نطاق التكوين
 enum ConfigScope {
-  SYSTEM      /// على مستوى النظام
-  HOLDING     /// على مستوى الشركة القابضة
-  UNIT        /// على مستوى الوحدة
-  PROJECT     /// على مستوى المشروع
+  SYSTEM /// على مستوى النظام
+  HOLDING /// على مستوى الشركة القابضة
+  UNIT /// على مستوى الوحدة
+  PROJECT /// على مستوى المشروع
 }
 
 // ============================================================================
@@ -316,43 +316,42 @@ enum ConfigScope {
 model Account {
   id               String        @id @default(cuid())
   code             String        @unique /// رمز الحساب (مثل: 1010, 2010)
-  nameAr           String        /// الاسم بالعربية
-  nameEn           String        /// الاسم بالإنجليزية
-  description      String?       /// وصف الحساب
-  accountType      AccountType   /// نوع الحساب (أصول، خصوم، إلخ)
+  nameAr           String /// الاسم بالعربية
+  nameEn           String /// الاسم بالإنجليزية
+  description      String? /// وصف الحساب
+  accountType      AccountType /// نوع الحساب (أصول، خصوم، إلخ)
   accountNature    AccountNature /// طبيعة الحساب (مدين، دائن)
-  level            Int           /// مستوى الحساب في الشجرة (1, 2, 3, ...)
+  level            Int /// مستوى الحساب في الشجرة (1, 2, 3, ...)
   isParent         Boolean       @default(false) /// هل الحساب رئيسي (يحتوي على حسابات فرعية)
   isActive         Boolean       @default(true) /// حالة التفعيل
   allowManualEntry Boolean       @default(true) /// السماح بالقيد المباشر (false للحسابات الرئيسية)
-  
+
   // العلاقات الهرمية (Self-Referencing)
-  parentId         String?
-  parent           Account?      @relation("AccountHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  children         Account[]     @relation("AccountHierarchy")
-  
+  parentId String?
+  parent   Account?  @relation("AccountHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Account[] @relation("AccountHierarchy")
+
   // العلاقات مع الكيانات (اختياري)
-  holdingId        String?
-  unitId           String?
-  
+  holdingId String?
+  unitId    String?
+
   // العلاقات
-  journalEntryLines JournalEntryLine[]
-  accountBalances   AccountBalance[]
-  hierarchyAsAccount AccountHierarchy[] @relation("AccountAsAccount")
+  journalEntryLines   JournalEntryLine[]
+  accountBalances     AccountBalance[]
+  hierarchyAsAccount  AccountHierarchy[] @relation("AccountAsAccount")
   hierarchyAsAncestor AccountHierarchy[] @relation("AccountAsAncestor")
-  
+
   // Item Relations (Inventory Integration)
   itemsAsSalesAccount     Item[] @relation("ItemSalesAccount")
   itemsAsPurchaseAccount  Item[] @relation("ItemPurchaseAccount")
   itemsAsInventoryAccount Item[] @relation("ItemInventoryAccount")
-  
+
   // التدقيق (Audit Trail)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  createdBy        String?
-  updatedBy        String?
-  
-  @@map("accounts")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([accountType])
   @@index([parentId])
@@ -360,64 +359,65 @@ model Account {
   @@index([unitId])
   @@index([isActive])
   @@index([allowManualEntry])
+  @@map("accounts")
 }
 
 /// نوع الحساب
 enum AccountType {
-  ASSET       /// أصول
-  LIABILITY   /// خصوم (التزامات)
-  EQUITY      /// حقوق ملكية
-  REVENUE     /// إيرادات
-  EXPENSE     /// مصروفات
+  ASSET /// أصول
+  LIABILITY /// خصوم (التزامات)
+  EQUITY /// حقوق ملكية
+  REVENUE /// إيرادات
+  EXPENSE /// مصروفات
 }
 
 /// طبيعة الحساب
 enum AccountNature {
-  DEBIT       /// مدين (الأصول والمصروفات)
-  CREDIT      /// دائن (الخصوم وحقوق الملكية والإيرادات)
+  DEBIT /// مدين (الأصول والمصروفات)
+  CREDIT /// دائن (الخصوم وحقوق الملكية والإيرادات)
 }
 
 /// أرصدة الحسابات
 model AccountBalance {
-  id             String   @id @default(cuid())
-  
-  accountId      String
-  account        Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  
-  fiscalYearId   String
-  fiscalYear     FiscalYear @relation(fields: [fiscalYearId], references: [id], onDelete: Cascade)
-  
-  openingBalance Decimal  @default(0) @db.Decimal(15, 2) /// الرصيد الافتتاحي
-  closingBalance Decimal  @default(0) @db.Decimal(15, 2) /// الرصيد الختامي
-  debitTotal     Decimal  @default(0) @db.Decimal(15, 2) /// إجمالي المدين
-  creditTotal    Decimal  @default(0) @db.Decimal(15, 2) /// إجمالي الدائن
-  
+  id String @id @default(cuid())
+
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  fiscalYearId String
+  fiscalYear   FiscalYear @relation(fields: [fiscalYearId], references: [id], onDelete: Cascade)
+
+  openingBalance Decimal @default(0) @db.Decimal(15, 2) /// الرصيد الافتتاحي
+  closingBalance Decimal @default(0) @db.Decimal(15, 2) /// الرصيد الختامي
+  debitTotal     Decimal @default(0) @db.Decimal(15, 2) /// إجمالي المدين
+  creditTotal    Decimal @default(0) @db.Decimal(15, 2) /// إجمالي الدائن
+
   // التدقيق (Audit Trail)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  
-  @@map("account_balances")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([accountId, fiscalYearId])
   @@index([accountId])
   @@index([fiscalYearId])
+  @@map("account_balances")
 }
 
 /// التسلسل الهرمي للحسابات (Materialized Path)
 model AccountHierarchy {
-  id         String  @id @default(cuid())
-  
-  accountId  String
-  account    Account @relation("AccountAsAccount", fields: [accountId], references: [id], onDelete: Cascade)
-  
+  id String @id @default(cuid())
+
+  accountId String
+  account   Account @relation("AccountAsAccount", fields: [accountId], references: [id], onDelete: Cascade)
+
   ancestorId String
   ancestor   Account @relation("AccountAsAncestor", fields: [ancestorId], references: [id], onDelete: Cascade)
-  
-  depth      Int     /// عمق العلاقة (0 للحساب نفسه، 1 للأب المباشر، إلخ)
-  
-  @@map("account_hierarchy")
+
+  depth Int /// عمق العلاقة (0 للحساب نفسه، 1 للأب المباشر، إلخ)
+
   @@index([accountId, ancestorId])
   @@index([accountId])
   @@index([ancestorId])
+  @@map("account_hierarchy")
 }
 
 // ============================================================================
@@ -426,52 +426,51 @@ model AccountHierarchy {
 
 /// القيد المحاسبي (رأس القيد)
 model JournalEntry {
-  id           String             @id @default(cuid())
-  entryNumber  String             @unique /// رقم القيد (مثل: JE-2025-0001)
-  entryDate    DateTime           /// تاريخ القيد
-  description  String             /// وصف القيد
-  reference    String?            /// مرجع خارجي (رقم فاتورة، شيك، إلخ)
-  entryType    JournalEntryType   /// نوع القيد
-  status       JournalEntryStatus @default(DRAFT) /// حالة القيد
-  totalDebit   Decimal            @default(0) @db.Decimal(15, 2) /// إجمالي المدين
-  totalCredit  Decimal            @default(0) @db.Decimal(15, 2) /// إجمالي الدائن
-  isBalanced   Boolean            @default(false) /// هل القيد متوازن (Computed)
-  
+  id          String             @id @default(cuid())
+  entryNumber String             @unique /// رقم القيد (مثل: JE-2025-0001)
+  entryDate   DateTime /// تاريخ القيد
+  description String /// وصف القيد
+  reference   String? /// مرجع خارجي (رقم فاتورة، شيك، إلخ)
+  entryType   JournalEntryType /// نوع القيد
+  status      JournalEntryStatus @default(DRAFT) /// حالة القيد
+  totalDebit  Decimal            @default(0) @db.Decimal(15, 2) /// إجمالي المدين
+  totalCredit Decimal            @default(0) @db.Decimal(15, 2) /// إجمالي الدائن
+  isBalanced  Boolean            @default(false) /// هل القيد متوازن (Computed)
+
   // الترحيل والعكس
-  postedAt     DateTime?          /// تاريخ الترحيل
-  postedBy     String?            /// من قام بالترحيل
-  reversedAt   DateTime?          /// تاريخ العكس
-  reversedBy   String?            /// من قام بالعكس
-  
+  postedAt   DateTime? /// تاريخ الترحيل
+  postedBy   String? /// من قام بالترحيل
+  reversedAt DateTime? /// تاريخ العكس
+  reversedBy String? /// من قام بالعكس
+
   // العلاقة مع القيد المعكوس
   reversalOfId String?
-  reversalOf   JournalEntry?      @relation("ReversalRelation", fields: [reversalOfId], references: [id], onDelete: SetNull)
-  reversals    JournalEntry[]     @relation("ReversalRelation")
-  
+  reversalOf   JournalEntry?  @relation("ReversalRelation", fields: [reversalOfId], references: [id], onDelete: SetNull)
+  reversals    JournalEntry[] @relation("ReversalRelation")
+
   // العلاقات مع الكيانات
   fiscalYearId String
-  fiscalYear   FiscalYear         @relation(fields: [fiscalYearId], references: [id], onDelete: Restrict)
-  
-  holdingId    String?
-  unitId       String?
-  projectId    String?
-  
+  fiscalYear   FiscalYear @relation(fields: [fiscalYearId], references: [id], onDelete: Restrict)
+
+  holdingId String?
+  unitId    String?
+  projectId String?
+
   // العلاقات
-  lines        JournalEntryLine[]
-  
+  lines JournalEntryLine[]
+
   // Invoice Relations
   purchaseInvoices PurchaseInvoice[]
   purchaseReturns  PurchaseReturn[]
   salesInvoices    SalesInvoice[]
   salesReturns     SalesReturn[]
-  
+
   // التدقيق (Audit Trail)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  createdBy    String?
-  updatedBy    String?
-  
-  @@map("journal_entries")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([entryNumber])
   @@index([entryDate])
   @@index([status])
@@ -479,52 +478,53 @@ model JournalEntry {
   @@index([holdingId])
   @@index([unitId])
   @@index([projectId])
+  @@map("journal_entries")
 }
 
 /// نوع القيد
 enum JournalEntryType {
-  OPENING     /// قيد افتتاحي
-  REGULAR     /// قيد عادي
-  CLOSING     /// قيد إقفال
-  ADJUSTMENT  /// قيد تسوية
+  OPENING /// قيد افتتاحي
+  REGULAR /// قيد عادي
+  CLOSING /// قيد إقفال
+  ADJUSTMENT /// قيد تسوية
 }
 
 /// حالة القيد
 enum JournalEntryStatus {
-  DRAFT       /// مسودة (قابل للتعديل)
-  POSTED      /// مرحّل (غير قابل للتعديل)
-  REVERSED    /// معكوس
+  DRAFT /// مسودة (قابل للتعديل)
+  POSTED /// مرحّل (غير قابل للتعديل)
+  REVERSED /// معكوس
 }
 
 /// سطر القيد المحاسبي
 model JournalEntryLine {
-  id             String        @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   journalEntryId String
-  journalEntry   JournalEntry  @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
-  
-  lineNumber     Int           /// رقم السطر (1, 2, 3, ...)
-  
-  accountId      String
-  account        Account       @relation(fields: [accountId], references: [id], onDelete: Restrict)
-  
-  description    String        /// وصف السطر
-  debit          Decimal       @default(0) @db.Decimal(15, 2) /// المبلغ المدين
-  credit         Decimal       @default(0) @db.Decimal(15, 2) /// المبلغ الدائن
-  
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+
+  lineNumber Int /// رقم السطر (1, 2, 3, ...)
+
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  description String /// وصف السطر
+  debit       Decimal @default(0) @db.Decimal(15, 2) /// المبلغ المدين
+  credit      Decimal @default(0) @db.Decimal(15, 2) /// المبلغ الدائن
+
   // مركز التكلفة (اختياري)
-  costCenterId   String?
-  costCenter     CostCenter?   @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
-  
+  costCenterId String?
+  costCenter   CostCenter? @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
+
   // التدقيق (Audit Trail)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  
-  @@map("journal_entry_lines")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([journalEntryId, lineNumber])
   @@index([journalEntryId])
   @@index([accountId])
   @@index([costCenterId])
+  @@map("journal_entry_lines")
 }
 
 // ============================================================================
@@ -533,39 +533,39 @@ model JournalEntryLine {
 
 /// مركز التكلفة
 model CostCenter {
-  id          String   @id @default(cuid())
-  code        String   @unique /// رمز مركز التكلفة
-  nameAr      String   /// الاسم بالعربية
-  nameEn      String   /// الاسم بالإنجليزية
-  description String?  /// الوصف
-  isActive    Boolean  @default(true) /// حالة التفعيل
-  
+  id          String  @id @default(cuid())
+  code        String  @unique /// رمز مركز التكلفة
+  nameAr      String /// الاسم بالعربية
+  nameEn      String /// الاسم بالإنجليزية
+  description String? /// الوصف
+  isActive    Boolean @default(true) /// حالة التفعيل
+
   // العلاقات الهرمية (Self-Referencing)
-  parentId    String?
-  parent      CostCenter? @relation("CostCenterHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  children    CostCenter[] @relation("CostCenterHierarchy")
-  
+  parentId String?
+  parent   CostCenter?  @relation("CostCenterHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children CostCenter[] @relation("CostCenterHierarchy")
+
   // العلاقات مع الكيانات (اختياري)
-  holdingId   String?
-  unitId      String?
-  projectId   String?
-  
+  holdingId String?
+  unitId    String?
+  projectId String?
+
   // العلاقات
   journalEntryLines JournalEntryLine[]
-  
+
   // التدقيق (Audit Trail)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  
-  @@map("cost_centers")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([parentId])
   @@index([holdingId])
   @@index([unitId])
   @@index([projectId])
   @@index([isActive])
+  @@map("cost_centers")
 }
 
 // ============================================================================
@@ -574,77 +574,76 @@ model CostCenter {
 
 /// السنة المالية
 model FiscalYear {
-  id          String           @id @default(cuid())
-  code        String           @unique /// رمز السنة المالية (مثل: FY-2025)
-  nameAr      String           /// الاسم بالعربية
-  nameEn      String           /// الاسم بالإنجليزية
-  startDate   DateTime         /// تاريخ بداية السنة المالية
-  endDate     DateTime         /// تاريخ نهاية السنة المالية
-  status      FiscalYearStatus @default(OPEN) /// حالة السنة
-  isCurrent   Boolean          @default(false) /// هل هي السنة الحالية
-  
+  id        String           @id @default(cuid())
+  code      String           @unique /// رمز السنة المالية (مثل: FY-2025)
+  nameAr    String /// الاسم بالعربية
+  nameEn    String /// الاسم بالإنجليزية
+  startDate DateTime /// تاريخ بداية السنة المالية
+  endDate   DateTime /// تاريخ نهاية السنة المالية
+  status    FiscalYearStatus @default(OPEN) /// حالة السنة
+  isCurrent Boolean          @default(false) /// هل هي السنة الحالية
+
   // العلاقات مع الكيانات (اختياري)
-  holdingId   String?
-  
+  holdingId String?
+
   // العلاقات
   periods         FiscalPeriod[]
   journalEntries  JournalEntry[]
   accountBalances AccountBalance[]
-  
+
   // التدقيق (Audit Trail)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  
-  @@map("fiscal_years")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([startDate])
   @@index([endDate])
   @@index([status])
   @@index([isCurrent])
   @@index([holdingId])
+  @@map("fiscal_years")
 }
 
 /// حالة السنة المالية
 enum FiscalYearStatus {
-  OPEN    /// مفتوحة (قابلة للقيد)
-  CLOSED  /// مغلقة (غير قابلة للقيد)
-  LOCKED  /// مقفلة (مغلقة نهائياً)
+  OPEN /// مفتوحة (قابلة للقيد)
+  CLOSED /// مغلقة (غير قابلة للقيد)
+  LOCKED /// مقفلة (مغلقة نهائياً)
 }
 
 /// الفترة المحاسبية
 model FiscalPeriod {
-  id           String             @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   fiscalYearId String
-  fiscalYear   FiscalYear         @relation(fields: [fiscalYearId], references: [id], onDelete: Cascade)
-  
-  periodNumber Int                /// رقم الفترة (1-12 للشهور)
-  nameAr       String             /// الاسم بالعربية (يناير، فبراير، ...)
-  nameEn       String             /// الاسم بالإنجليزية (January, February, ...)
-  startDate    DateTime           /// تاريخ بداية الفترة
-  endDate      DateTime           /// تاريخ نهاية الفترة
+  fiscalYear   FiscalYear @relation(fields: [fiscalYearId], references: [id], onDelete: Cascade)
+
+  periodNumber Int /// رقم الفترة (1-12 للشهور)
+  nameAr       String /// الاسم بالعربية (يناير، فبراير، ...)
+  nameEn       String /// الاسم بالإنجليزية (January, February, ...)
+  startDate    DateTime /// تاريخ بداية الفترة
+  endDate      DateTime /// تاريخ نهاية الفترة
   status       FiscalPeriodStatus @default(OPEN) /// حالة الفترة
-  
+
   // التدقيق (Audit Trail)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  
-  @@map("fiscal_periods")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([fiscalYearId, periodNumber])
   @@index([fiscalYearId])
   @@index([status])
   @@index([startDate])
   @@index([endDate])
+  @@map("fiscal_periods")
 }
 
 /// حالة الفترة المحاسبية
 enum FiscalPeriodStatus {
-  OPEN    /// مفتوحة
-  CLOSED  /// مغلقة
+  OPEN /// مفتوحة
+  CLOSED /// مغلقة
 }
-
 
 // ============================================================================
 // 6. SUPPLIERS SYSTEM (نظام الموردين)
@@ -652,65 +651,64 @@ enum FiscalPeriodStatus {
 
 /// فئات الموردين
 model SupplierCategory {
-  id          String   @id @default(cuid())
-  code        String   @unique
+  id          String  @id @default(cuid())
+  code        String  @unique
   nameAr      String
   nameEn      String
   description String?
-  isActive    Boolean  @default(true)
-  
+  isActive    Boolean @default(true)
+
   // Relations
-  suppliers   Supplier[]
-  
+  suppliers Supplier[]
+
   // Audit Trail
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  
-  @@map("supplier_categories")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([isActive])
+  @@map("supplier_categories")
 }
 
 /// الموردين
 model Supplier {
-  id                  String   @id @default(cuid())
-  code                String   @unique
-  nameAr              String
-  nameEn              String
-  taxNumber           String?  @unique
-  commercialRegister  String?
-  email               String?
-  phone               String?
-  website             String?
-  paymentTerms        Int      @default(30) /// أيام الدفع
-  creditLimit         Decimal  @default(0) @db.Decimal(15, 2)
-  currentBalance      Decimal  @default(0) @db.Decimal(15, 2)
-  isActive            Boolean  @default(true)
-  
+  id                 String  @id @default(cuid())
+  code               String  @unique
+  nameAr             String
+  nameEn             String
+  taxNumber          String? @unique
+  commercialRegister String?
+  email              String?
+  phone              String?
+  website            String?
+  paymentTerms       Int     @default(30) /// أيام الدفع
+  creditLimit        Decimal @default(0) @db.Decimal(15, 2)
+  currentBalance     Decimal @default(0) @db.Decimal(15, 2)
+  isActive           Boolean @default(true)
+
   // Relations
-  categoryId          String?
-  category            SupplierCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  
+  categoryId String?
+  category   SupplierCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
   // Multi-Entity Support
-  holdingId           String?
-  unitId              String?
-  
+  holdingId String?
+  unitId    String?
+
   // Relations
-  addresses           SupplierAddress[]
-  contacts            SupplierContact[]
-  purchaseOrders      PurchaseOrder[]
-  purchaseInvoices    PurchaseInvoice[]
-  purchaseReturns     PurchaseReturn[]
-  
+  addresses        SupplierAddress[]
+  contacts         SupplierContact[]
+  purchaseOrders   PurchaseOrder[]
+  purchaseInvoices PurchaseInvoice[]
+  purchaseReturns  PurchaseReturn[]
+
   // Audit Trail
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  createdBy           String?
-  updatedBy           String?
-  
-  @@map("suppliers")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([taxNumber])
   @@index([email])
@@ -718,6 +716,7 @@ model Supplier {
   @@index([holdingId])
   @@index([unitId])
   @@index([isActive])
+  @@map("suppliers")
 }
 
 enum AddressType {
@@ -728,49 +727,49 @@ enum AddressType {
 
 /// عناوين الموردين
 model SupplierAddress {
-  id              String      @id @default(cuid())
-  supplierId      String
-  supplier        Supplier    @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  
-  addressType     AddressType
-  country         String
-  city            String
-  district        String?
-  street          String?
-  buildingNumber  String?
-  postalCode      String?
-  isPrimary       Boolean     @default(false)
-  
+  id         String   @id @default(cuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  addressType    AddressType
+  country        String
+  city           String
+  district       String?
+  street         String?
+  buildingNumber String?
+  postalCode     String?
+  isPrimary      Boolean     @default(false)
+
   // Audit Trail
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  
-  @@map("supplier_addresses")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([supplierId])
   @@index([addressType])
   @@index([isPrimary])
+  @@map("supplier_addresses")
 }
 
 /// جهات اتصال الموردين
 model SupplierContact {
-  id          String   @id @default(cuid())
-  supplierId  String
-  supplier    Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  
-  name        String
-  position    String?
-  email       String?
-  phone       String?
-  mobile      String?
-  isPrimary   Boolean  @default(false)
-  
+  id         String   @id @default(cuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  name      String
+  position  String?
+  email     String?
+  phone     String?
+  mobile    String?
+  isPrimary Boolean @default(false)
+
   // Audit Trail
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("supplier_contacts")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([supplierId])
   @@index([isPrimary])
+  @@map("supplier_contacts")
 }
 
 // ============================================================================
@@ -779,66 +778,65 @@ model SupplierContact {
 
 /// فئات العملاء
 model CustomerCategory {
-  id                  String   @id @default(cuid())
-  code                String   @unique
-  nameAr              String
-  nameEn              String
-  description         String?
-  discountPercentage  Decimal  @default(0) @db.Decimal(5, 2)
-  isActive            Boolean  @default(true)
-  
+  id                 String  @id @default(cuid())
+  code               String  @unique
+  nameAr             String
+  nameEn             String
+  description        String?
+  discountPercentage Decimal @default(0) @db.Decimal(5, 2)
+  isActive           Boolean @default(true)
+
   // Relations
-  customers           Customer[]
-  
+  customers Customer[]
+
   // Audit Trail
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  createdBy           String?
-  updatedBy           String?
-  
-  @@map("customer_categories")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([isActive])
+  @@map("customer_categories")
 }
 
 /// العملاء
 model Customer {
-  id                  String   @id @default(cuid())
-  code                String   @unique
-  nameAr              String
-  nameEn              String
-  taxNumber           String?  @unique
-  commercialRegister  String?
-  email               String?
-  phone               String?
-  website             String?
-  paymentTerms        Int      @default(30)
-  creditLimit         Decimal  @default(0) @db.Decimal(15, 2)
-  currentBalance      Decimal  @default(0) @db.Decimal(15, 2)
-  isActive            Boolean  @default(true)
-  
+  id                 String  @id @default(cuid())
+  code               String  @unique
+  nameAr             String
+  nameEn             String
+  taxNumber          String? @unique
+  commercialRegister String?
+  email              String?
+  phone              String?
+  website            String?
+  paymentTerms       Int     @default(30)
+  creditLimit        Decimal @default(0) @db.Decimal(15, 2)
+  currentBalance     Decimal @default(0) @db.Decimal(15, 2)
+  isActive           Boolean @default(true)
+
   // Relations
-  categoryId          String?
-  category            CustomerCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  
+  categoryId String?
+  category   CustomerCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
   // Multi-Entity Support
-  holdingId           String?
-  unitId              String?
-  
+  holdingId String?
+  unitId    String?
+
   // Relations
-  addresses           CustomerAddress[]
-  contacts            CustomerContact[]
-  salesOrders         SalesOrder[]
-  salesInvoices       SalesInvoice[]
-  salesReturns        SalesReturn[]
-  
+  addresses     CustomerAddress[]
+  contacts      CustomerContact[]
+  salesOrders   SalesOrder[]
+  salesInvoices SalesInvoice[]
+  salesReturns  SalesReturn[]
+
   // Audit Trail
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  createdBy           String?
-  updatedBy           String?
-  
-  @@map("customers")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([taxNumber])
   @@index([email])
@@ -846,53 +844,54 @@ model Customer {
   @@index([holdingId])
   @@index([unitId])
   @@index([isActive])
+  @@map("customers")
 }
 
 /// عناوين العملاء
 model CustomerAddress {
-  id              String      @id @default(cuid())
-  customerId      String
-  customer        Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  
-  addressType     AddressType
-  country         String
-  city            String
-  district        String?
-  street          String?
-  buildingNumber  String?
-  postalCode      String?
-  isPrimary       Boolean     @default(false)
-  
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  addressType    AddressType
+  country        String
+  city           String
+  district       String?
+  street         String?
+  buildingNumber String?
+  postalCode     String?
+  isPrimary      Boolean     @default(false)
+
   // Audit Trail
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  
-  @@map("customer_addresses")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([customerId])
   @@index([addressType])
   @@index([isPrimary])
+  @@map("customer_addresses")
 }
 
 /// جهات اتصال العملاء
 model CustomerContact {
-  id          String   @id @default(cuid())
-  customerId  String
-  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  
-  name        String
-  position    String?
-  email       String?
-  phone       String?
-  mobile      String?
-  isPrimary   Boolean  @default(false)
-  
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  name      String
+  position  String?
+  email     String?
+  phone     String?
+  mobile    String?
+  isPrimary Boolean @default(false)
+
   // Audit Trail
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("customer_contacts")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([customerId])
   @@index([isPrimary])
+  @@map("customer_contacts")
 }
 
 // ============================================================================
@@ -901,98 +900,97 @@ model CustomerContact {
 
 /// فئات الأصناف
 model ItemCategory {
-  id          String   @id @default(cuid())
-  code        String   @unique
+  id          String  @id @default(cuid())
+  code        String  @unique
   nameAr      String
   nameEn      String
   description String?
-  isActive    Boolean  @default(true)
-  
+  isActive    Boolean @default(true)
+
   // Self-Referencing (Hierarchical)
-  parentId    String?
-  parent      ItemCategory?  @relation("ItemCategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  children    ItemCategory[] @relation("ItemCategoryHierarchy")
-  
+  parentId String?
+  parent   ItemCategory?  @relation("ItemCategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children ItemCategory[] @relation("ItemCategoryHierarchy")
+
   // Relations
-  items       Item[]
-  
+  items Item[]
+
   // Audit Trail
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  
-  @@map("item_categories")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([parentId])
   @@index([isActive])
+  @@map("item_categories")
 }
 
 enum ItemType {
-  PRODUCT   /// منتج
-  SERVICE   /// خدمة
-  MATERIAL  /// مادة خام
+  PRODUCT /// منتج
+  SERVICE /// خدمة
+  MATERIAL /// مادة خام
 }
 
 /// الأصناف
 model Item {
-  id                  String   @id @default(cuid())
-  code                String   @unique
-  barcode             String?  @unique
-  nameAr              String
-  nameEn              String
-  description         String?
-  itemType            ItemType
-  unit                String   /// وحدة القياس
-  
+  id          String   @id @default(cuid())
+  code        String   @unique
+  barcode     String?  @unique
+  nameAr      String
+  nameEn      String
+  description String?
+  itemType    ItemType
+  unit        String /// وحدة القياس
+
   // Pricing
-  costPrice           Decimal  @default(0) @db.Decimal(15, 2)
-  sellingPrice        Decimal  @default(0) @db.Decimal(15, 2)
-  minSellingPrice     Decimal? @db.Decimal(15, 2)
-  
+  costPrice       Decimal  @default(0) @db.Decimal(15, 2)
+  sellingPrice    Decimal  @default(0) @db.Decimal(15, 2)
+  minSellingPrice Decimal? @db.Decimal(15, 2)
+
   // Stock
-  reorderLevel        Decimal? @db.Decimal(10, 2)
-  maxStockLevel       Decimal? @db.Decimal(10, 2)
-  
+  reorderLevel  Decimal? @db.Decimal(10, 2)
+  maxStockLevel Decimal? @db.Decimal(10, 2)
+
   // Flags
-  isActive            Boolean  @default(true)
-  isSellable          Boolean  @default(true)
-  isPurchasable       Boolean  @default(true)
-  isStockable         Boolean  @default(true)
-  
+  isActive      Boolean @default(true)
+  isSellable    Boolean @default(true)
+  isPurchasable Boolean @default(true)
+  isStockable   Boolean @default(true)
+
   // Relations
-  categoryId          String?
-  category            ItemCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  
+  categoryId String?
+  category   ItemCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
   // Accounting Integration
-  salesAccountId      String?
-  salesAccount        Account?  @relation("ItemSalesAccount", fields: [salesAccountId], references: [id], onDelete: SetNull)
-  
-  purchaseAccountId   String?
-  purchaseAccount     Account?  @relation("ItemPurchaseAccount", fields: [purchaseAccountId], references: [id], onDelete: SetNull)
-  
-  inventoryAccountId  String?
-  inventoryAccount    Account?  @relation("ItemInventoryAccount", fields: [inventoryAccountId], references: [id], onDelete: SetNull)
-  
+  salesAccountId String?
+  salesAccount   Account? @relation("ItemSalesAccount", fields: [salesAccountId], references: [id], onDelete: SetNull)
+
+  purchaseAccountId String?
+  purchaseAccount   Account? @relation("ItemPurchaseAccount", fields: [purchaseAccountId], references: [id], onDelete: SetNull)
+
+  inventoryAccountId String?
+  inventoryAccount   Account? @relation("ItemInventoryAccount", fields: [inventoryAccountId], references: [id], onDelete: SetNull)
+
   // Multi-Entity Support
-  holdingId           String?
-  
+  holdingId String?
+
   // Relations
-  stockLevels         StockLevel[]
-  stockMovements      StockMovement[]
-  purchaseOrderLines  PurchaseOrderLine[]
+  stockLevels          StockLevel[]
+  stockMovements       StockMovement[]
+  purchaseOrderLines   PurchaseOrderLine[]
   purchaseInvoiceLines PurchaseInvoiceLine[]
-  salesOrderLines     SalesOrderLine[]
-  salesInvoiceLines   SalesInvoiceLine[]
-  stockCountLines     StockCountLine[]
-  
+  salesOrderLines      SalesOrderLine[]
+  salesInvoiceLines    SalesInvoiceLine[]
+  stockCountLines      StockCountLine[]
+
   // Audit Trail
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  createdBy           String?
-  updatedBy           String?
-  
-  @@map("items")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([barcode])
   @@index([itemType])
@@ -1005,111 +1003,112 @@ model Item {
   @@index([isSellable])
   @@index([isPurchasable])
   @@index([isStockable])
+  @@map("items")
 }
 
 /// المخازن
 model Warehouse {
-  id              String   @id @default(cuid())
-  code            String   @unique
-  nameAr          String
-  nameEn          String
-  description     String?
-  location        String?
-  isActive        Boolean  @default(true)
-  
+  id          String  @id @default(cuid())
+  code        String  @unique
+  nameAr      String
+  nameEn      String
+  description String?
+  location    String?
+  isActive    Boolean @default(true)
+
   // Multi-Entity Support
-  holdingId       String?
-  unitId          String?
-  
+  holdingId String?
+  unitId    String?
+
   // Relations
-  stockLevels     StockLevel[]
-  stockMovements  StockMovement[]
-  stockCounts     StockCount[]
+  stockLevels          StockLevel[]
+  stockMovements       StockMovement[]
+  stockCounts          StockCount[]
   purchaseInvoiceLines PurchaseInvoiceLine[]
   salesInvoiceLines    SalesInvoiceLine[]
-  
+
   // Audit Trail
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  
-  @@map("warehouses")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([code])
   @@index([holdingId])
   @@index([unitId])
   @@index([isActive])
+  @@map("warehouses")
 }
 
 /// مستويات المخزون
 model StockLevel {
-  id                  String   @id @default(cuid())
-  
-  itemId              String
-  item                Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  
-  warehouseId         String
-  warehouse           Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
-  
-  quantity            Decimal  @default(0) @db.Decimal(10, 2)
-  reservedQuantity    Decimal  @default(0) @db.Decimal(10, 2)
-  availableQuantity   Decimal  @default(0) @db.Decimal(10, 2)
-  
+  id String @id @default(cuid())
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  quantity          Decimal @default(0) @db.Decimal(10, 2)
+  reservedQuantity  Decimal @default(0) @db.Decimal(10, 2)
+  availableQuantity Decimal @default(0) @db.Decimal(10, 2)
+
   // Audit Trail
-  updatedAt           DateTime @updatedAt
-  
-  @@map("stock_levels")
+  updatedAt DateTime @updatedAt
+
   @@unique([itemId, warehouseId])
   @@index([itemId])
   @@index([warehouseId])
+  @@map("stock_levels")
 }
 
 enum StockMovementType {
-  PURCHASE_RECEIPT      /// استلام شراء
-  SALES_ISSUE           /// صرف مبيعات
-  TRANSFER_IN           /// تحويل وارد
-  TRANSFER_OUT          /// تحويل صادر
-  ADJUSTMENT_IN         /// تسوية إضافة
-  ADJUSTMENT_OUT        /// تسوية خصم
-  OPENING_BALANCE       /// رصيد افتتاحي
-  RETURN_FROM_CUSTOMER  /// مرتجع من عميل
-  RETURN_TO_SUPPLIER    /// مرتجع لمورد
+  PURCHASE_RECEIPT /// استلام شراء
+  SALES_ISSUE /// صرف مبيعات
+  TRANSFER_IN /// تحويل وارد
+  TRANSFER_OUT /// تحويل صادر
+  ADJUSTMENT_IN /// تسوية إضافة
+  ADJUSTMENT_OUT /// تسوية خصم
+  OPENING_BALANCE /// رصيد افتتاحي
+  RETURN_FROM_CUSTOMER /// مرتجع من عميل
+  RETURN_TO_SUPPLIER /// مرتجع لمورد
 }
 
 /// حركات المخزون
 model StockMovement {
-  id                      String            @id @default(cuid())
-  movementNumber          String            @unique
-  movementDate            DateTime
-  movementType            StockMovementType
-  
-  itemId                  String
-  item                    Item              @relation(fields: [itemId], references: [id], onDelete: Restrict)
-  
-  warehouseId             String
-  warehouse               Warehouse         @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
-  
-  quantity                Decimal           @db.Decimal(10, 2)
-  unitCost                Decimal?          @db.Decimal(15, 2)
-  totalCost               Decimal?          @db.Decimal(15, 2)
-  
-  reference               String?
-  notes                   String?
-  
+  id             String            @id @default(cuid())
+  movementNumber String            @unique
+  movementDate   DateTime
+  movementType   StockMovementType
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+
+  quantity  Decimal  @db.Decimal(10, 2)
+  unitCost  Decimal? @db.Decimal(15, 2)
+  totalCost Decimal? @db.Decimal(15, 2)
+
+  reference String?
+  notes     String?
+
   // Relations (optional based on movement type)
-  purchaseInvoiceLineId   String?
-  salesInvoiceLineId      String?
-  
+  purchaseInvoiceLineId String?
+  salesInvoiceLineId    String?
+
   // Audit Trail
-  createdAt               DateTime          @default(now())
-  createdBy               String?
-  
-  @@map("stock_movements")
+  createdAt DateTime @default(now())
+  createdBy String?
+
   @@index([movementNumber])
   @@index([movementDate])
   @@index([movementType])
   @@index([itemId])
   @@index([warehouseId])
+  @@map("stock_movements")
 }
 
 enum StockCountStatus {
@@ -1121,57 +1120,57 @@ enum StockCountStatus {
 
 /// الجرد
 model StockCount {
-  id              String           @id @default(cuid())
-  countNumber     String           @unique
-  countDate       DateTime
-  status          StockCountStatus
-  
-  warehouseId     String
-  warehouse       Warehouse        @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
-  
-  notes           String?
-  
+  id          String           @id @default(cuid())
+  countNumber String           @unique
+  countDate   DateTime
+  status      StockCountStatus
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+
+  notes String?
+
   // Relations
-  lines           StockCountLine[]
-  
+  lines StockCountLine[]
+
   // Audit Trail
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  completedAt     DateTime?
-  completedBy     String?
-  
-  @@map("stock_counts")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  completedAt DateTime?
+  completedBy String?
+
   @@index([countNumber])
   @@index([countDate])
   @@index([status])
   @@index([warehouseId])
+  @@map("stock_counts")
 }
 
 /// سطور الجرد
 model StockCountLine {
-  id                String     @id @default(cuid())
-  
-  stockCountId      String
-  stockCount        StockCount @relation(fields: [stockCountId], references: [id], onDelete: Cascade)
-  
-  itemId            String
-  item              Item       @relation(fields: [itemId], references: [id], onDelete: Restrict)
-  
-  systemQuantity    Decimal    @db.Decimal(10, 2)
-  countedQuantity   Decimal    @db.Decimal(10, 2)
-  difference        Decimal    @db.Decimal(10, 2)
-  
-  notes             String?
-  
+  id String @id @default(cuid())
+
+  stockCountId String
+  stockCount   StockCount @relation(fields: [stockCountId], references: [id], onDelete: Cascade)
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  systemQuantity  Decimal @db.Decimal(10, 2)
+  countedQuantity Decimal @db.Decimal(10, 2)
+  difference      Decimal @db.Decimal(10, 2)
+
+  notes String?
+
   // Audit Trail
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
-  
-  @@map("stock_count_lines")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([stockCountId])
   @@index([itemId])
+  @@map("stock_count_lines")
 }
 
 // ============================================================================
@@ -1189,40 +1188,39 @@ enum PurchaseOrderStatus {
 
 /// طلبات الشراء
 model PurchaseOrder {
-  id                    String              @id @default(cuid())
-  orderNumber           String              @unique
-  orderDate             DateTime
-  expectedDeliveryDate  DateTime?
-  status                PurchaseOrderStatus
-  
-  supplierId            String
-  supplier              Supplier            @relation(fields: [supplierId], references: [id], onDelete: Restrict)
-  
-  subtotal              Decimal             @default(0) @db.Decimal(15, 2)
-  taxAmount             Decimal             @default(0) @db.Decimal(15, 2)
-  discountAmount        Decimal             @default(0) @db.Decimal(15, 2)
-  totalAmount           Decimal             @default(0) @db.Decimal(15, 2)
-  
-  notes                 String?
-  
+  id                   String              @id @default(cuid())
+  orderNumber          String              @unique
+  orderDate            DateTime
+  expectedDeliveryDate DateTime?
+  status               PurchaseOrderStatus
+
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+
+  subtotal       Decimal @default(0) @db.Decimal(15, 2)
+  taxAmount      Decimal @default(0) @db.Decimal(15, 2)
+  discountAmount Decimal @default(0) @db.Decimal(15, 2)
+  totalAmount    Decimal @default(0) @db.Decimal(15, 2)
+
+  notes String?
+
   // Multi-Entity Support
-  holdingId             String?
-  unitId                String?
-  projectId             String?
-  
+  holdingId String?
+  unitId    String?
+  projectId String?
+
   // Relations
-  lines                 PurchaseOrderLine[]
-  invoices              PurchaseInvoice[]
-  
+  lines    PurchaseOrderLine[]
+  invoices PurchaseInvoice[]
+
   // Audit Trail
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
-  createdBy             String?
-  updatedBy             String?
-  approvedAt            DateTime?
-  approvedBy            String?
-  
-  @@map("purchase_orders")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  approvedAt DateTime?
+  approvedBy String?
+
   @@index([orderNumber])
   @@index([orderDate])
   @@index([status])
@@ -1230,42 +1228,43 @@ model PurchaseOrder {
   @@index([holdingId])
   @@index([unitId])
   @@index([projectId])
+  @@map("purchase_orders")
 }
 
 /// سطور طلبات الشراء
 model PurchaseOrderLine {
-  id                String        @id @default(cuid())
-  
-  purchaseOrderId   String
-  purchaseOrder     PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-  
-  lineNumber        Int
-  
-  itemId            String
-  item              Item          @relation(fields: [itemId], references: [id], onDelete: Restrict)
-  
-  description       String?
-  quantity          Decimal       @db.Decimal(10, 2)
-  unitPrice         Decimal       @db.Decimal(15, 2)
-  taxRate           Decimal       @default(15) @db.Decimal(5, 2)
-  discountRate      Decimal       @default(0) @db.Decimal(5, 2)
-  
+  id String @id @default(cuid())
+
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  lineNumber Int
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  description  String?
+  quantity     Decimal @db.Decimal(10, 2)
+  unitPrice    Decimal @db.Decimal(15, 2)
+  taxRate      Decimal @default(15) @db.Decimal(5, 2)
+  discountRate Decimal @default(0) @db.Decimal(5, 2)
+
   // Computed Fields
-  lineTotal         Decimal       @db.Decimal(15, 2)
-  taxAmount         Decimal       @db.Decimal(15, 2)
-  discountAmount    Decimal       @db.Decimal(15, 2)
-  netAmount         Decimal       @db.Decimal(15, 2)
-  
-  receivedQuantity  Decimal       @default(0) @db.Decimal(10, 2)
-  
+  lineTotal      Decimal @db.Decimal(15, 2)
+  taxAmount      Decimal @db.Decimal(15, 2)
+  discountAmount Decimal @db.Decimal(15, 2)
+  netAmount      Decimal @db.Decimal(15, 2)
+
+  receivedQuantity Decimal @default(0) @db.Decimal(10, 2)
+
   // Audit Trail
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  
-  @@map("purchase_order_lines")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([purchaseOrderId, lineNumber])
   @@index([purchaseOrderId])
   @@index([itemId])
+  @@map("purchase_order_lines")
 }
 
 enum PurchaseInvoiceStatus {
@@ -1278,50 +1277,49 @@ enum PurchaseInvoiceStatus {
 
 /// فواتير الشراء
 model PurchaseInvoice {
-  id                      String                @id @default(cuid())
-  invoiceNumber           String                @unique
-  supplierInvoiceNumber   String?
-  invoiceDate             DateTime
-  dueDate                 DateTime?
-  status                  PurchaseInvoiceStatus
-  
-  supplierId              String
-  supplier                Supplier              @relation(fields: [supplierId], references: [id], onDelete: Restrict)
-  
-  purchaseOrderId         String?
-  purchaseOrder           PurchaseOrder?        @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
-  
-  subtotal                Decimal               @default(0) @db.Decimal(15, 2)
-  taxAmount               Decimal               @default(0) @db.Decimal(15, 2)
-  discountAmount          Decimal               @default(0) @db.Decimal(15, 2)
-  totalAmount             Decimal               @default(0) @db.Decimal(15, 2)
-  paidAmount              Decimal               @default(0) @db.Decimal(15, 2)
-  remainingAmount         Decimal               @default(0) @db.Decimal(15, 2)
-  
-  notes                   String?
-  
+  id                    String                @id @default(cuid())
+  invoiceNumber         String                @unique
+  supplierInvoiceNumber String?
+  invoiceDate           DateTime
+  dueDate               DateTime?
+  status                PurchaseInvoiceStatus
+
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
+
+  subtotal        Decimal @default(0) @db.Decimal(15, 2)
+  taxAmount       Decimal @default(0) @db.Decimal(15, 2)
+  discountAmount  Decimal @default(0) @db.Decimal(15, 2)
+  totalAmount     Decimal @default(0) @db.Decimal(15, 2)
+  paidAmount      Decimal @default(0) @db.Decimal(15, 2)
+  remainingAmount Decimal @default(0) @db.Decimal(15, 2)
+
+  notes String?
+
   // Multi-Entity Support
-  holdingId               String?
-  unitId                  String?
-  projectId               String?
-  
+  holdingId String?
+  unitId    String?
+  projectId String?
+
   // Accounting Integration
-  journalEntryId          String?
-  journalEntry            JournalEntry?         @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
-  
+  journalEntryId String?
+  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+
   // Relations
-  lines                   PurchaseInvoiceLine[]
-  returns                 PurchaseReturn[]
-  
+  lines   PurchaseInvoiceLine[]
+  returns PurchaseReturn[]
+
   // Audit Trail
-  createdAt               DateTime              @default(now())
-  updatedAt               DateTime              @updatedAt
-  createdBy               String?
-  updatedBy               String?
-  postedAt                DateTime?
-  postedBy                String?
-  
-  @@map("purchase_invoices")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  postedAt  DateTime?
+  postedBy  String?
+
   @@index([invoiceNumber])
   @@index([invoiceDate])
   @@index([status])
@@ -1331,44 +1329,45 @@ model PurchaseInvoice {
   @@index([holdingId])
   @@index([unitId])
   @@index([projectId])
+  @@map("purchase_invoices")
 }
 
 /// سطور فواتير الشراء
 model PurchaseInvoiceLine {
-  id                  String          @id @default(cuid())
-  
-  purchaseInvoiceId   String
-  purchaseInvoice     PurchaseInvoice @relation(fields: [purchaseInvoiceId], references: [id], onDelete: Cascade)
-  
-  lineNumber          Int
-  
-  itemId              String
-  item                Item            @relation(fields: [itemId], references: [id], onDelete: Restrict)
-  
-  warehouseId         String
-  warehouse           Warehouse       @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
-  
-  description         String?
-  quantity            Decimal         @db.Decimal(10, 2)
-  unitPrice           Decimal         @db.Decimal(15, 2)
-  taxRate             Decimal         @default(15) @db.Decimal(5, 2)
-  discountRate        Decimal         @default(0) @db.Decimal(5, 2)
-  
+  id String @id @default(cuid())
+
+  purchaseInvoiceId String
+  purchaseInvoice   PurchaseInvoice @relation(fields: [purchaseInvoiceId], references: [id], onDelete: Cascade)
+
+  lineNumber Int
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+
+  description  String?
+  quantity     Decimal @db.Decimal(10, 2)
+  unitPrice    Decimal @db.Decimal(15, 2)
+  taxRate      Decimal @default(15) @db.Decimal(5, 2)
+  discountRate Decimal @default(0) @db.Decimal(5, 2)
+
   // Computed Fields
-  lineTotal           Decimal         @db.Decimal(15, 2)
-  taxAmount           Decimal         @db.Decimal(15, 2)
-  discountAmount      Decimal         @db.Decimal(15, 2)
-  netAmount           Decimal         @db.Decimal(15, 2)
-  
+  lineTotal      Decimal @db.Decimal(15, 2)
+  taxAmount      Decimal @db.Decimal(15, 2)
+  discountAmount Decimal @db.Decimal(15, 2)
+  netAmount      Decimal @db.Decimal(15, 2)
+
   // Audit Trail
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  
-  @@map("purchase_invoice_lines")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([purchaseInvoiceId, lineNumber])
   @@index([purchaseInvoiceId])
   @@index([itemId])
   @@index([warehouseId])
+  @@map("purchase_invoice_lines")
 }
 
 enum PurchaseReturnStatus {
@@ -1379,40 +1378,39 @@ enum PurchaseReturnStatus {
 
 /// مرتجعات الشراء
 model PurchaseReturn {
-  id                  String               @id @default(cuid())
-  returnNumber        String               @unique
-  returnDate          DateTime
-  status              PurchaseReturnStatus
-  
-  supplierId          String
-  supplier            Supplier             @relation(fields: [supplierId], references: [id], onDelete: Restrict)
-  
-  purchaseInvoiceId   String
-  purchaseInvoice     PurchaseInvoice      @relation(fields: [purchaseInvoiceId], references: [id], onDelete: Restrict)
-  
-  totalAmount         Decimal              @default(0) @db.Decimal(15, 2)
-  
-  reason              String?
-  notes               String?
-  
+  id           String               @id @default(cuid())
+  returnNumber String               @unique
+  returnDate   DateTime
+  status       PurchaseReturnStatus
+
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+
+  purchaseInvoiceId String
+  purchaseInvoice   PurchaseInvoice @relation(fields: [purchaseInvoiceId], references: [id], onDelete: Restrict)
+
+  totalAmount Decimal @default(0) @db.Decimal(15, 2)
+
+  reason String?
+  notes  String?
+
   // Multi-Entity Support
-  holdingId           String?
-  unitId              String?
-  
+  holdingId String?
+  unitId    String?
+
   // Accounting Integration
-  journalEntryId      String?
-  journalEntry        JournalEntry?        @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
-  
+  journalEntryId String?
+  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+
   // Relations
-  lines               PurchaseReturnLine[]
-  
+  lines PurchaseReturnLine[]
+
   // Audit Trail
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  createdBy           String?
-  updatedBy           String?
-  
-  @@map("purchase_returns")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([returnNumber])
   @@index([returnDate])
   @@index([status])
@@ -1421,40 +1419,41 @@ model PurchaseReturn {
   @@index([journalEntryId])
   @@index([holdingId])
   @@index([unitId])
+  @@map("purchase_returns")
 }
 
 /// سطور مرتجعات الشراء
 model PurchaseReturnLine {
-  id                String         @id @default(cuid())
-  
-  purchaseReturnId  String
-  purchaseReturn    PurchaseReturn @relation(fields: [purchaseReturnId], references: [id], onDelete: Cascade)
-  
-  lineNumber        Int
-  
-  itemId            String
-  
-  warehouseId       String
-  
-  description       String?
-  quantity          Decimal        @db.Decimal(10, 2)
-  unitPrice         Decimal        @db.Decimal(15, 2)
-  taxRate           Decimal        @default(15) @db.Decimal(5, 2)
-  
+  id String @id @default(cuid())
+
+  purchaseReturnId String
+  purchaseReturn   PurchaseReturn @relation(fields: [purchaseReturnId], references: [id], onDelete: Cascade)
+
+  lineNumber Int
+
+  itemId String
+
+  warehouseId String
+
+  description String?
+  quantity    Decimal @db.Decimal(10, 2)
+  unitPrice   Decimal @db.Decimal(15, 2)
+  taxRate     Decimal @default(15) @db.Decimal(5, 2)
+
   // Computed Fields
-  lineTotal         Decimal        @db.Decimal(15, 2)
-  taxAmount         Decimal        @db.Decimal(15, 2)
-  netAmount         Decimal        @db.Decimal(15, 2)
-  
+  lineTotal Decimal @db.Decimal(15, 2)
+  taxAmount Decimal @db.Decimal(15, 2)
+  netAmount Decimal @db.Decimal(15, 2)
+
   // Audit Trail
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  
-  @@map("purchase_return_lines")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([purchaseReturnId, lineNumber])
   @@index([purchaseReturnId])
   @@index([itemId])
   @@index([warehouseId])
+  @@map("purchase_return_lines")
 }
 
 // ============================================================================
@@ -1472,40 +1471,39 @@ enum SalesOrderStatus {
 
 /// طلبات المبيعات / عروض الأسعار
 model SalesOrder {
-  id                    String           @id @default(cuid())
-  orderNumber           String           @unique
-  orderDate             DateTime
-  expectedDeliveryDate  DateTime?
-  status                SalesOrderStatus
-  
-  customerId            String
-  customer              Customer         @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  
-  subtotal              Decimal          @default(0) @db.Decimal(15, 2)
-  taxAmount             Decimal          @default(0) @db.Decimal(15, 2)
-  discountAmount        Decimal          @default(0) @db.Decimal(15, 2)
-  totalAmount           Decimal          @default(0) @db.Decimal(15, 2)
-  
-  notes                 String?
-  
+  id                   String           @id @default(cuid())
+  orderNumber          String           @unique
+  orderDate            DateTime
+  expectedDeliveryDate DateTime?
+  status               SalesOrderStatus
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  subtotal       Decimal @default(0) @db.Decimal(15, 2)
+  taxAmount      Decimal @default(0) @db.Decimal(15, 2)
+  discountAmount Decimal @default(0) @db.Decimal(15, 2)
+  totalAmount    Decimal @default(0) @db.Decimal(15, 2)
+
+  notes String?
+
   // Multi-Entity Support
-  holdingId             String?
-  unitId                String?
-  projectId             String?
-  
+  holdingId String?
+  unitId    String?
+  projectId String?
+
   // Relations
-  lines                 SalesOrderLine[]
-  invoices              SalesInvoice[]
-  
+  lines    SalesOrderLine[]
+  invoices SalesInvoice[]
+
   // Audit Trail
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
-  createdBy             String?
-  updatedBy             String?
-  approvedAt            DateTime?
-  approvedBy            String?
-  
-  @@map("sales_orders")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  approvedAt DateTime?
+  approvedBy String?
+
   @@index([orderNumber])
   @@index([orderDate])
   @@index([status])
@@ -1513,42 +1511,43 @@ model SalesOrder {
   @@index([holdingId])
   @@index([unitId])
   @@index([projectId])
+  @@map("sales_orders")
 }
 
 /// سطور طلبات المبيعات
 model SalesOrderLine {
-  id              String      @id @default(cuid())
-  
-  salesOrderId    String
-  salesOrder      SalesOrder  @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
-  
-  lineNumber      Int
-  
-  itemId          String
-  item            Item        @relation(fields: [itemId], references: [id], onDelete: Restrict)
-  
-  description     String?
-  quantity        Decimal     @db.Decimal(10, 2)
-  unitPrice       Decimal     @db.Decimal(15, 2)
-  taxRate         Decimal     @default(15) @db.Decimal(5, 2)
-  discountRate    Decimal     @default(0) @db.Decimal(5, 2)
-  
+  id String @id @default(cuid())
+
+  salesOrderId String
+  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+
+  lineNumber Int
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  description  String?
+  quantity     Decimal @db.Decimal(10, 2)
+  unitPrice    Decimal @db.Decimal(15, 2)
+  taxRate      Decimal @default(15) @db.Decimal(5, 2)
+  discountRate Decimal @default(0) @db.Decimal(5, 2)
+
   // Computed Fields
-  lineTotal       Decimal     @db.Decimal(15, 2)
-  taxAmount       Decimal     @db.Decimal(15, 2)
-  discountAmount  Decimal     @db.Decimal(15, 2)
-  netAmount       Decimal     @db.Decimal(15, 2)
-  
-  invoicedQuantity Decimal    @default(0) @db.Decimal(10, 2)
-  
+  lineTotal      Decimal @db.Decimal(15, 2)
+  taxAmount      Decimal @db.Decimal(15, 2)
+  discountAmount Decimal @db.Decimal(15, 2)
+  netAmount      Decimal @db.Decimal(15, 2)
+
+  invoicedQuantity Decimal @default(0) @db.Decimal(10, 2)
+
   // Audit Trail
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  
-  @@map("sales_order_lines")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([salesOrderId, lineNumber])
   @@index([salesOrderId])
   @@index([itemId])
+  @@map("sales_order_lines")
 }
 
 enum SalesInvoiceStatus {
@@ -1561,49 +1560,48 @@ enum SalesInvoiceStatus {
 
 /// فواتير المبيعات
 model SalesInvoice {
-  id                  String             @id @default(cuid())
-  invoiceNumber       String             @unique
-  invoiceDate         DateTime
-  dueDate             DateTime?
-  status              SalesInvoiceStatus
-  
-  customerId          String
-  customer            Customer           @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  
-  salesOrderId        String?
-  salesOrder          SalesOrder?        @relation(fields: [salesOrderId], references: [id], onDelete: SetNull)
-  
-  subtotal            Decimal            @default(0) @db.Decimal(15, 2)
-  taxAmount           Decimal            @default(0) @db.Decimal(15, 2)
-  discountAmount      Decimal            @default(0) @db.Decimal(15, 2)
-  totalAmount         Decimal            @default(0) @db.Decimal(15, 2)
-  paidAmount          Decimal            @default(0) @db.Decimal(15, 2)
-  remainingAmount     Decimal            @default(0) @db.Decimal(15, 2)
-  
-  notes               String?
-  
+  id            String             @id @default(cuid())
+  invoiceNumber String             @unique
+  invoiceDate   DateTime
+  dueDate       DateTime?
+  status        SalesInvoiceStatus
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  salesOrderId String?
+  salesOrder   SalesOrder? @relation(fields: [salesOrderId], references: [id], onDelete: SetNull)
+
+  subtotal        Decimal @default(0) @db.Decimal(15, 2)
+  taxAmount       Decimal @default(0) @db.Decimal(15, 2)
+  discountAmount  Decimal @default(0) @db.Decimal(15, 2)
+  totalAmount     Decimal @default(0) @db.Decimal(15, 2)
+  paidAmount      Decimal @default(0) @db.Decimal(15, 2)
+  remainingAmount Decimal @default(0) @db.Decimal(15, 2)
+
+  notes String?
+
   // Multi-Entity Support
-  holdingId           String?
-  unitId              String?
-  projectId           String?
-  
+  holdingId String?
+  unitId    String?
+  projectId String?
+
   // Accounting Integration
-  journalEntryId      String?
-  journalEntry        JournalEntry?      @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
-  
+  journalEntryId String?
+  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+
   // Relations
-  lines               SalesInvoiceLine[]
-  returns             SalesReturn[]
-  
+  lines   SalesInvoiceLine[]
+  returns SalesReturn[]
+
   // Audit Trail
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  createdBy           String?
-  updatedBy           String?
-  postedAt            DateTime?
-  postedBy            String?
-  
-  @@map("sales_invoices")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  postedAt  DateTime?
+  postedBy  String?
+
   @@index([invoiceNumber])
   @@index([invoiceDate])
   @@index([status])
@@ -1613,44 +1611,45 @@ model SalesInvoice {
   @@index([holdingId])
   @@index([unitId])
   @@index([projectId])
+  @@map("sales_invoices")
 }
 
 /// سطور فواتير المبيعات
 model SalesInvoiceLine {
-  id                String        @id @default(cuid())
-  
-  salesInvoiceId    String
-  salesInvoice      SalesInvoice  @relation(fields: [salesInvoiceId], references: [id], onDelete: Cascade)
-  
-  lineNumber        Int
-  
-  itemId            String
-  item              Item          @relation(fields: [itemId], references: [id], onDelete: Restrict)
-  
-  warehouseId       String
-  warehouse         Warehouse     @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
-  
-  description       String?
-  quantity          Decimal       @db.Decimal(10, 2)
-  unitPrice         Decimal       @db.Decimal(15, 2)
-  taxRate           Decimal       @default(15) @db.Decimal(5, 2)
-  discountRate      Decimal       @default(0) @db.Decimal(5, 2)
-  
+  id String @id @default(cuid())
+
+  salesInvoiceId String
+  salesInvoice   SalesInvoice @relation(fields: [salesInvoiceId], references: [id], onDelete: Cascade)
+
+  lineNumber Int
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Restrict)
+
+  description  String?
+  quantity     Decimal @db.Decimal(10, 2)
+  unitPrice    Decimal @db.Decimal(15, 2)
+  taxRate      Decimal @default(15) @db.Decimal(5, 2)
+  discountRate Decimal @default(0) @db.Decimal(5, 2)
+
   // Computed Fields
-  lineTotal         Decimal       @db.Decimal(15, 2)
-  taxAmount         Decimal       @db.Decimal(15, 2)
-  discountAmount    Decimal       @db.Decimal(15, 2)
-  netAmount         Decimal       @db.Decimal(15, 2)
-  
+  lineTotal      Decimal @db.Decimal(15, 2)
+  taxAmount      Decimal @db.Decimal(15, 2)
+  discountAmount Decimal @db.Decimal(15, 2)
+  netAmount      Decimal @db.Decimal(15, 2)
+
   // Audit Trail
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  
-  @@map("sales_invoice_lines")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([salesInvoiceId, lineNumber])
   @@index([salesInvoiceId])
   @@index([itemId])
   @@index([warehouseId])
+  @@map("sales_invoice_lines")
 }
 
 enum SalesReturnStatus {
@@ -1661,40 +1660,39 @@ enum SalesReturnStatus {
 
 /// مرتجعات المبيعات
 model SalesReturn {
-  id                String            @id @default(cuid())
-  returnNumber      String            @unique
-  returnDate        DateTime
-  status            SalesReturnStatus
-  
-  customerId        String
-  customer          Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  
-  salesInvoiceId    String
-  salesInvoice      SalesInvoice      @relation(fields: [salesInvoiceId], references: [id], onDelete: Restrict)
-  
-  totalAmount       Decimal           @default(0) @db.Decimal(15, 2)
-  
-  reason            String?
-  notes             String?
-  
+  id           String            @id @default(cuid())
+  returnNumber String            @unique
+  returnDate   DateTime
+  status       SalesReturnStatus
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  salesInvoiceId String
+  salesInvoice   SalesInvoice @relation(fields: [salesInvoiceId], references: [id], onDelete: Restrict)
+
+  totalAmount Decimal @default(0) @db.Decimal(15, 2)
+
+  reason String?
+  notes  String?
+
   // Multi-Entity Support
-  holdingId         String?
-  unitId            String?
-  
+  holdingId String?
+  unitId    String?
+
   // Accounting Integration
-  journalEntryId    String?
-  journalEntry      JournalEntry?     @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
-  
+  journalEntryId String?
+  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+
   // Relations
-  lines             SalesReturnLine[]
-  
+  lines SalesReturnLine[]
+
   // Audit Trail
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  createdBy         String?
-  updatedBy         String?
-  
-  @@map("sales_returns")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
   @@index([returnNumber])
   @@index([returnDate])
   @@index([status])
@@ -1703,42 +1701,42 @@ model SalesReturn {
   @@index([journalEntryId])
   @@index([holdingId])
   @@index([unitId])
+  @@map("sales_returns")
 }
 
 /// سطور مرتجعات المبيعات
 model SalesReturnLine {
-  id              String      @id @default(cuid())
-  
-  salesReturnId   String
-  salesReturn     SalesReturn @relation(fields: [salesReturnId], references: [id], onDelete: Cascade)
-  
-  lineNumber      Int
-  
-  itemId          String
-  
-  warehouseId     String
-  
-  description     String?
-  quantity        Decimal     @db.Decimal(10, 2)
-  unitPrice       Decimal     @db.Decimal(15, 2)
-  taxRate         Decimal     @default(15) @db.Decimal(5, 2)
-  
+  id String @id @default(cuid())
+
+  salesReturnId String
+  salesReturn   SalesReturn @relation(fields: [salesReturnId], references: [id], onDelete: Cascade)
+
+  lineNumber Int
+
+  itemId String
+
+  warehouseId String
+
+  description String?
+  quantity    Decimal @db.Decimal(10, 2)
+  unitPrice   Decimal @db.Decimal(15, 2)
+  taxRate     Decimal @default(15) @db.Decimal(5, 2)
+
   // Computed Fields
-  lineTotal       Decimal     @db.Decimal(15, 2)
-  taxAmount       Decimal     @db.Decimal(15, 2)
-  netAmount       Decimal     @db.Decimal(15, 2)
-  
+  lineTotal Decimal @db.Decimal(15, 2)
+  taxAmount Decimal @db.Decimal(15, 2)
+  netAmount Decimal @db.Decimal(15, 2)
+
   // Audit Trail
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  
-  @@map("sales_return_lines")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([salesReturnId, lineNumber])
   @@index([salesReturnId])
   @@index([itemId])
   @@index([warehouseId])
+  @@map("sales_return_lines")
 }
-
 
 // ============================================================================
 // SMART DOCUMENTATION NOTEBOOK (دفتر التوثيق الذكي)
@@ -1746,49 +1744,48 @@ model SalesReturnLine {
 
 /// صفحات التوثيق - النظام الأساسي لجميع أنواع المحتوى
 model DocumentationPage {
-  id          String   @id @default(cuid())
-  slug        String   @unique /// معرف فريد للصفحة (URL-friendly)
-  title       String   /// عنوان الصفحة
-  content     String   @db.Text /// المحتوى (Markdown)
-  summary     String?  /// ملخص قصير
-  
+  id      String  @id @default(cuid())
+  slug    String  @unique /// معرف فريد للصفحة (URL-friendly)
+  title   String /// عنوان الصفحة
+  content String  @db.Text /// المحتوى (Markdown)
+  summary String? /// ملخص قصير
+
   // التنظيم الهرمي
-  parentId    String?
-  parent      DocumentationPage?  @relation("PageHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children    DocumentationPage[] @relation("PageHierarchy")
-  order       Int      @default(0) /// ترتيب الصفحة ضمن المستوى
-  
+  parentId String?
+  parent   DocumentationPage?  @relation("PageHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children DocumentationPage[] @relation("PageHierarchy")
+  order    Int                 @default(0) /// ترتيب الصفحة ضمن المستوى
+
   // التصنيف
-  type        PageType /// نوع الصفحة
-  category    String   /// التصنيف الرئيسي
-  tags        String[] /// وسوم للبحث والتصنيف
-  
+  type     PageType /// نوع الصفحة
+  category String /// التصنيف الرئيسي
+  tags     String[] /// وسوم للبحث والتصنيف
+
   // الحالة والنشر
   status      PageStatus @default(DRAFT) /// حالة الصفحة
-  isPublished Boolean  @default(false) /// هل منشورة؟
-  isFavorite  Boolean  @default(false) /// مميزة بنجمة؟
-  version     String   @default("1.0.0") /// رقم الإصدار
-  
+  isPublished Boolean    @default(false) /// هل منشورة؟
+  isFavorite  Boolean    @default(false) /// مميزة بنجمة؟
+  version     String     @default("1.0.0") /// رقم الإصدار
+
   // الإحصائيات
-  viewCount   Int      @default(0) /// عدد المشاهدات
-  
+  viewCount Int @default(0) /// عدد المشاهدات
+
   // العلاقات
-  tasks       Task[]
-  ideas       Idea[]
-  chatLogs    ChatLog[]
-  reports     Report[]
-  links       PageLink[] @relation("FromPage")
-  linkedFrom  PageLink[] @relation("ToPage")
-  history     PageHistory[]
-  comments    PageComment[]
-  
+  tasks      Task[]
+  ideas      Idea[]
+  chatLogs   ChatLog[]
+  reports    Report[]
+  links      PageLink[]    @relation("FromPage")
+  linkedFrom PageLink[]    @relation("ToPage")
+  history    PageHistory[]
+  comments   PageComment[]
+
   // التدقيق (Audit Trail)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String
-  updatedBy   String?
-  
-  @@map("documentation_pages")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String?
+
   @@index([slug])
   @@index([type])
   @@index([category])
@@ -1797,26 +1794,27 @@ model DocumentationPage {
   @@index([isFavorite])
   @@index([parentId])
   @@index([createdAt])
+  @@map("documentation_pages")
 }
 
 /// أنواع الصفحات
 enum PageType {
-  GUIDE          /// دليل
-  DOCUMENTATION  /// توثيق تقني
-  TASK           /// مهمة
-  REPORT         /// تقرير
-  IDEA           /// فكرة
-  CHAT           /// محادثة
-  NOTE           /// ملاحظة
-  REFERENCE      /// مرجع
+  GUIDE /// دليل
+  DOCUMENTATION /// توثيق تقني
+  TASK /// مهمة
+  REPORT /// تقرير
+  IDEA /// فكرة
+  CHAT /// محادثة
+  NOTE /// ملاحظة
+  REFERENCE /// مرجع
 }
 
 /// حالات الصفحة
 enum PageStatus {
-  DRAFT          /// مسودة
-  REVIEW         /// قيد المراجعة
-  PUBLISHED      /// منشورة
-  ARCHIVED       /// مؤرشفة
+  DRAFT /// مسودة
+  REVIEW /// قيد المراجعة
+  PUBLISHED /// منشورة
+  ARCHIVED /// مؤرشفة
 }
 
 // ============================================================================
@@ -1825,47 +1823,46 @@ enum PageStatus {
 
 /// الأفكار - بنك الأفكار في نظام الدفتر الذكي
 model Idea {
-  id              String          @id @default(cuid())
-  title           String          /// عنوان الفكرة
-  description     String          @db.Text /// وصف تفصيلي
-  category        IdeaCategory    /// الفئة
-  priority        Priority        @default(MEDIUM) /// الأولوية
-  rating          Int             @default(0) /// التقييم (1-5)
-  status          IdeaStatus      @default(NEW) /// الحالة
-  
+  id          String       @id @default(cuid())
+  title       String /// عنوان الفكرة
+  description String       @db.Text /// وصف تفصيلي
+  category    IdeaCategory /// الفئة
+  priority    Priority     @default(MEDIUM) /// الأولوية
+  rating      Int          @default(0) /// التقييم (1-5)
+  status      IdeaStatus   @default(NEW) /// الحالة
+
   // البيانات الإضافية
-  estimatedEffort String?         /// الجهد المتوقع
-  expectedValue   String?         /// القيمة المتوقعة
-  notes           String?         @db.Text /// ملاحظات إضافية
-  tags            String[]        /// وسوم
-  relatedSystem   String?         /// النظام المرتبط (maps, accounting, etc.)
-  
+  estimatedEffort String? /// الجهد المتوقع
+  expectedValue   String? /// القيمة المتوقعة
+  notes           String?  @db.Text /// ملاحظات إضافية
+  tags            String[] /// وسوم
+  relatedSystem   String? /// النظام المرتبط (maps, accounting, etc.)
+
   // العلاقات
-  conversationId  String?         /// المحادثة المصدر
-  conversation    Conversation?   @relation(fields: [conversationId], references: [id], onDelete: SetNull)
-  
-  tasks           Task[]          /// المهام المحولة من هذه الفكرة
-  
+  conversationId String? /// المحادثة المصدر
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  tasks Task[] /// المهام المحولة من هذه الفكرة
+
   // الأفكار المرتبطة (Many-to-Many Self-Relation)
-  relatedIdeas    IdeaRelation[]  @relation("IdeaFrom")
-  relatedBy       IdeaRelation[]  @relation("IdeaTo")
-  
+  relatedIdeas IdeaRelation[] @relation("IdeaFrom")
+  relatedBy    IdeaRelation[] @relation("IdeaTo")
+
   // الربط بصفحة التوثيق
-  pageId          String?
-  page            DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
-  
+  pageId String?
+  page   DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
+
   // التواريخ
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  reviewedAt      DateTime?       /// تاريخ المراجعة
-  convertedAt     DateTime?       /// تاريخ التحويل لمهمة
-  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  reviewedAt  DateTime? /// تاريخ المراجعة
+  convertedAt DateTime? /// تاريخ التحويل لمهمة
+
   // التدقيق
-  createdBy       String
-  updatedBy       String?
-  reviewedBy      String?         /// من راجع الفكرة
-  
-  @@map("ideas")
+  createdBy  String
+  updatedBy  String?
+  reviewedBy String? /// من راجع الفكرة
+
   @@index([status])
   @@index([category])
   @@index([priority])
@@ -1873,31 +1870,32 @@ model Idea {
   @@index([conversationId])
   @@index([relatedSystem])
   @@index([createdAt])
+  @@map("ideas")
 }
 
 /// حالات الفكرة
 enum IdeaStatus {
-  NEW               /// جديدة
-  UNDER_REVIEW      /// قيد المراجعة
-  APPROVED          /// معتمدة
-  CONVERTED         /// محولة لمهمة
-  REJECTED          /// مرفوضة
-  ON_HOLD           /// معلقة
+  NEW /// جديدة
+  UNDER_REVIEW /// قيد المراجعة
+  APPROVED /// معتمدة
+  CONVERTED /// محولة لمهمة
+  REJECTED /// مرفوضة
+  ON_HOLD /// معلقة
 }
 
 /// تصنيفات الأفكار
 enum IdeaCategory {
-  INFRASTRUCTURE    /// بنية تحتية
-  FEATURE           /// ميزة جديدة
-  IMPROVEMENT       /// تحسين
-  BUG_FIX           /// إصلاح
-  DOCUMENTATION     /// توثيق
-  OPTIMIZATION      /// تحسين أداء
-  SECURITY          /// أمان
-  UI_UX             /// واجهة المستخدم
-  DATABASE          /// قاعدة بيانات
-  API               /// واجهة برمجية
-  OTHER             /// أخرى
+  INFRASTRUCTURE /// بنية تحتية
+  FEATURE /// ميزة جديدة
+  IMPROVEMENT /// تحسين
+  BUG_FIX /// إصلاح
+  DOCUMENTATION /// توثيق
+  OPTIMIZATION /// تحسين أداء
+  SECURITY /// أمان
+  UI_UX /// واجهة المستخدم
+  DATABASE /// قاعدة بيانات
+  API /// واجهة برمجية
+  OTHER /// أخرى
 }
 
 // ============================================================================
@@ -1906,50 +1904,50 @@ enum IdeaCategory {
 
 /// سجل المحادثات مع Manus
 model ChatLog {
-  id          String   @id @default(cuid())
-  title       String   /// عنوان المحادثة
-  summary     String?  /// ملخص المحادثة
-  content     String   @db.Text /// المحادثة الكاملة (JSON أو Text)
-  
+  id      String  @id @default(cuid())
+  title   String /// عنوان المحادثة
+  summary String? /// ملخص المحادثة
+  content String  @db.Text /// المحادثة الكاملة (JSON أو Text)
+
   // الإحصائيات
-  messageCount Int     @default(0) /// عدد الرسائل
-  
+  messageCount Int @default(0) /// عدد الرسائل
+
   // التصنيف
-  topic       ChatTopic /// موضوع المحادثة
-  tags        String[]  /// وسوم
-  isFavorite  Boolean   @default(false) /// مميزة بنجمة؟
-  
+  topic      ChatTopic /// موضوع المحادثة
+  tags       String[] /// وسوم
+  isFavorite Boolean   @default(false) /// مميزة بنجمة؟
+
   // الربط
-  pageId      String?
-  page        DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
-  
+  pageId String?
+  page   DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
+
   // المهام المرتبطة
   relatedTasks Task[]
-  
+
   // الملاحظات
-  notes       String?  @db.Text /// ملاحظات على المحادثة
-  
+  notes String? @db.Text /// ملاحظات على المحادثة
+
   // التدقيق (Audit Trail)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String
-  
-  @@map("chat_logs")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+
   @@index([topic])
   @@index([isFavorite])
   @@index([createdAt])
+  @@map("chat_logs")
 }
 
 /// مواضيع المحادثات
 enum ChatTopic {
-  DEVELOPMENT    /// تطوير
-  BUG_FIX        /// إصلاح أخطاء
-  PLANNING       /// تخطيط
-  DISCUSSION     /// نقاش
-  SUPPORT        /// دعم
-  RESEARCH       /// بحث
-  REVIEW         /// مراجعة
-  OTHER          /// أخرى
+  DEVELOPMENT /// تطوير
+  BUG_FIX /// إصلاح أخطاء
+  PLANNING /// تخطيط
+  DISCUSSION /// نقاش
+  SUPPORT /// دعم
+  RESEARCH /// بحث
+  REVIEW /// مراجعة
+  OTHER /// أخرى
 }
 
 // ============================================================================
@@ -1958,78 +1956,78 @@ enum ChatTopic {
 
 /// التقارير - مكتبة لحفظ وتنظيم التقارير
 model Report {
-  id          String   @id @default(cuid())
-  title       String   /// عنوان التقرير
-  content     String   @db.Text /// محتوى التقرير (Markdown)
-  summary     String?  /// ملخص التقرير
-  
+  id      String  @id @default(cuid())
+  title   String /// عنوان التقرير
+  content String  @db.Text /// محتوى التقرير (Markdown)
+  summary String? /// ملخص التقرير
+
   // التصنيف
-  type        ReportType /// نوع التقرير
-  category    String     /// التصنيف
-  tags        String[]   /// وسوم
-  status      ReportStatus @default(DRAFT) /// حالة التقرير
-  format      ReportFormat @default(MARKDOWN) /// صيغة التقرير
-  
+  type     ReportType /// نوع التقرير
+  category String /// التصنيف
+  tags     String[] /// وسوم
+  status   ReportStatus @default(DRAFT) /// حالة التقرير
+  format   ReportFormat @default(MARKDOWN) /// صيغة التقرير
+
   // المصدر
-  sourceRepo  String?    /// المستودع المصدر
-  sourceFile  String?    /// اسم الملف الأصلي
-  sourcePath  String?    /// المسار الكامل
-  importedAt  DateTime?  /// تاريخ الاستيراد
-  
+  sourceRepo String? /// المستودع المصدر
+  sourceFile String? /// اسم الملف الأصلي
+  sourcePath String? /// المسار الكامل
+  importedAt DateTime? /// تاريخ الاستيراد
+
   // البيانات الوصفية
-  fileSize    Int?       /// حجم الملف (بايت)
-  version     String?    /// رقم الإصدار
-  
+  fileSize Int? /// حجم الملف (بايت)
+  version  String? /// رقم الإصدار
+
   // الربط
-  pageId      String?
-  page        DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
-  
+  pageId String?
+  page   DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
+
   // التدقيق (Audit Trail)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String
-  updatedBy   String?
-  
-  @@map("reports")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String?
+
   @@index([type])
   @@index([category])
   @@index([sourceRepo])
   @@index([importedAt])
   @@index([createdAt])
+  @@map("reports")
 }
 
 /// أنواع التقارير
 enum ReportType {
-  ACHIEVEMENT    /// إنجاز
-  PHASE          /// مرحلة
-  UPDATE         /// تحديث
-  ANALYSIS       /// تحليل
-  SUMMARY        /// ملخص
-  TECHNICAL      /// تقني
-  BUSINESS       /// عمل
-  DOCUMENTATION  /// توثيق
-  USER_GUIDE     /// دليل المستخدم
+  ACHIEVEMENT /// إنجاز
+  PHASE /// مرحلة
+  UPDATE /// تحديث
+  ANALYSIS /// تحليل
+  SUMMARY /// ملخص
+  TECHNICAL /// تقني
+  BUSINESS /// عمل
+  DOCUMENTATION /// توثيق
+  USER_GUIDE /// دليل المستخدم
   DEVELOPER_GUIDE /// دليل المطور
-  ARCHITECTURE   /// بنية معمارية
-  SYSTEM_GUIDE   /// دليل نظام
-  COMPREHENSIVE  /// شامل
-  OTHER          /// أخرى
+  ARCHITECTURE /// بنية معمارية
+  SYSTEM_GUIDE /// دليل نظام
+  COMPREHENSIVE /// شامل
+  OTHER /// أخرى
 }
 
 /// حالة التقرير
 enum ReportStatus {
-  DRAFT      /// مسودة
-  PUBLISHED  /// منشور
-  ARCHIVED   /// مؤرشف
+  DRAFT /// مسودة
+  PUBLISHED /// منشور
+  ARCHIVED /// مؤرشف
 }
 
 /// صيغة التقرير
 enum ReportFormat {
-  MARKDOWN   /// Markdown
-  PDF        /// PDF
-  HTML       /// HTML
-  JSON       /// JSON
-  TEXT       /// نص عادي
+  MARKDOWN /// Markdown
+  PDF /// PDF
+  HTML /// HTML
+  JSON /// JSON
+  TEXT /// نص عادي
 }
 
 // ============================================================================
@@ -2038,59 +2036,58 @@ enum ReportFormat {
 
 /// المهام - نظام إدارة المهام في الدفتر الذكي
 model Task {
-  id                String          @id @default(cuid())
-  title             String          /// عنوان المهمة
-  description       String          @db.Text /// وصف تفصيلي
-  status            TaskStatus      @default(NEW) /// الحالة
-  priority          Priority        @default(MEDIUM) /// الأولوية
-  progress          Int             @default(0) /// نسبة الإنجاز (0-100)
-  
+  id          String     @id @default(cuid())
+  title       String /// عنوان المهمة
+  description String     @db.Text /// وصف تفصيلي
+  status      TaskStatus @default(NEW) /// الحالة
+  priority    Priority   @default(MEDIUM) /// الأولوية
+  progress    Int        @default(0) /// نسبة الإنجاز (0-100)
+
   // المسؤولية
-  assignee          String?         /// المسؤول
-  assigneeEmail     String?         /// بريد المسؤول
-  team              String?         /// الفريق المسؤول
-  
+  assignee      String? /// المسؤول
+  assigneeEmail String? /// بريد المسؤول
+  team          String? /// الفريق المسؤول
+
   // التقدير
-  estimatedHours    Int?            /// الساعات المتوقعة
-  actualHours       Int?            /// الساعات الفعلية
-  
+  estimatedHours Int? /// الساعات المتوقعة
+  actualHours    Int? /// الساعات الفعلية
+
   // العلاقات
-  ideaId            String?         /// الفكرة المصدر
-  idea              Idea?           @relation(fields: [ideaId], references: [id], onDelete: SetNull)
-  
+  ideaId String? /// الفكرة المصدر
+  idea   Idea?   @relation(fields: [ideaId], references: [id], onDelete: SetNull)
+
   achievementReports TaskAchievement[] /// تقارير الإنجاز المرتبطة
-  
+
   // الربط بالصفحة
-  pageId            String?
-  page              DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
-  
+  pageId String?
+  page   DocumentationPage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
+
   // الربط بالمحادثات
-  chatLogId         String?
-  chatLog           ChatLog?   @relation(fields: [chatLogId], references: [id], onDelete: SetNull)
-  
+  chatLogId String?
+  chatLog   ChatLog? @relation(fields: [chatLogId], references: [id], onDelete: SetNull)
+
   // المهام الفرعية
-  parentTaskId      String?
-  parentTask        Task?     @relation("TaskHierarchy", fields: [parentTaskId], references: [id], onDelete: Cascade)
-  subTasks          Task[]    @relation("TaskHierarchy")
-  
+  parentTaskId String?
+  parentTask   Task?   @relation("TaskHierarchy", fields: [parentTaskId], references: [id], onDelete: Cascade)
+  subTasks     Task[]  @relation("TaskHierarchy")
+
   // التواريخ
-  startDate         DateTime?       /// تاريخ البدء
-  dueDate           DateTime?       /// الموعد النهائي
-  completedDate     DateTime?       /// تاريخ الإنجاز الفعلي
-  
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  
+  startDate     DateTime? /// تاريخ البدء
+  dueDate       DateTime? /// الموعد النهائي
+  completedDate DateTime? /// تاريخ الإنجاز الفعلي
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // ملاحظات
-  notes             String?         @db.Text /// ملاحظات التنفيذ
-  blockers          String?         @db.Text /// المعوقات
-  tags              String[]        /// وسوم
-  
+  notes    String?  @db.Text /// ملاحظات التنفيذ
+  blockers String?  @db.Text /// المعوقات
+  tags     String[] /// وسوم
+
   // التدقيق
-  createdBy         String
-  updatedBy         String?
-  
-  @@map("tasks")
+  createdBy String
+  updatedBy String?
+
   @@index([status])
   @@index([priority])
   @@index([assignee])
@@ -2100,34 +2097,35 @@ model Task {
   @@index([chatLogId])
   @@index([parentTaskId])
   @@index([createdAt])
+  @@map("tasks")
 }
 
 /// حالات المهمة
 enum TaskStatus {
-  NEW               /// جديدة
-  IN_PROGRESS       /// قيد التنفيذ
-  COMPLETED         /// مكتملة
-  ON_HOLD           /// معلقة
-  CANCELLED         /// ملغاة
-  BLOCKED           /// محظورة
-  REVIEW            /// قيد المراجعة
+  NEW /// جديدة
+  IN_PROGRESS /// قيد التنفيذ
+  COMPLETED /// مكتملة
+  ON_HOLD /// معلقة
+  CANCELLED /// ملغاة
+  BLOCKED /// محظورة
+  REVIEW /// قيد المراجعة
 }
 
 /// مصادر المهام
 enum TaskSource {
-  MANUAL         /// يدوية
-  IDEA           /// من فكرة
-  CHAT           /// من محادثة
-  REPORT         /// من تقرير
-  PAGE           /// من صفحة
+  MANUAL /// يدوية
+  IDEA /// من فكرة
+  CHAT /// من محادثة
+  REPORT /// من تقرير
+  PAGE /// من صفحة
 }
 
 /// الأولويات
 enum Priority {
-  LOW            /// منخفضة
-  MEDIUM         /// متوسطة
-  HIGH           /// عالية
-  URGENT         /// عاجلة
+  LOW /// منخفضة
+  MEDIUM /// متوسطة
+  HIGH /// عالية
+  URGENT /// عاجلة
 }
 
 // ============================================================================
@@ -2136,69 +2134,68 @@ enum Priority {
 
 /// روابط بين الصفحات
 model PageLink {
-  id          String   @id @default(cuid())
-  
-  fromPageId  String
-  fromPage    DocumentationPage @relation("FromPage", fields: [fromPageId], references: [id], onDelete: Cascade)
-  
-  toPageId    String
-  toPage      DocumentationPage @relation("ToPage", fields: [toPageId], references: [id], onDelete: Cascade)
-  
-  linkType    String?  /// نوع الرابط (related, reference, etc.)
-  
-  createdAt   DateTime @default(now())
-  createdBy   String
-  
-  @@map("page_links")
+  id String @id @default(cuid())
+
+  fromPageId String
+  fromPage   DocumentationPage @relation("FromPage", fields: [fromPageId], references: [id], onDelete: Cascade)
+
+  toPageId String
+  toPage   DocumentationPage @relation("ToPage", fields: [toPageId], references: [id], onDelete: Cascade)
+
+  linkType String? /// نوع الرابط (related, reference, etc.)
+
+  createdAt DateTime @default(now())
+  createdBy String
+
   @@unique([fromPageId, toPageId])
   @@index([fromPageId])
   @@index([toPageId])
+  @@map("page_links")
 }
 
 /// تاريخ التعديلات على الصفحات
 model PageHistory {
-  id          String   @id @default(cuid())
-  
-  pageId      String
-  page        DocumentationPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  
-  content     String   @db.Text /// المحتوى في هذا الإصدار
-  version     String   /// رقم الإصدار
-  changeNote  String?  /// ملاحظة التغيير
-  
-  createdAt   DateTime @default(now())
-  createdBy   String
-  
-  @@map("page_history")
+  id String @id @default(cuid())
+
+  pageId String
+  page   DocumentationPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  content    String  @db.Text /// المحتوى في هذا الإصدار
+  version    String /// رقم الإصدار
+  changeNote String? /// ملاحظة التغيير
+
+  createdAt DateTime @default(now())
+  createdBy String
+
   @@index([pageId])
   @@index([createdAt])
+  @@map("page_history")
 }
 
 /// تعليقات على الصفحات
 model PageComment {
-  id          String   @id @default(cuid())
-  
-  pageId      String
-  page        DocumentationPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  
-  content     String   @db.Text /// محتوى التعليق
-  
+  id String @id @default(cuid())
+
+  pageId String
+  page   DocumentationPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  content String @db.Text /// محتوى التعليق
+
   // التعليقات المتداخلة
-  parentId    String?
-  parent      PageComment?  @relation("CommentHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  replies     PageComment[] @relation("CommentHierarchy")
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String
-  updatedBy   String?
-  
-  @@map("page_comments")
+  parentId String?
+  parent   PageComment?  @relation("CommentHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  PageComment[] @relation("CommentHierarchy")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String?
+
   @@index([pageId])
   @@index([parentId])
   @@index([createdAt])
+  @@map("page_comments")
 }
-
 
 // ============================================================================
 // CONVERSATIONS (المحادثات)
@@ -2206,83 +2203,83 @@ model PageComment {
 
 /// المحادثات - نقطة البداية لدورة حياة المعرفة
 model Conversation {
-  id                  String              @id @default(cuid())
-  title               String              /// عنوان المحادثة
-  content             String              @db.Text /// المحتوى الكامل
-  summary             String?             @db.Text /// ملخص المحادثة
-  source              String?             /// المصدر (ملف، محادثة، إلخ)
-  sourceFile          String?             /// اسم الملف المصدر
-  sourcePath          String?             /// المسار الكامل للملف
-  sourceRepo          String?             /// المستودع المصدر
+  id                  String               @id @default(cuid())
+  title               String /// عنوان المحادثة
+  content             String               @db.Text /// المحتوى الكامل
+  summary             String?              @db.Text /// ملخص المحادثة
+  source              String? /// المصدر (ملف، محادثة، إلخ)
+  sourceFile          String? /// اسم الملف المصدر
+  sourcePath          String? /// المسار الكامل للملف
+  sourceRepo          String? /// المستودع المصدر
   category            ConversationCategory /// الفئة
-  status              ConversationStatus  /// الحالة
-  extractedIdeasCount Int                 @default(0) /// عدد الأفكار المستخلصة
-  
+  status              ConversationStatus /// الحالة
+  extractedIdeasCount Int                  @default(0) /// عدد الأفكار المستخلصة
+
   // البيانات الوصفية
-  fileSize            Int?                /// حجم الملف (بايت)
-  linesCount          Int?                /// عدد الأسطر
-  wordsCount          Int?                /// عدد الكلمات
-  
+  fileSize   Int? /// حجم الملف (بايت)
+  linesCount Int? /// عدد الأسطر
+  wordsCount Int? /// عدد الكلمات
+
   // العلاقات
-  ideas               Idea[]              /// الأفكار المستخلصة
-  
+  ideas Idea[] /// الأفكار المستخلصة
+
   // التواريخ
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  archivedAt          DateTime?           /// تاريخ الأرشفة
-  completedAt         DateTime?           /// تاريخ الاكتمال
-  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  archivedAt  DateTime? /// تاريخ الأرشفة
+  completedAt DateTime? /// تاريخ الاكتمال
+
   // التدقيق
-  createdBy           String
-  updatedBy           String?
-  
-  @@map("conversations")
+  createdBy String
+  updatedBy String?
+
   @@index([status])
   @@index([category])
   @@index([createdAt])
   @@index([sourceRepo])
+  @@map("conversations")
 }
 
 /// أنواع المحادثات
 enum ConversationCategory {
-  ARCHITECTURE      /// بنية معمارية
-  FEATURE           /// ميزة جديدة
-  IMPROVEMENT       /// تحسين
-  BUG_FIX           /// إصلاح خطأ
-  DOCUMENTATION     /// توثيق
-  PLANNING          /// تخطيط
-  GUIDE             /// دليل
-  REPORT            /// تقرير
-  OTHER             /// أخرى
+  ARCHITECTURE /// بنية معمارية
+  FEATURE /// ميزة جديدة
+  IMPROVEMENT /// تحسين
+  BUG_FIX /// إصلاح خطأ
+  DOCUMENTATION /// توثيق
+  PLANNING /// تخطيط
+  GUIDE /// دليل
+  REPORT /// تقرير
+  OTHER /// أخرى
 }
 
 /// حالات المحادثة
 enum ConversationStatus {
-  ACTIVE            /// نشط
-  EXTRACTING        /// قيد الاستخلاص
-  COMPLETED         /// مكتمل
-  ARCHIVED          /// أرشيف
+  ACTIVE /// نشط
+  EXTRACTING /// قيد الاستخلاص
+  COMPLETED /// مكتمل
+  ARCHIVED /// أرشيف
 }
 
 /// ربط الأفكار ببعضها (Many-to-Many)
 model IdeaRelation {
-  id          String   @id @default(cuid())
-  
-  fromIdeaId  String
-  fromIdea    Idea     @relation("IdeaFrom", fields: [fromIdeaId], references: [id], onDelete: Cascade)
-  
-  toIdeaId    String
-  toIdea      Idea     @relation("IdeaTo", fields: [toIdeaId], references: [id], onDelete: Cascade)
-  
+  id String @id @default(cuid())
+
+  fromIdeaId String
+  fromIdea   Idea   @relation("IdeaFrom", fields: [fromIdeaId], references: [id], onDelete: Cascade)
+
+  toIdeaId String
+  toIdea   Idea   @relation("IdeaTo", fields: [toIdeaId], references: [id], onDelete: Cascade)
+
   relationType String? /// نوع العلاقة (related, depends_on, blocks, etc.)
-  
-  createdAt   DateTime @default(now())
-  createdBy   String
-  
-  @@map("idea_relations")
+
+  createdAt DateTime @default(now())
+  createdBy String
+
   @@unique([fromIdeaId, toIdeaId])
   @@index([fromIdeaId])
   @@index([toIdeaId])
+  @@map("idea_relations")
 }
 
 // ============================================================================
@@ -2291,80 +2288,80 @@ model IdeaRelation {
 
 /// تقارير الإنجاز - المرحلة الرابعة من دورة حياة المعرفة
 model AchievementReport {
-  id                     String            @id @default(cuid())
-  title                  String            /// عنوان التقرير
-  type                   AchievementReportType /// نوع التقرير
-  period                 String            /// الفترة (يومي، أسبوعي، شهري)
-  
+  id     String                @id @default(cuid())
+  title  String /// عنوان التقرير
+  type   AchievementReportType /// نوع التقرير
+  period String /// الفترة (يومي، أسبوعي، شهري)
+
   // الإحصائيات
-  totalTasks             Int               @default(0) /// إجمالي المهام
-  completedTasks         Int               @default(0) /// المهام المنجزة
-  progressPercentage     Float             @default(0) /// نسبة الإنجاز
-  
-  totalIdeas             Int               @default(0) /// إجمالي الأفكار
-  convertedIdeas         Int               @default(0) /// الأفكار المحولة
-  
-  totalConversations     Int               @default(0) /// إجمالي المحادثات
-  processedConversations Int               @default(0) /// المحادثات المعالجة
-  
+  totalTasks         Int   @default(0) /// إجمالي المهام
+  completedTasks     Int   @default(0) /// المهام المنجزة
+  progressPercentage Float @default(0) /// نسبة الإنجاز
+
+  totalIdeas     Int @default(0) /// إجمالي الأفكار
+  convertedIdeas Int @default(0) /// الأفكار المحولة
+
+  totalConversations     Int @default(0) /// إجمالي المحادثات
+  processedConversations Int @default(0) /// المحادثات المعالجة
+
   // المحتوى
-  content                String            @db.Text /// محتوى التقرير
-  summary                String?           @db.Text /// ملخص تنفيذي
-  recommendations        String?           @db.Text /// التوصيات
-  highlights             String?           @db.Text /// أبرز الإنجازات
-  challenges             String?           @db.Text /// التحديات
-  
+  content         String  @db.Text /// محتوى التقرير
+  summary         String? @db.Text /// ملخص تنفيذي
+  recommendations String? @db.Text /// التوصيات
+  highlights      String? @db.Text /// أبرز الإنجازات
+  challenges      String? @db.Text /// التحديات
+
   // البيانات الإضافية
-  team                   String?           /// الفريق
-  project                String?           /// المشروع
-  
+  team    String? /// الفريق
+  project String? /// المشروع
+
   // العلاقات
-  tasks                  TaskAchievement[] /// المهام المرتبطة
-  
+  tasks TaskAchievement[] /// المهام المرتبطة
+
   // التواريخ
-  startDate              DateTime          /// بداية الفترة
-  endDate                DateTime          /// نهاية الفترة
-  createdAt              DateTime          @default(now())
-  
+  startDate DateTime /// بداية الفترة
+  endDate   DateTime /// نهاية الفترة
+  createdAt DateTime @default(now())
+
   // التدقيق
-  createdBy              String
-  
-  @@map("achievement_reports")
+  createdBy String
+
   @@index([type])
   @@index([startDate])
   @@index([endDate])
   @@index([team])
   @@index([project])
+  @@map("achievement_reports")
 }
 
 /// أنواع تقارير الإنجاز
 enum AchievementReportType {
-  DAILY             /// يومي
-  WEEKLY            /// أسبوعي
-  MONTHLY           /// شهري
-  QUARTERLY         /// ربع سنوي
-  YEARLY            /// سنوي
-  PROJECT           /// مشروع
-  TEAM              /// فريق
-  CUSTOM            /// مخصص
+  DAILY /// يومي
+  WEEKLY /// أسبوعي
+  MONTHLY /// شهري
+  QUARTERLY /// ربع سنوي
+  YEARLY /// سنوي
+  PROJECT /// مشروع
+  TEAM /// فريق
+  CUSTOM /// مخصص
 }
 
 /// ربط المهام بتقارير الإنجاز (Many-to-Many)
 model TaskAchievement {
-  id        String            @id @default(cuid())
-  
-  taskId    String
-  task      Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  
-  reportId  String
-  report    AchievementReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
-  
-  createdAt DateTime          @default(now())
-  
-  @@map("task_achievements")
+  id String @id @default(cuid())
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  reportId String
+  report   AchievementReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
   @@unique([taskId, reportId])
   @@index([taskId])
   @@index([reportId])
+  @@map("task_achievements")
 }
 
 // ============================================================================
@@ -2373,52 +2370,52 @@ model TaskAchievement {
 
 /// تقارير سير المهام - تتبع تقدم مجموعة مهام مرتبطة بنظام أو مشروع
 model TaskProgressReport {
-  id                     String            @id @default(cuid())
-  title                  String            /// عنوان التقرير
-  description            String?           @db.Text /// وصف التقرير
-  
+  id          String  @id @default(cuid())
+  title       String /// عنوان التقرير
+  description String? @db.Text /// وصف التقرير
+
   // التصنيف
-  system                 String?           /// النظام المرتبط (maps, accounting, etc.)
-  project                String?           /// المشروع
-  category               String?           /// الفئة
-  
+  system   String? /// النظام المرتبط (maps, accounting, etc.)
+  project  String? /// المشروع
+  category String? /// الفئة
+
   // الإحصائيات
-  totalTasks             Int               @default(0) /// إجمالي المهام
-  completedTasks         Int               @default(0) /// المهام المنجزة
-  inProgressTasks        Int               @default(0) /// المهام قيد التنفيذ
-  blockedTasks           Int               @default(0) /// المهام المحظورة
-  pendingTasks           Int               @default(0) /// المهام المعلقة
-  
-  overallProgress        Float             @default(0) /// نسبة الإنجاز الكلية (0-100)
-  
+  totalTasks      Int @default(0) /// إجمالي المهام
+  completedTasks  Int @default(0) /// المهام المنجزة
+  inProgressTasks Int @default(0) /// المهام قيد التنفيذ
+  blockedTasks    Int @default(0) /// المهام المحظورة
+  pendingTasks    Int @default(0) /// المهام المعلقة
+
+  overallProgress Float @default(0) /// نسبة الإنجاز الكلية (0-100)
+
   // تفاصيل التقدم
-  completedTasksList     String[]          /// قائمة المهام المنجزة (IDs)
-  inProgressTasksList    String[]          /// قائمة المهام قيد التنفيذ (IDs)
-  blockedTasksList       String[]          /// قائمة المهام المحظورة (IDs)
-  pendingTasksList       String[]          /// قائمة المهام المعلقة (IDs)
-  
+  completedTasksList  String[] /// قائمة المهام المنجزة (IDs)
+  inProgressTasksList String[] /// قائمة المهام قيد التنفيذ (IDs)
+  blockedTasksList    String[] /// قائمة المهام المحظورة (IDs)
+  pendingTasksList    String[] /// قائمة المهام المعلقة (IDs)
+
   // التحليل
-  summary                String?           @db.Text /// ملخص التقدم
-  achievements           String?           @db.Text /// الإنجازات
-  challenges             String?           @db.Text /// التحديات والمعوقات
-  nextSteps              String?           @db.Text /// الخطوات التالية
-  recommendations        String?           @db.Text /// التوصيات
-  
+  summary         String? @db.Text /// ملخص التقدم
+  achievements    String? @db.Text /// الإنجازات
+  challenges      String? @db.Text /// التحديات والمعوقات
+  nextSteps       String? @db.Text /// الخطوات التالية
+  recommendations String? @db.Text /// التوصيات
+
   // التواريخ
-  startDate              DateTime?         /// تاريخ البدء
-  targetDate             DateTime?         /// التاريخ المستهدف للإنجاز
-  lastUpdated            DateTime          @default(now()) /// آخر تحديث
-  createdAt              DateTime          @default(now())
-  
+  startDate   DateTime? /// تاريخ البدء
+  targetDate  DateTime? /// التاريخ المستهدف للإنجاز
+  lastUpdated DateTime  @default(now()) /// آخر تحديث
+  createdAt   DateTime  @default(now())
+
   // التدقيق
-  createdBy              String
-  updatedBy              String?
-  
-  @@map("task_progress_reports")
+  createdBy String
+  updatedBy String?
+
   @@index([system])
   @@index([project])
   @@index([overallProgress])
   @@index([createdAt])
+  @@map("task_progress_reports")
 }
 
 // ============================================================================
@@ -2427,134 +2424,241 @@ model TaskProgressReport {
 
 /// صفحات الدفتر - ملاحظات حرة مثل OneNote
 model NotebookPage {
-  id                     String            @id @default(cuid())
-  title                  String            /// عنوان الصفحة
-  content                String            @db.Text /// المحتوى (Markdown)
-  
+  id      String @id @default(cuid())
+  title   String /// عنوان الصفحة
+  content String @db.Text /// المحتوى (Markdown)
+
   // التنظيم
-  section                String?           /// القسم/المجلد
-  tags                   String[]          /// الوسوم
-  color                  String?           /// لون الصفحة
-  icon                   String?           /// أيقونة الصفحة
-  
+  section String? /// القسم/المجلد
+  tags    String[] /// الوسوم
+  color   String? /// لون الصفحة
+  icon    String? /// أيقونة الصفحة
+
   // الربط
-  conversationId         String?           /// ربط بمحادثة
-  ideaId                 String?           /// ربط بفكرة
-  taskId                 String?           /// ربط بمهمة
-  
+  conversationId String? /// ربط بمحادثة
+  ideaId         String? /// ربط بفكرة
+  taskId         String? /// ربط بمهمة
+
   // الحالة
-  isPinned               Boolean           @default(false) /// مثبتة
-  isArchived             Boolean           @default(false) /// مؤرشفة
-  isFavorite             Boolean           @default(false) /// مفضلة
-  
+  isPinned   Boolean @default(false) /// مثبتة
+  isArchived Boolean @default(false) /// مؤرشفة
+  isFavorite Boolean @default(false) /// مفضلة
+
   // التواريخ
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime          @updatedAt
-  lastViewedAt           DateTime?         /// آخر مشاهدة
-  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastViewedAt DateTime? /// آخر مشاهدة
+
   // التدقيق
-  createdBy              String
-  updatedBy              String?
-  
+  createdBy String
+  updatedBy String?
+
   // العلاقات
-  stickyNotes            StickyNote[]
-  timelineEvents         TimelineEvent[]
-  
-  @@map("notebook_pages")
+  stickyNotes    StickyNote[]
+  timelineEvents TimelineEvent[]
+
   @@index([section])
   @@index([createdBy])
   @@index([isPinned])
   @@index([createdAt])
+  @@map("notebook_pages")
 }
 
 /// الملصقات - ملاحظات سريعة مثل Sticky Notes
 model StickyNote {
-  id                     String            @id @default(cuid())
-  content                String            @db.Text /// المحتوى
-  
+  id      String @id @default(cuid())
+  content String @db.Text /// المحتوى
+
   // التنسيق
-  color                  String            @default("yellow") /// اللون
-  position               Json?             /// الموقع على الشاشة {x, y}
-  size                   Json?             /// الحجم {width, height}
-  
+  color    String @default("yellow") /// اللون
+  position Json? /// الموقع على الشاشة {x, y}
+  size     Json? /// الحجم {width, height}
+
   // الربط
-  pageId                 String?           /// ربط بصفحة دفتر
-  page                   NotebookPage?     @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  
-  conversationId         String?           /// ربط بمحادثة
-  ideaId                 String?           /// ربط بفكرة
-  taskId                 String?           /// ربط بمهمة
-  
+  pageId String? /// ربط بصفحة دفتر
+  page   NotebookPage? @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  conversationId String? /// ربط بمحادثة
+  ideaId         String? /// ربط بفكرة
+  taskId         String? /// ربط بمهمة
+
   // الحالة
-  isDismissed            Boolean           @default(false) /// تم إخفاؤها
-  
+  isDismissed Boolean @default(false) /// تم إخفاؤها
+
   // التواريخ
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime          @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // التدقيق
-  createdBy              String
-  
-  @@map("sticky_notes")
+  createdBy String
+
   @@index([pageId])
   @@index([createdBy])
   @@index([isDismissed])
+  @@map("sticky_notes")
 }
 
 /// الخط الزمني - تتبع تطور الأشياء
 model TimelineEvent {
-  id                     String            @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // نوع الحدث
-  eventType              TimelineEventType /// نوع الحدث
-  title                  String            /// عنوان الحدث
-  description            String?           @db.Text /// وصف الحدث
-  
+  eventType   TimelineEventType /// نوع الحدث
+  title       String /// عنوان الحدث
+  description String?           @db.Text /// وصف الحدث
+
   // الربط بالكيانات
-  conversationId         String?           /// المحادثة
-  ideaId                 String?           /// الفكرة
-  taskId                 String?           /// المهمة
-  pageId                 String?           /// صفحة الدفتر
-  page                   NotebookPage?     @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  
+  conversationId String? /// المحادثة
+  ideaId         String? /// الفكرة
+  taskId         String? /// المهمة
+  pageId         String? /// صفحة الدفتر
+  page           NotebookPage? @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
   // البيانات الإضافية
-  metadata               Json?             /// بيانات إضافية
-  
+  metadata Json? /// بيانات إضافية
+
   // التواريخ
-  eventDate              DateTime          @default(now()) /// تاريخ الحدث
-  createdAt              DateTime          @default(now())
-  
+  eventDate DateTime @default(now()) /// تاريخ الحدث
+  createdAt DateTime @default(now())
+
   // التدقيق
-  createdBy              String
-  
-  @@map("timeline_events")
+  createdBy String
+
   @@index([eventType])
   @@index([conversationId])
   @@index([ideaId])
   @@index([taskId])
   @@index([eventDate])
   @@index([createdBy])
+  @@map("timeline_events")
 }
 
 enum TimelineEventType {
-  CONVERSATION_CREATED   /// محادثة أُنشئت
-  CONVERSATION_UPDATED   /// محادثة حُدثت
-  CONVERSATION_ARCHIVED  /// محادثة أُرشفت
-  
-  IDEA_EXTRACTED         /// فكرة استُخلصت
-  IDEA_APPROVED          /// فكرة اعتُمدت
-  IDEA_REJECTED          /// فكرة رُفضت
-  
-  TASK_CREATED           /// مهمة أُنشئت
-  TASK_STARTED           /// مهمة بدأت
-  TASK_PROGRESS          /// تقدم في المهمة
-  TASK_BLOCKED           /// مهمة حُظرت
-  TASK_COMPLETED         /// مهمة أُنجزت
-  
-  NOTE_CREATED           /// ملاحظة أُنشئت
-  NOTE_UPDATED           /// ملاحظة حُدثت
-  
-  REPORT_GENERATED       /// تقرير وُلّد
-  
-  OTHER                  /// حدث آخر
+  CONVERSATION_CREATED /// محادثة أُنشئت
+  CONVERSATION_UPDATED /// محادثة حُدثت
+  CONVERSATION_ARCHIVED /// محادثة أُرشفت
+
+  IDEA_EXTRACTED /// فكرة استُخلصت
+  IDEA_APPROVED /// فكرة اعتُمدت
+  IDEA_REJECTED /// فكرة رُفضت
+
+  TASK_CREATED /// مهمة أُنشئت
+  TASK_STARTED /// مهمة بدأت
+  TASK_PROGRESS /// تقدم في المهمة
+  TASK_BLOCKED /// مهمة حُظرت
+  TASK_COMPLETED /// مهمة أُنجزت
+
+  NOTE_CREATED /// ملاحظة أُنشئت
+  NOTE_UPDATED /// ملاحظة حُدثت
+
+  REPORT_GENERATED /// تقرير وُلّد
+
+  OTHER /// حدث آخر
+}
+
+// ========================================
+// Smart Notebook Additional Models
+// ========================================
+
+model Notebook {
+  id          String     @id @default(uuid())
+  title       String     @db.VarChar(255)
+  description String?    @db.Text
+  ownerId     String
+  status      String     @default("active") @db.VarChar(50)
+  isShared    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  parentId    String?
+  parent      Notebook?  @relation("NotebookHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Notebook[] @relation("NotebookHierarchy")
+  sections    Section[]
+
+  @@unique([ownerId, title])
+  @@index([ownerId])
+}
+
+model Section {
+  id         String   @id @default(uuid())
+  name       String
+  rank       Int      @default(0)
+  notebookId String
+  notebook   Notebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([notebookId, rank])
+  @@index([notebookId])
+}
+
+model Archive {
+  id         String    @id @default(uuid())
+  entityType String
+  entityId   String
+  entityData Json
+  archivedBy String
+  archivedAt DateTime  @default(now())
+  reason     String?   @db.Text
+  isRestored Boolean   @default(false)
+  restoredAt DateTime?
+  restoredBy String?
+
+  @@index([entityType, entityId])
+  @@index([archivedBy])
+}
+
+model AutoLink {
+  id         String   @id @default(uuid())
+  sourceType String
+  sourceId   String
+  targetType String
+  targetId   String
+  linkType   String
+  confidence Float    @default(0.0)
+  createdAt  DateTime @default(now())
+
+  @@unique([sourceType, sourceId, targetType, targetId])
+  @@index([sourceType, sourceId])
+  @@index([targetType, targetId])
+}
+
+model DashboardStats {
+  id        String   @id @default(uuid())
+  userId    String
+  statType  String
+  statValue Json
+  period    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, statType, period])
+  @@index([userId])
+}
+
+model ExportJob {
+  id          String    @id @default(uuid())
+  userId      String
+  exportType  String
+  format      String
+  status      String    @default("pending")
+  filePath    String?
+  error       String?   @db.Text
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@index([userId])
+  @@index([status])
+}
+
+model SearchIndex {
+  id         String   @id @default(uuid())
+  entityType String
+  entityId   String
+  content    String   @db.Text
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([entityType, entityId])
+  @@index([entityType])
 }

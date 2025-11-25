@@ -4,7 +4,6 @@ import { ChatLogsModule } from './chat-logs/chat-logs.module';
 import { ReportsModule } from './reports/reports.module';
 import { TasksModule } from './tasks/tasks.module';
 import { PagesModule } from './pages/pages.module';
-
 // New Modules
 import { NotebooksModule } from './notebooks/notebooks.module';
 import { SectionsModule } from './sections/sections.module';
@@ -15,6 +14,9 @@ import { ArchiveModule } from './archive/archive.module';
 import { LinksModule } from './links/links.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ExportsModule } from './exports/exports.module';
+// AI & Integration Modules
+import { AiServicesModule } from './ai-services/ai-services.module';
+import { OneNoteModule } from './onenote/onenote.module';
 
 @Module({
   imports: [
@@ -34,6 +36,9 @@ import { ExportsModule } from './exports/exports.module';
     LinksModule,
     DashboardModule,
     ExportsModule,
+    // AI & Integration
+    AiServicesModule,
+    OneNoteModule,
   ],
   exports: [
     // Existing Modules
@@ -52,6 +57,9 @@ import { ExportsModule } from './exports/exports.module';
     LinksModule,
     DashboardModule,
     ExportsModule,
+    // AI & Integration
+    AiServicesModule,
+    OneNoteModule,
   ],
 })
 export class SmartNotebookModule {}
