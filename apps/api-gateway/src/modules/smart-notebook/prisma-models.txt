@@ -1,0 +1,270 @@
+// نموذج Prisma لدفتر الملاحظات (Notebook)
+// يدعم الهيكل الهرمي (Parent-Child) والصلاحيات الأساسية
+model Notebook {
+  // المعرف الفريد للدفتر
+  id          String    @id @default(uuid())
+  // اسم الدفتر
+  title       String    @db.VarChar(255)
+  // وصف موجز للدفتر
+  description String?   @db.Text
+  // معرف المستخدم المالك للدفتر (لأغراض الصلاحيات)
+  ownerId     String
+  // حالة الدفتر (مثلاً: فعال، مؤرشف، محذوف)
+  status      String    @default("active") @db.VarChar(50)
+  // هل الدفتر مشترك مع مستخدمين آخرين؟
+  isShared    Boolean   @default(false)
+  // تاريخ الإنشاء
+  createdAt   DateTime  @default(now())
+  // تاريخ آخر تحديث
+  updatedAt   DateTime  @updatedAt
+
+  // --------------------------------------------------
+  // دعم الهيكل الهرمي (Parent-Child Structure)
+  // --------------------------------------------------
+
+  // معرف الدفتر الأب (إذا كان دفتراً فرعياً)
+  parentId    String?
+  // علاقة الدفتر الأب
+  parent      Notebook? @relation("NotebookHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  // علاقة الدفاتر الفرعية
+  children    Notebook[] @relation("NotebookHierarchy")
+
+  // --------------------------------------------------
+  // علاقات أخرى (يمكن إضافة علاقات أخرى مثل المستخدمين المشتركين)
+  // --------------------------------------------------
+
+  // مؤشر فريد لـ ownerId و title لضمان عدم تكرار اسم الدفتر لنفس المالك
+  @@unique([ownerId, title])
+  // فهرس لتحسين أداء البحث على ownerId
+  @@index([ownerId])
+}
+// نموذج Prisma لتمثيل قسم داخل دفتر ملاحظات
+model Section {
+  // المعرف الفريد للقسم
+  id          String   @id @default(uuid())
+  // اسم القسم
+  name        String
+  // ترتيب القسم داخل الدفتر
+  rank        Int      @default(0)
+  // معرف الدفتر الذي ينتمي إليه القسم
+  notebookId  String
+  // تاريخ ووقت الإنشاء
+  createdAt   DateTime @default(now())
+  // تاريخ ووقت آخر تحديث
+  updatedAt   DateTime @updatedAt
+
+  // العلاقة مع نموذج Notebook (يجب أن يكون موجودًا في schema.prisma)
+  // Notebook   Notebook @relation(fields: [notebookId], references: [id])
+
+  // ضمان أن يكون الترتيب فريدًا داخل الدفتر الواحد
+  @@unique([notebookId, rank])
+  // فهرسة على notebookId لتحسين أداء الاستعلامات
+  @@index([notebookId])
+}
+// /home/ubuntu/timeline-module/prisma-model.txt
+// تعريف نموذج Prisma لحدث التتبع الزمني (TimelineEvent)
+
+model TimelineEvent {
+  // المعرف الفريد للحدث
+  id        String   @id @default(uuid())
+
+  // نوع الحدث (مثال: NOTE_CREATED, NOTE_UPDATED, USER_LOGIN)
+  eventType String
+
+  // وصف موجز للحدث
+  description String
+
+  // معرف الكيان المتأثر بالحدث (مثل معرف المذكرة، معرف المستخدم)
+  entityId  String
+
+  // نوع الكيان المتأثر (مثال: Note, User, Section)
+  entityType String
+
+  // بيانات إضافية للحدث (بصيغة JSON)
+  payload   Json?
+
+  // معرف المستخدم الذي قام بالحدث
+  userId    String?
+
+  // تاريخ ووقت إنشاء الحدث
+  createdAt DateTime @default(now())
+
+  // يمكن إضافة علاقات هنا إذا كان هناك نماذج أخرى (مثل User)
+  // user      User?    @relation(fields: [userId], references: [id])
+
+  // فهرس لتحسين أداء الاستعلامات بناءً على نوع الكيان ومعرفه
+  @@index([entityType, entityId])
+  // فهرس لتحسين أداء الاستعلامات بناءً على المستخدم
+  @@index([userId])
+}
+// وصف: نموذج Prisma لإدارة الأرشفة (Archive Management)
+// يمثل هذا النموذج سجلات الأرشفة، سواء كانت تلقائية أو يدوية، للمستندات أو الملاحظات.
+
+model Archive {
+  // المعرف الفريد لسجل الأرشفة
+  id          String    @id @default(uuid())
+
+  // نوع العنصر المؤرشف (مثل: 'Note', 'Document', 'User')
+  entityType  String
+
+  // المعرف الفريد للعنصر المؤرشف (ID الخاص به في الجدول الأصلي)
+  entityId    String
+
+  // اسم العنصر المؤرشف أو وصف موجز له
+  title       String
+
+  // مسار الملف المؤرشف أو مرجع لمكان تخزينه
+  archivePath String
+
+  // تاريخ ووقت إنشاء سجل الأرشفة
+  archivedAt  DateTime  @default(now())
+
+  // هل تمت الأرشفة بشكل تلقائي (true) أم يدوي (false)
+  isAutomatic Boolean   @default(false)
+
+  // المعرف الفريد للمستخدم الذي قام بالأرشفة (إذا كانت يدوية)
+  archivedBy  String?
+
+  // تاريخ ووقت استرجاع العنصر من الأرشيف (إذا تم استرجاعه)
+  restoredAt  DateTime?
+
+  // المعرف الفريد للمستخدم الذي قام بالاسترجاع
+  restoredBy  String?
+
+  // ملاحظات إضافية حول عملية الأرشفة أو الاسترجاع
+  notes       String?
+
+  // فهرس مركب لتحسين البحث عن العناصر المؤرشفة
+  @@index([entityType, entityId])
+  @@map("archives")
+}
+// نموذج Prisma لربط العناصر تلقائيًا (AutoLink)
+// هذا النموذج يمثل العلاقة بين عنصرين مختلفين في النظام (مثل ملاحظة ووسم، أو ملاحظة وملاحظة أخرى)
+model AutoLink {
+  // المعرف الفريد للرابط
+  id        String   @id @default(uuid())
+  // تاريخ إنشاء الرابط
+  createdAt DateTime @default(now())
+  // تاريخ آخر تحديث للرابط
+  updatedAt DateTime @updatedAt
+
+  // نوع العنصر المصدر (مثل 'Note', 'Tag', 'Section')
+  sourceType String
+  // معرف العنصر المصدر
+  sourceId   String
+  // نوع العنصر الهدف
+  targetType String
+  // معرف العنصر الهدف
+  targetId   String
+
+  // نوع العلاقة بين العنصرين (مثل 'mentions', 'related_to', 'contains')
+  linkType   String
+
+  // حقل اختياري لتخزين بيانات إضافية حول عملية الربط التلقائي (مثل السياق أو سبب الربط)
+  metadata   Json?
+
+  // لضمان عدم تكرار نفس الرابط بين نفس العنصرين بنفس النوع
+  @@unique([sourceId, sourceType, targetId, targetType, linkType])
+  // فهرسة لتحسين أداء الاستعلامات على المعرفات
+  @@index([sourceId, sourceType])
+  @@index([targetId, targetType])
+  @@map("auto_links")
+}
+// نموذج Prisma لـ إحصائيات لوحة التحكم (DashboardStatistics)
+// هذا النموذج يمثل بيانات إحصائية مجمعة أو سجلات نشاط حديثة
+// بما أن لوحة التحكم تعرض بيانات مجمعة وليست كيانات CRUD تقليدية،
+// سنركز على نموذج يمثل سجلات النشاط الحديثة (RecentActivity)
+// أو نموذج يمثل إعدادات لوحة التحكم (DashboardSettings) إذا كان هناك تخصيص.
+// سنختار نموذج يمثل سجلات النشاط الحديثة ليكون له استخدام CRUD بسيط.
+
+model RecentActivity {
+  // معرف السجل
+  id        String   @id @default(uuid())
+  // نوع النشاط (مثل: 'NOTE_CREATED', 'NOTE_UPDATED', 'USER_LOGIN')
+  activityType String
+  // وصف مختصر للنشاط
+  description String
+  // معرف المستخدم الذي قام بالنشاط
+  userId    String
+  // معرف الكيان المرتبط بالنشاط (مثل: معرف المذكرة)
+  entityId  String?
+  // وقت حدوث النشاط
+  createdAt DateTime @default(now())
+
+  // يمكن إضافة علاقة مع نموذج المستخدم إذا كان موجوداً
+  // user      User     @relation(fields: [userId], references: [id])
+
+  @@map("recent_activities")
+}
+// نموذج Prisma لعملية التصدير (ExportJob)
+// هذا النموذج يمثل مهمة تصدير واحدة، حيث يتم تخزين تفاصيل العملية وحالتها.
+model ExportJob {
+  id          String    @id @default(uuid())
+  userId      String    // معرف المستخدم الذي طلب التصدير
+  notebookId  String?   // معرف الدفتر (Notebook) المراد تصديره (إذا كان التصدير لدفتر كامل)
+  noteId      String?   // معرف الملاحظة (Note) المراد تصديرها (إذا كان التصدير لملاحظة واحدة)
+  exportType  ExportType // نوع التصدير (PDF, WORD, JSON, MARKDOWN)
+  status      JobStatus @default(PENDING) // حالة المهمة (معلقة، قيد التنفيذ، مكتملة، فاشلة)
+  filePath    String?   // المسار إلى الملف المُصدَّر بعد الاكتمال
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([notebookId])
+  @@index([noteId])
+}
+
+// أنواع التصدير المتاحة
+enum ExportType {
+  PDF
+  WORD
+  JSON
+  MARKDOWN
+}
+
+// حالات مهمة التصدير
+enum JobStatus {
+  PENDING     // معلقة
+  IN_PROGRESS // قيد التنفيذ
+  COMPLETED   // مكتملة
+  FAILED      // فاشلة
+}
+// /home/ubuntu/search-module/prisma-model.txt
+// نموذج Prisma لتسجيل عمليات البحث المتقدم (SearchLog)
+// هذا النموذج ليس ضروريًا لعملية البحث نفسها، ولكنه يخدم متطلبات المخطط ويسجل نشاط المستخدم.
+
+model SearchLog {
+  id        String   @id @default(uuid())
+  userId    String   // معرف المستخدم الذي أجرى عملية البحث
+  query     String   @db.VarChar(255) // نص البحث
+  searchType String  // نوع البحث (مثل: 'full-text', 'tag', 'date-range')
+  resultsCount Int   // عدد النتائج التي تم العثور عليها
+  createdAt DateTime @default(now())
+
+  // يمكن إضافة علاقة للمستخدم إذا كان نموذج المستخدم موجودًا
+  // user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([query])
+}
+
+// نماذج افتراضية أخرى سيتم البحث فيها (للتوضيح فقط)
+// model Notebook {
+//   id    String @id @default(uuid())
+//   title String
+//   notes Note[]
+// }
+
+// model Note {
+//   id          String   @id @default(uuid())
+//   content     String
+//   notebookId  String
+//   notebook    Notebook @relation(fields: [notebookId], references: [id])
+//   tags        Tag[]
+// }
+
+// model Tag {
+//   id    String @id @default(uuid())
+//   name  String @unique
+//   notes Note[]
+// }
