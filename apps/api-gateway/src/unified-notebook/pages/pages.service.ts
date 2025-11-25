@@ -75,10 +75,10 @@ export class NotebookPagesService {
       },
     });
 
+    if (!page) {
       throw new NotFoundException(`Notebook page with ID ${id} not found`);
     }
 
-    // Update last viewed time
     await this.prisma.notebookPage.update({
       where: { id },
       data: { lastViewedAt: new Date() },
@@ -92,6 +92,7 @@ export class NotebookPagesService {
       where: { id },
     });
 
+    if (!page) {
       throw new NotFoundException(`Notebook page with ID ${id} not found`);
     }
 
@@ -119,6 +120,7 @@ export class NotebookPagesService {
       where: { id },
     });
 
+    if (!page) {
       throw new NotFoundException(`Notebook page with ID ${id} not found`);
     }
 

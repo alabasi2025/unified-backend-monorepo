@@ -7,7 +7,6 @@ import { PagesModule } from './pages/pages.module';
 // New Modules
 import { NotebooksModule } from './notebooks/notebooks.module';
 import { SectionsModule } from './sections/sections.module';
-import { StickyNotesModule } from './stickynotes/stickynotes.module';
 import { TimelineModule } from './timeline/timeline.module';
 import { SearchModule } from './search/search.module';
 import { ArchiveModule } from './archive/archive.module';
@@ -29,7 +28,6 @@ import { OneNoteModule } from './onenote/onenote.module';
     // New Modules
     NotebooksModule,
     SectionsModule,
-    StickyNotesModule,
     TimelineModule,
     SearchModule,
     ArchiveModule,
@@ -50,7 +48,6 @@ import { OneNoteModule } from './onenote/onenote.module';
     // New Modules
     NotebooksModule,
     SectionsModule,
-    StickyNotesModule,
     TimelineModule,
     SearchModule,
     ArchiveModule,
