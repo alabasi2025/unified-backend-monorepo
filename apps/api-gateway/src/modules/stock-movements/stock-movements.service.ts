@@ -16,6 +16,30 @@ export interface StockMovement {
   notes?: string;
   createdBy: string;
   createdAt: string;
+  isDeleted?: boolean;
+}
+
+export interface StockMovementFilters {
+  warehouseId?: string;
+  itemId?: string;
+  movementType?: string;
+  startDate?: string;
+  endDate?: string;
+  skip?: number;
+  take?: number;
+}
+
+export interface StockMovementStatistics {
+  totalIncoming: number;
+  totalOutgoing: number;
+  movementsToday: number;
+  totalMovements: number;
+  byMovementType?: {
+    IN: number;
+    OUT: number;
+    TRANSFER: number;
+    ADJUSTMENT: number;
+  };
 }
 
 @Injectable()
@@ -159,34 +183,182 @@ export class StockMovementsService {
     }
   ];
 
-  findAll(warehouseId?: string): StockMovement[] {
-    let filtered = this.movements.filter(m => !m['isDeleted']);
-    if (warehouseId) {
-      filtered = filtered.filter(m => m.warehouseId === warehouseId);
+  /**
+   * الحصول على جميع حركات المخزون مع الفلاتر و pagination
+   */
+  findAll(filters?: StockMovementFilters): StockMovement[] {
+    let filtered = this.movements.filter(m => !m.isDeleted);
+
+    if (filters?.warehouseId) {
+      filtered = filtered.filter(m => m.warehouseId === filters.warehouseId);
     }
-    return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    if (filters?.itemId) {
+      filtered = filtered.filter(m => m.itemId === filters.itemId);
+    }
+
+    if (filters?.movementType) {
+      filtered = filtered.filter(m => m.movementType === filters.movementType);
+    }
+
+    if (filters?.startDate) {
+      const startDate = new Date(filters.startDate);
+      filtered = filtered.filter(m => new Date(m.createdAt) >= startDate);
+    }
+
+    if (filters?.endDate) {
+      const endDate = new Date(filters.endDate);
+      endDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(m => new Date(m.createdAt) <= endDate);
+    }
+
+    // Sort by date descending
+    filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    // Apply pagination
+    const skip = filters?.skip || 0;
+    const take = filters?.take || 10;
+    return filtered.slice(skip, skip + take);
   }
 
+  /**
+   * الحصول على حركة واحدة بالمعرف
+   */
   findOne(id: string): StockMovement {
-    const movement = this.movements.find(m => m.id === id && !m['isDeleted']);
+    const movement = this.movements.find(m => m.id === id && !m.isDeleted);
     if (!movement) {
       throw new NotFoundException(`Stock movement with ID ${id} not found`);
     }
     return movement;
   }
 
+  /**
+   * الحصول على إحصائيات حركات المخزون الشاملة
+   */
+  getStatistics(): StockMovementStatistics {
+    const activeMovements = this.movements.filter(m => !m.isDeleted);
+    
+    // الحصول على تاريخ اليوم
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // حساب الإحصائيات
+    let totalIncoming = 0;
+    let totalOutgoing = 0;
+    let movementsToday = 0;
+    const byMovementType = {
+      IN: 0,
+      OUT: 0,
+      TRANSFER: 0,
+      ADJUSTMENT: 0
+    };
+
+    activeMovements.forEach(movement => {
+      // حساب الوارد والصادر
+      if (movement.movementType === 'IN') {
+        totalIncoming += movement.quantity;
+        byMovementType.IN++;
+      } else if (movement.movementType === 'OUT') {
+        totalOutgoing += movement.quantity;
+        byMovementType.OUT++;
+      } else if (movement.movementType === 'TRANSFER') {
+        byMovementType.TRANSFER++;
+      } else if (movement.movementType === 'ADJUSTMENT') {
+        byMovementType.ADJUSTMENT++;
+      }
+
+      // حساب حركات اليوم
+      const movementDate = new Date(movement.createdAt);
+      movementDate.setHours(0, 0, 0, 0);
+      if (movementDate.getTime() === today.getTime()) {
+        movementsToday++;
+      }
+    });
+
+    return {
+      totalIncoming,
+      totalOutgoing,
+      movementsToday,
+      totalMovements: activeMovements.length,
+      byMovementType
+    };
+  }
+
+  /**
+   * الحصول على إحصائيات حسب المستودع
+   */
+  getWarehouseStatistics(warehouseId: string): any {
+    const warehouseMovements = this.movements.filter(
+      m => m.warehouseId === warehouseId && !m.isDeleted
+    );
+
+    let incoming = 0;
+    let outgoing = 0;
+
+    warehouseMovements.forEach(movement => {
+      if (movement.movementType === 'IN') {
+        incoming += movement.quantity;
+      } else if (movement.movementType === 'OUT') {
+        outgoing += movement.quantity;
+      }
+    });
+
+    return {
+      warehouseId,
+      totalMovements: warehouseMovements.length,
+      incoming,
+      outgoing,
+      balance: incoming - outgoing
+    };
+  }
+
+  /**
+   * الحصول على إحصائيات حسب الصنف
+   */
+  getItemStatistics(itemId: string): any {
+    const itemMovements = this.movements.filter(
+      m => m.itemId === itemId && !m.isDeleted
+    );
+
+    let incoming = 0;
+    let outgoing = 0;
+    let totalValue = 0;
+
+    itemMovements.forEach(movement => {
+      if (movement.movementType === 'IN') {
+        incoming += movement.quantity;
+        totalValue += movement.totalValue || 0;
+      } else if (movement.movementType === 'OUT') {
+        outgoing += movement.quantity;
+        totalValue -= movement.totalValue || 0;
+      }
+    });
+
+    return {
+      itemId,
+      totalMovements: itemMovements.length,
+      incoming,
+      outgoing,
+      balance: incoming - outgoing,
+      totalValue
+    };
+  }
+
+  /**
+   * إنشاء حركة مخزون جديدة
+   */
   create(createDto: any): StockMovement {
     const newMovement: StockMovement = {
       id: String(this.movements.length + 1),
       warehouseId: createDto.warehouseId,
-      warehouseName: 'مستودع جديد',
+      warehouseName: this.getWarehouseName(createDto.warehouseId),
       itemId: createDto.itemId,
-      itemCode: 'ITEM-NEW',
-      itemName: 'صنف جديد',
+      itemCode: this.getItemCode(createDto.itemId),
+      itemName: this.getItemName(createDto.itemId),
       movementType: createDto.movementType,
       quantity: createDto.quantity,
-      unitPrice: 0,
-      totalValue: 0,
+      unitPrice: createDto.unitCost || 0,
+      totalValue: (createDto.unitCost || 0) * createDto.quantity,
       referenceType: createDto.referenceType,
       referenceId: createDto.referenceId,
       notes: createDto.notes,
@@ -197,15 +369,56 @@ export class StockMovementsService {
     return newMovement;
   }
 
+  /**
+   * تحديث حركة مخزون
+   */
   update(id: string, updateDto: any): StockMovement {
     const movement = this.findOne(id);
     Object.assign(movement, updateDto);
     return movement;
   }
 
+  /**
+   * حذف حركة مخزون
+   */
   remove(id: string): StockMovement {
     const movement = this.findOne(id);
-    movement['isDeleted'] = true;
+    movement.isDeleted = true;
     return movement;
+  }
+
+  /**
+   * الحصول على اسم المستودع
+   */
+  private getWarehouseName(warehouseId: string): string {
+    const warehouses: any = {
+      '1': 'المستودع الرئيسي',
+      '2': 'مستودع عدن',
+      '3': 'مستودع تعز',
+      '4': 'مستودع الحديدة'
+    };
+    return warehouses[warehouseId] || 'مستودع جديد';
+  }
+
+  /**
+   * الحصول على رمز الصنف
+   */
+  private getItemCode(itemId: string): string {
+    return `ITEM-${String(itemId).padStart(3, '0')}`;
+  }
+
+  /**
+   * الحصول على اسم الصنف
+   */
+  private getItemName(itemId: string): string {
+    const items: any = {
+      '1': 'لابتوب Dell Latitude',
+      '2': 'شاشة Samsung 27"',
+      '3': 'طابعة HP LaserJet',
+      '4': 'ماوس Logitech',
+      '5': 'لوحة مفاتيح Mechanical',
+      '6': 'سماعات Bluetooth'
+    };
+    return items[itemId] || 'صنف جديد';
   }
 }
