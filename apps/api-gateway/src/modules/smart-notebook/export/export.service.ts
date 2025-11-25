@@ -56,7 +56,8 @@ export class ExportService {
       data: {
         userId,
         exportType,
-        status: JobStatus.PENDING,
+        format: exportType,
+        status: "pending",
       },
     });
 
