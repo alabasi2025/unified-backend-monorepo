@@ -57,6 +57,7 @@ model Unit {
 
   // العلاقات
   projects Project[]
+  institutions Institution[]
   users    User[]
 
   // التدقيق (Audit Trail)
@@ -70,6 +71,36 @@ model Unit {
   @@index([type])
   @@index([isActive])
   @@map("units")
+}
+
+/// المؤسسة - المستوى الثالث في الهيكل الهرمي
+model Institution {
+  id          String  @id @default(cuid())
+  code        String  @unique /// كود فريد للمؤسسة (مثل: INST001)
+  nameAr      String /// الاسم بالعربية
+  nameEn      String /// الاسم بالإنجليزية
+  description String? /// وصف المؤسسة
+  isActive    Boolean @default(true) /// هل المؤسسة نشطة؟
+
+  // العلاقات الهرمية
+  unitId String
+  unit   Unit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  // العلاقات
+  accounts Account[]
+  users    User[]
+
+  // التدقيق (Audit Trail)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
+  @@index([code])
+  @@index([unitId])
+  @@index([institutionId])
+  @@index([isActive])
+  @@map("institutions")
 }
 
 /// أنواع الوحدات
@@ -109,6 +140,7 @@ model Project {
 
   @@index([code])
   @@index([unitId])
+  @@index([institutionId])
   @@index([status])
   @@index([isActive])
   @@map("projects")
@@ -149,8 +181,8 @@ model User {
   unitId String?
   unit   Unit?   @relation(fields: [unitId], references: [id], onDelete: SetNull)
 
-  projectId String?
-  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id], onDelete: SetNull)
 
   // العلاقات مع الأدوار
   userRoles UserRole[]
@@ -177,7 +209,7 @@ model User {
   @@index([username])
   @@index([holdingId])
   @@index([unitId])
-  @@index([projectId])
+  @@index([institutionId])
   @@index([isActive])
   @@map("users")
 }
@@ -369,6 +401,7 @@ model Account {
   @@index([parentId])
   @@index([holdingId])
   @@index([unitId])
+  @@index([institutionId])
   @@index([isActive])
   @@index([allowManualEntry])
   @@map("accounts")
@@ -489,7 +522,7 @@ model JournalEntry {
   @@index([fiscalYearId])
   @@index([holdingId])
   @@index([unitId])
-  @@index([projectId])
+  @@index([institutionId])
   @@map("journal_entries")
 }
 
@@ -575,7 +608,7 @@ model CostCenter {
   @@index([parentId])
   @@index([holdingId])
   @@index([unitId])
-  @@index([projectId])
+  @@index([institutionId])
   @@index([isActive])
   @@map("cost_centers")
 }
@@ -727,6 +760,7 @@ model Supplier {
   @@index([categoryId])
   @@index([holdingId])
   @@index([unitId])
+  @@index([institutionId])
   @@index([isActive])
   @@map("suppliers")
 }
@@ -855,6 +889,7 @@ model Customer {
   @@index([categoryId])
   @@index([holdingId])
   @@index([unitId])
+  @@index([institutionId])
   @@index([isActive])
   @@map("customers")
 }
@@ -1048,6 +1083,7 @@ model Warehouse {
   @@index([code])
   @@index([holdingId])
   @@index([unitId])
+  @@index([institutionId])
   @@index([isActive])
   @@map("warehouses")
 }
@@ -1239,7 +1275,7 @@ model PurchaseOrder {
   @@index([supplierId])
   @@index([holdingId])
   @@index([unitId])
-  @@index([projectId])
+  @@index([institutionId])
   @@map("purchase_orders")
 }
 
@@ -1340,7 +1376,7 @@ model PurchaseInvoice {
   @@index([journalEntryId])
   @@index([holdingId])
   @@index([unitId])
-  @@index([projectId])
+  @@index([institutionId])
   @@map("purchase_invoices")
 }
 
@@ -1431,6 +1467,7 @@ model PurchaseReturn {
   @@index([journalEntryId])
   @@index([holdingId])
   @@index([unitId])
+  @@index([institutionId])
   @@map("purchase_returns")
 }
 
@@ -1522,7 +1559,7 @@ model SalesOrder {
   @@index([customerId])
   @@index([holdingId])
   @@index([unitId])
-  @@index([projectId])
+  @@index([institutionId])
   @@map("sales_orders")
 }
 
@@ -1622,7 +1659,7 @@ model SalesInvoice {
   @@index([journalEntryId])
   @@index([holdingId])
   @@index([unitId])
-  @@index([projectId])
+  @@index([institutionId])
   @@map("sales_invoices")
 }
 
@@ -1713,6 +1750,7 @@ model SalesReturn {
   @@index([journalEntryId])
   @@index([holdingId])
   @@index([unitId])
+  @@index([institutionId])
   @@map("sales_returns")
 }
 

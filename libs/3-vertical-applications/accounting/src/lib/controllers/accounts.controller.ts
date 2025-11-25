@@ -11,11 +11,13 @@ export class AccountsController {
     @Query('accountType') accountType?: AccountType,
     @Query('isActive') isActive?: string,
     @Query('isParent') isParent?: string,
+    @Query('institutionId') institutionId?: string, // إضافة institutionId
   ) {
     return this.accountService.findAll({
       accountType,
       isActive: isActive === 'true' ? true : isActive === 'false' ? false : undefined,
       isParent: isParent === 'true' ? true : isParent === 'false' ? false : undefined,
+      institutionId, // إضافة institutionId
     });
   }
 
@@ -38,6 +40,7 @@ export class AccountsController {
     parentId?: string;
     holdingId?: string;
     unitId?: string;
+    institutionId?: string; // إضافة institutionId
   }) {
     return this.accountService.create(data);
   }

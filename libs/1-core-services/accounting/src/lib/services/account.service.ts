@@ -31,6 +31,7 @@ export class AccountService {
     parentId?: string;
     holdingId?: string;
     unitId?: string;
+    institutionId?: string; // إضافة institutionId
     createdBy?: string;
   }): Promise<Account> {
     // التحقق من عدم تكرار الكود
@@ -68,6 +69,11 @@ export class AccountService {
       throw new BadRequestException('Parent accounts cannot allow manual entry');
     }
 
+    // التحقق من أن الحسابات الفرعية التي تسمح بالقيد المباشر يجب أن تكون مرتبطة بمؤسسة
+    if (!data.isParent && (data.allowManualEntry ?? true) && !data.institutionId) {
+      throw new BadRequestException('Sub-accounts that allow manual entry must be linked to an institution');
+    }
+
     // إنشاء الحساب
     const account = await this.prisma.account.create({
       data: {
@@ -83,6 +89,7 @@ export class AccountService {
         parentId: data.parentId,
         holdingId: data.holdingId,
         unitId: data.unitId,
+        institutionId: data.institutionId, // إضافة institutionId
         createdBy: data.createdBy,
       },
     });
@@ -105,6 +112,7 @@ export class AccountService {
     allowManualEntry?: boolean;
     holdingId?: string;
     unitId?: string;
+    institutionId?: string; // إضافة institutionId
   }): Promise<Account[]> {
     const where: Prisma.AccountWhereInput = {};
 
@@ -130,6 +138,10 @@ export class AccountService {
 
     if (filters?.unitId) {
       where.unitId = filters.unitId;
+    }
+
+    if (filters?.institutionId) { // إضافة institutionId
+      where.institutionId = filters.institutionId;
     }
 
     return this.prisma.account.findMany({
@@ -218,6 +230,11 @@ export class AccountService {
     // التحقق من أن الحسابات الرئيسية لا تسمح بالقيد المباشر
     if (account.isParent && data.allowManualEntry) {
       throw new BadRequestException('Parent accounts cannot allow manual entry');
+    }
+
+    // التحقق من أن الحسابات الفرعية التي تسمح بالقيد المباشر يجب أن تكون مرتبطة بمؤسسة
+    if (!account.isParent && (data.allowManualEntry ?? account.allowManualEntry) && !account.institutionId) {
+      throw new BadRequestException('Sub-accounts that allow manual entry must be linked to an institution');
     }
 
     return this.prisma.account.update({
@@ -435,7 +452,7 @@ export class AccountService {
   /**
    * توليد دليل حسابات افتراضي
    */
-  async generateDefaultChartOfAccounts(holdingId?: string, createdBy?: string): Promise<Account[]> {
+  async generateDefaultChartOfAccounts(holdingId?: string, institutionId?: string, createdBy?: string): Promise<Account[]> {
     const accounts: Account[] = [];
 
     // 1. الأصول (Assets)
@@ -449,6 +466,7 @@ export class AccountService {
       isParent: true,
       allowManualEntry: false,
       holdingId,
+      institutionId, // إضافة institutionId
       createdBy,
     });
     accounts.push(assets);
@@ -465,6 +483,7 @@ export class AccountService {
       allowManualEntry: false,
       parentId: assets.id,
       holdingId,
+      institutionId, // إضافة institutionId
       createdBy,
     });
     accounts.push(currentAssets);
@@ -481,6 +500,7 @@ export class AccountService {
       allowManualEntry: true,
       parentId: currentAssets.id,
       holdingId,
+      institutionId, // إضافة institutionId
       createdBy,
     });
     accounts.push(cash);
@@ -497,6 +517,7 @@ export class AccountService {
       allowManualEntry: true,
       parentId: currentAssets.id,
       holdingId,
+      institutionId, // إضافة institutionId
       createdBy,
     });
     accounts.push(bank);
@@ -512,6 +533,7 @@ export class AccountService {
       isParent: true,
       allowManualEntry: false,
       holdingId,
+      institutionId, // إضافة institutionId
       createdBy,
     });
     accounts.push(liabilities);
@@ -527,6 +549,7 @@ export class AccountService {
       isParent: true,
       allowManualEntry: false,
       holdingId,
+      institutionId, // إضافة institutionId
       createdBy,
     });
     accounts.push(equity);
@@ -542,6 +565,7 @@ export class AccountService {
       isParent: true,
       allowManualEntry: false,
       holdingId,
+      institutionId, // إضافة institutionId
       createdBy,
     });
     accounts.push(revenue);
@@ -557,6 +581,7 @@ export class AccountService {
       isParent: true,
       allowManualEntry: false,
       holdingId,
+      institutionId, // إضافة institutionId
       createdBy,
     });
     accounts.push(expenses);
