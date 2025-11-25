@@ -80,7 +80,7 @@ export class CreateAutoLinkDto {
   @ApiProperty({
     description: 'بيانات إضافية حول عملية الربط التلقائي',
     required: false,
-    type: 'object',
+    type: () => Object,
     example: { confidence: 0.95, algorithm: 'NLP' },
   })
   @IsOptional()

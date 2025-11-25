@@ -41,7 +41,7 @@ export class TimelineEventResponseDto {
   /**
    * بيانات إضافية للحدث
    */
-  @ApiProperty({ description: 'بيانات إضافية للحدث', type: 'object', nullable: true })
+  @ApiProperty({ description: 'بيانات إضافية للحدث', type: () => Object, nullable: true })
   payload: Record<string, any> | null;
 
   /**

@@ -44,7 +44,7 @@ export class CreateTimelineEventDto {
   /**
    * بيانات إضافية للحدث (اختياري)
    */
-  @ApiProperty({ description: 'بيانات إضافية للحدث', required: false, type: 'object' })
+  @ApiProperty({ description: 'بيانات إضافية للحدث', required: false, type: () => Object })
   @IsOptional()
   @IsObject({ message: 'يجب أن تكون البيانات الإضافية كائنًا' })
   payload?: Record<string, any>;
