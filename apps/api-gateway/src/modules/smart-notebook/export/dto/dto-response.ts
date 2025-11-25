@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ExportType } from './dto-create.ts';
-import { JobStatus } from './dto-update.ts';
+import { ExportType } from './dto-create';
+import { JobStatus } from './dto-update';
 
 /**
  * فئة DTO لتمثيل مهمة تصدير (ExportJob) في الاستجابات.

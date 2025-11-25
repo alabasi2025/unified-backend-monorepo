@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ExportController } from './controller.ts';
-import { ExportService } from './service.ts';
+import { ExportController } from './controller';
+import { ExportService } from './service';
 import { PrismaModule } from '../prisma/prisma.module'; // افتراض وجود PrismaModule
 
 /**

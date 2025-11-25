@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'; // افتراض وجود PrismaService
-import { CreateExportJobDto, ExportType } from './dto-create.ts';
-import { ExportJobResponseDto } from './dto-response.ts';
-import { JobStatus } from './dto-update.ts';
+import { CreateExportJobDto, ExportType } from './dto-create';
+import { ExportJobResponseDto } from './dto-response';
+import { JobStatus } from './dto-update';
 
 /**
  * خدمة التصدير (ExportService)
