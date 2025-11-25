@@ -30,15 +30,6 @@ export class AutoLinkResponseDto {
   createdAt: Date;
 
   /**
-   * @property updatedAt
-   * @description تاريخ آخر تحديث للرابط.
-   * @example '2023-10-27T10:30:00.000Z'
-   */
-  @ApiProperty({
-    description: 'تاريخ آخر تحديث للرابط',
-    example: '2023-10-27T10:30:00.000Z',
-  })
-  updatedAt: Date;
 
   /**
    * @property sourceType
@@ -90,17 +81,6 @@ export class AutoLinkResponseDto {
    * @example 'mentions'
    */
   @ApiProperty({
-    description: 'نوع العلاقة بين العنصرين',
-    example: 'mentions',
-  })
-  linkType: string;
-
-  /**
-   * @property metadata
-   * @description بيانات إضافية حول عملية الربط التلقائي.
-   * @example { "confidence": 0.95, "algorithm": "NLP" }
-   */
-  @ApiProperty({
     description: 'بيانات إضافية حول عملية الربط التلقائي',
     required: false,
     type: () => Object,
@@ -116,12 +96,10 @@ export class AutoLinkResponseDto {
   constructor(autoLink: AutoLink) {
     this.id = autoLink.id;
     this.createdAt = autoLink.createdAt;
-    this.updatedAt = autoLink.updatedAt;
     this.sourceType = autoLink.sourceType;
     this.sourceId = autoLink.sourceId;
     this.targetType = autoLink.targetType;
     this.targetId = autoLink.targetId;
     this.linkType = autoLink.linkType;
-    this.metadata = autoLink.metadata;
   }
 }
