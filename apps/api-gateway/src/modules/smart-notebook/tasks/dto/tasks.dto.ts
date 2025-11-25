@@ -1,6 +1,5 @@
 import { IsString, IsOptional, IsEnum, IsArray, IsInt, IsDateString, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
-import { TaskStatus, Priority, TaskSource } from '@prisma/client';
 
 export class CreateTaskDto {
   @IsString()
@@ -27,12 +26,9 @@ export class CreateTaskDto {
   startDate?: string;
 
   @IsOptional()
-  @IsEnum(TaskSource)
-  sourceType?: TaskSource;
 
   @IsOptional()
   @IsString()
-  sourceId?: string;
 
   @IsOptional()
   @IsString()
