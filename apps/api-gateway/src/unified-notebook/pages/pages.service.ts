@@ -8,7 +8,18 @@ export class NotebookPagesService {
 
   async create(createDto: CreateNotebookPageDto) {
     return this.prisma.notebookPage.create({
-      data: createDto,
+      data: {
+        title: createDto.title,
+        content: createDto.content || '',
+        section: createDto.section,
+        tags: createDto.tags || [],
+        color: createDto.color,
+        icon: createDto.icon,
+        conversationId: createDto.conversationId,
+        ideaId: createDto.ideaId,
+        taskId: createDto.taskId,
+        createdBy: createDto.createdBy,
+      },
     });
   }
 
@@ -21,7 +32,7 @@ export class NotebookPagesService {
     search?: string;
   }) {
     const where: any = {};
-
+    
     if (filters?.section) where.section = filters.section;
     if (filters?.isPinned !== undefined) where.isPinned = filters.isPinned;
     if (filters?.isArchived !== undefined) where.isArchived = filters.isArchived;
@@ -64,7 +75,6 @@ export class NotebookPagesService {
       },
     });
 
-    if (!page) {
       throw new NotFoundException(`Notebook page with ID ${id} not found`);
     }
 
@@ -82,13 +92,25 @@ export class NotebookPagesService {
       where: { id },
     });
 
-    if (!page) {
       throw new NotFoundException(`Notebook page with ID ${id} not found`);
     }
 
+    const updateData: any = {};
+    
+    if (updateDto.title !== undefined) updateData.title = updateDto.title;
+    if (updateDto.content !== undefined) updateData.content = updateDto.content;
+    if (updateDto.section !== undefined) updateData.section = updateDto.section;
+    if (updateDto.tags !== undefined) updateData.tags = updateDto.tags;
+    if (updateDto.color !== undefined) updateData.color = updateDto.color;
+    if (updateDto.icon !== undefined) updateData.icon = updateDto.icon;
+    if (updateDto.isPinned !== undefined) updateData.isPinned = updateDto.isPinned;
+    if (updateDto.isArchived !== undefined) updateData.isArchived = updateDto.isArchived;
+    if (updateDto.isFavorite !== undefined) updateData.isFavorite = updateDto.isFavorite;
+    if (updateDto.updatedBy !== undefined) updateData.updatedBy = updateDto.updatedBy;
+
     return this.prisma.notebookPage.update({
       where: { id },
-      data: updateDto,
+      data: updateData,
     });
   }
 
@@ -97,7 +119,6 @@ export class NotebookPagesService {
       where: { id },
     });
 
-    if (!page) {
       throw new NotFoundException(`Notebook page with ID ${id} not found`);
     }
 
