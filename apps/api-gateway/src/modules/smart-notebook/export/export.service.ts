@@ -55,8 +55,6 @@ export class ExportService {
     const newJob = await this.prisma.exportJob.create({
       data: {
         userId,
-        notebookId,
-        noteId,
         exportType,
         status: JobStatus.PENDING,
       },
