@@ -1,0 +1,108 @@
+import { IsString, IsOptional, IsNumber, IsEnum, IsDateString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
+// تعريف حالة التصدير
+export enum ExportStatus {
+  PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+}
+
+/**
+ * DTO لطلب عملية تصدير جديدة
+ */
+export class ExportRequestDto {
+  @ApiProperty({
+    description: 'نوع المحتوى المراد تصديره (مثلاً: "notebook", "section", "data")',
+    example: 'notebook',
+  })
+  @IsString()
+  contentType: string;
+
+  @ApiProperty({
+    description: 'معرف المحتوى المراد تصديره',
+    example: 'uuid-of-the-content',
+  })
+  @IsString()
+  contentId: string;
+
+  @ApiProperty({
+    description: 'صيغة الملف المطلوبة للتصدير (مثلاً: "PDF", "CSV", "JSON")',
+    example: 'PDF',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  format?: string;
+
+  @ApiProperty({
+    description: 'إعدادات إضافية لعملية التصدير (اختياري)',
+    example: { includeImages: true, orientation: 'portrait' },
+    required: false,
+  })
+  @IsOptional()
+  // يمكن استخدام IsObject أو تركها بدون ديكوراتور إذا كانت من نوع Record<string, any>
+  options?: Record<string, any>;
+}
+
+/**
+ * DTO لعرض حالة عملية تصدير قائمة
+ */
+export class ExportStatusDto {
+  @ApiProperty({
+    description: 'معرف عملية التصدير',
+    example: 'export-job-uuid',
+  })
+  @IsString()
+  exportId: string;
+
+  @ApiProperty({
+    description: 'حالة عملية التصدير',
+    enum: ExportStatus,
+    example: ExportStatus.IN_PROGRESS,
+  })
+  @IsEnum(ExportStatus)
+  status: ExportStatus;
+
+  @ApiProperty({
+    description: 'نسبة الإنجاز (من 0 إلى 100)',
+    example: 50,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  progress?: number;
+
+  @ApiProperty({
+    description: 'رابط الملف المصدّر عند اكتمال العملية',
+    example: 'https://storage.example.com/exports/file.pdf',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  downloadUrl?: string;
+
+  @ApiProperty({
+    description: 'رسالة خطأ في حال فشل العملية',
+    example: 'Failed to connect to storage service',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  errorMessage?: string;
+
+  @ApiProperty({
+    description: 'تاريخ ووقت بدء عملية التصدير',
+    example: '2025-11-25T10:00:00Z',
+  })
+  @IsDateString()
+  createdAt: string;
+
+  @ApiProperty({
+    description: 'تاريخ ووقت آخر تحديث لحالة التصدير',
+    example: '2025-11-25T10:05:00Z',
+  })
+  @IsDateString()
+  updatedAt: string;
+}
