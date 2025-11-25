@@ -154,18 +154,6 @@ model User {
 
   // العلاقات مع الأدوار
   userRoles UserRole[]
-  
-  // Magic Notebook Relations
-  magicNotebooks      MagicNotebook[]
-  magicSections       MagicSection[]
-  magicPages          MagicPage[]
-  magicChatLogs       MagicChatLog[]
-  magicIdeas          MagicIdea[]
-  magicTasks          MagicTask[]
-  magicReports        MagicReport[]
-  magicArchives       MagicArchive[]
-  magicTimelineEvents MagicTimelineEvent[]
-  magicStickyNotes    MagicStickyNote[]
 
   // التدقيق (Audit Trail)
   createdAt DateTime @default(now())
@@ -1751,6 +1739,8 @@ model SalesReturnLine {
 }
 
 // ============================================================================
+// SMART DOCUMENTATION NOTEBOOK (دفتر التوثيق الذكي)
+// ============================================================================
 
 /// صفحات التوثيق - النظام الأساسي لجميع أنواع المحتوى
 model DocumentationPage {
@@ -1849,10 +1839,14 @@ model Idea {
   relatedSystem   String? /// النظام المرتبط (maps, accounting, etc.)
 
   // العلاقات
+  conversationId String? /// المحادثة المصدر
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
 
   tasks Task[] /// المهام المحولة من هذه الفكرة
 
   // الأفكار المرتبطة (Many-to-Many Self-Relation)
+  relatedIdeas IdeaRelation[] @relation("IdeaFrom")
+  relatedBy    IdeaRelation[] @relation("IdeaTo")
 
   // الربط بصفحة التوثيق
   pageId String?
@@ -1873,6 +1867,7 @@ model Idea {
   @@index([category])
   @@index([priority])
   @@index([rating])
+  @@index([conversationId])
   @@index([relatedSystem])
   @@index([createdAt])
   @@map("ideas")
@@ -2061,6 +2056,7 @@ model Task {
   ideaId String? /// الفكرة المصدر
   idea   Idea?   @relation(fields: [ideaId], references: [id], onDelete: SetNull)
 
+  achievementReports TaskAchievement[] /// تقارير الإنجاز المرتبطة
 
   // الربط بالصفحة
   pageId String?
@@ -2201,278 +2197,468 @@ model PageComment {
   @@map("page_comments")
 }
 
+// ============================================================================
+// CONVERSATIONS (المحادثات)
+// ============================================================================
 
-// ============================================
-// الدفتر السحري (Magic Notebook System)
-// ============================================
+/// المحادثات - نقطة البداية لدورة حياة المعرفة
+model Conversation {
+  id                  String               @id @default(cuid())
+  title               String /// عنوان المحادثة
+  content             String               @db.Text /// المحتوى الكامل
+  summary             String?              @db.Text /// ملخص المحادثة
+  source              String? /// المصدر (ملف، محادثة، إلخ)
+  sourceFile          String? /// اسم الملف المصدر
+  sourcePath          String? /// المسار الكامل للملف
+  sourceRepo          String? /// المستودع المصدر
+  category            ConversationCategory /// الفئة
+  status              ConversationStatus /// الحالة
+  extractedIdeasCount Int                  @default(0) /// عدد الأفكار المستخلصة
 
-// Enums
-enum MagicIdeaCategory {
-  FEATURE
-  IMPROVEMENT
-  BUG_FIX
-  RESEARCH
-  OTHER
-}
+  // البيانات الوصفية
+  fileSize   Int? /// حجم الملف (بايت)
+  linesCount Int? /// عدد الأسطر
+  wordsCount Int? /// عدد الكلمات
 
-enum MagicIdeaStatus {
-  NEW
-  IN_PROGRESS
-  APPROVED
-  REJECTED
-  CONVERTED
-}
+  // العلاقات
+  ideas Idea[] /// الأفكار المستخلصة
 
-enum MagicPriority {
-  HIGH
-  MEDIUM
-  LOW
-}
+  // التواريخ
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  archivedAt  DateTime? /// تاريخ الأرشفة
+  completedAt DateTime? /// تاريخ الاكتمال
 
-enum MagicTaskStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
+  // التدقيق
+  createdBy String
+  updatedBy String?
 
-enum MagicReportType {
-  DAILY
-  WEEKLY
-  MONTHLY
-  QUARTERLY
-  ANNUAL
-  CUSTOM
-  PROJECT
-  TASK
-  IDEA
-  COMPLETION
-  ANALYSIS
-  SUMMARY
-}
-
-enum MagicReportStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
-
-// Models
-model MagicNotebook {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  icon        String?  @default("📖")
-  color       String?  @default("#4CAF50")
-  parentId    String?
-  parent      MagicNotebook?  @relation("MagicNotebookHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children    MagicNotebook[] @relation("MagicNotebookHierarchy")
-  sections    MagicSection[]
-  pages       MagicPage[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String
-  userId      String
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@index([userId])
-  @@index([parentId])
-  @@map("magic_notebooks")
-}
-
-model MagicSection {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  order       Int      @default(0)
-  notebookId  String
-  notebook    MagicNotebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
-  pages       MagicPage[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  userId      String
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@index([notebookId])
-  @@index([userId])
-  @@map("magic_sections")
-}
-
-model MagicPage {
-  id             String   @id @default(cuid())
-  title          String
-  content        String   @db.Text
-  tags           String[]
-  notebookId     String
-  notebook       MagicNotebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
-  sectionId      String?
-  section        MagicSection? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
-  conversationId String?   @unique
-  conversation   MagicChatLog?  @relation(fields: [conversationId], references: [id], onDelete: SetNull)
-  ideaId         String?   @unique
-  idea           MagicIdea?     @relation(fields: [ideaId], references: [id], onDelete: SetNull)
-  taskId         String?   @unique
-  task           MagicTask?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  reportId       String?   @unique
-  report         MagicReport?   @relation(fields: [reportId], references: [id], onDelete: SetNull)
-  stickyNotes    MagicStickyNote[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  createdBy      String
-  userId         String
-  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@index([notebookId])
-  @@index([sectionId])
-  @@index([userId])
-  @@index([conversationId])
-  @@index([ideaId])
-  @@index([taskId])
-  @@index([reportId])
-  @@map("magic_pages")
-}
-
-model MagicChatLog {
-  id         String   @id @default(cuid())
-  title      String
-  content    String   @db.Text
-  tags       String[]
-  isFavorite Boolean  @default(false)
-  pageId     String?
-  page       MagicPage?
-  ideas      MagicIdea[]
-  tasks      MagicTask[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  createdBy  String
-  userId     String
-  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@index([userId])
-  @@index([isFavorite])
-  @@map("magic_chat_logs")
-}
-
-model MagicIdea {
-  id             String              @id @default(cuid())
-  title          String
-  description    String              @db.Text
-  category       MagicIdeaCategory   @default(FEATURE)
-  priority       MagicPriority       @default(MEDIUM)
-  status         MagicIdeaStatus     @default(NEW)
-  conversationId String?
-  conversation   MagicChatLog? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
-  pageId         String?
-  page           MagicPage?
-  tasks          MagicTask[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  createdBy      String
-  userId         String
-  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@index([userId])
   @@index([status])
   @@index([category])
-  @@index([priority])
-  @@index([conversationId])
-  @@map("magic_ideas")
+  @@index([createdAt])
+  @@index([sourceRepo])
+  @@map("conversations")
 }
 
-model MagicTask {
-  id          String            @id @default(cuid())
-  title       String
-  description String            @db.Text
-  status      MagicTaskStatus   @default(PENDING)
-  priority    MagicPriority     @default(MEDIUM)
-  dueDate     DateTime?
-  ideaId      String?
-  idea        MagicIdea? @relation(fields: [ideaId], references: [id], onDelete: SetNull)
-  chatLogId   String?
-  chatLog     MagicChatLog? @relation(fields: [chatLogId], references: [id], onDelete: SetNull)
-  pageId      String?
-  page        MagicPage?
-  reports     MagicReport[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  completedAt DateTime?
-  createdBy   String
-  userId      String
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@index([userId])
-  @@index([status])
-  @@index([priority])
-  @@index([ideaId])
-  @@index([chatLogId])
-  @@map("magic_tasks")
+/// أنواع المحادثات
+enum ConversationCategory {
+  ARCHITECTURE /// بنية معمارية
+  FEATURE /// ميزة جديدة
+  IMPROVEMENT /// تحسين
+  BUG_FIX /// إصلاح خطأ
+  DOCUMENTATION /// توثيق
+  PLANNING /// تخطيط
+  GUIDE /// دليل
+  REPORT /// تقرير
+  OTHER /// أخرى
 }
 
-model MagicReport {
-  id          String              @id @default(cuid())
-  title       String
-  content     String              @db.Text
-  type        MagicReportType     @default(CUSTOM)
-  status      MagicReportStatus   @default(DRAFT)
-  taskId      String?
-  task        MagicTask? @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  pageId      String?
-  page        MagicPage?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  publishedAt DateTime?
-  createdBy   String
-  userId      String
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@index([userId])
-  @@index([status])
+/// حالات المحادثة
+enum ConversationStatus {
+  ACTIVE /// نشط
+  EXTRACTING /// قيد الاستخلاص
+  COMPLETED /// مكتمل
+  ARCHIVED /// أرشيف
+}
+
+/// ربط الأفكار ببعضها (Many-to-Many)
+model IdeaRelation {
+  id String @id @default(cuid())
+
+  fromIdeaId String
+  fromIdea   Idea   @relation("IdeaFrom", fields: [fromIdeaId], references: [id], onDelete: Cascade)
+
+  toIdeaId String
+  toIdea   Idea   @relation("IdeaTo", fields: [toIdeaId], references: [id], onDelete: Cascade)
+
+  relationType String? /// نوع العلاقة (related, depends_on, blocks, etc.)
+
+  createdAt DateTime @default(now())
+  createdBy String
+
+  @@unique([fromIdeaId, toIdeaId])
+  @@index([fromIdeaId])
+  @@index([toIdeaId])
+  @@map("idea_relations")
+}
+
+// ============================================================================
+// ACHIEVEMENT REPORTS (تقارير الإنجاز)
+// ============================================================================
+
+/// تقارير الإنجاز - المرحلة الرابعة من دورة حياة المعرفة
+model AchievementReport {
+  id     String                @id @default(cuid())
+  title  String /// عنوان التقرير
+  type   AchievementReportType /// نوع التقرير
+  period String /// الفترة (يومي، أسبوعي، شهري)
+
+  // الإحصائيات
+  totalTasks         Int   @default(0) /// إجمالي المهام
+  completedTasks     Int   @default(0) /// المهام المنجزة
+  progressPercentage Float @default(0) /// نسبة الإنجاز
+
+  totalIdeas     Int @default(0) /// إجمالي الأفكار
+  convertedIdeas Int @default(0) /// الأفكار المحولة
+
+  totalConversations     Int @default(0) /// إجمالي المحادثات
+  processedConversations Int @default(0) /// المحادثات المعالجة
+
+  // المحتوى
+  content         String  @db.Text /// محتوى التقرير
+  summary         String? @db.Text /// ملخص تنفيذي
+  recommendations String? @db.Text /// التوصيات
+  highlights      String? @db.Text /// أبرز الإنجازات
+  challenges      String? @db.Text /// التحديات
+
+  // البيانات الإضافية
+  team    String? /// الفريق
+  project String? /// المشروع
+
+  // العلاقات
+  tasks TaskAchievement[] /// المهام المرتبطة
+
+  // التواريخ
+  startDate DateTime /// بداية الفترة
+  endDate   DateTime /// نهاية الفترة
+  createdAt DateTime @default(now())
+
+  // التدقيق
+  createdBy String
+
   @@index([type])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([team])
+  @@index([project])
+  @@map("achievement_reports")
+}
+
+/// أنواع تقارير الإنجاز
+enum AchievementReportType {
+  DAILY /// يومي
+  WEEKLY /// أسبوعي
+  MONTHLY /// شهري
+  QUARTERLY /// ربع سنوي
+  YEARLY /// سنوي
+  PROJECT /// مشروع
+  TEAM /// فريق
+  CUSTOM /// مخصص
+}
+
+/// ربط المهام بتقارير الإنجاز (Many-to-Many)
+model TaskAchievement {
+  id String @id @default(cuid())
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  reportId String
+  report   AchievementReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([taskId, reportId])
   @@index([taskId])
-  @@map("magic_reports")
+  @@index([reportId])
+  @@map("task_achievements")
 }
 
-model MagicArchive {
-  id          String   @id @default(cuid())
-  entityType  String
-  entityId    String
-  title       String
-  content     String?  @db.Text
-  archivePath String
-  reason      String?
-  archivedAt  DateTime @default(now())
-  archivedBy  String
-  userId      String
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@index([userId])
-  @@index([entityType])
-  @@index([entityId])
-  @@map("magic_archives")
+// ============================================================================
+// TASK PROGRESS REPORTS (تقارير سير المهام)
+// ============================================================================
+
+/// تقارير سير المهام - تتبع تقدم مجموعة مهام مرتبطة بنظام أو مشروع
+model TaskProgressReport {
+  id          String  @id @default(cuid())
+  title       String /// عنوان التقرير
+  description String? @db.Text /// وصف التقرير
+
+  // التصنيف
+  system   String? /// النظام المرتبط (maps, accounting, etc.)
+  project  String? /// المشروع
+  category String? /// الفئة
+
+  // الإحصائيات
+  totalTasks      Int @default(0) /// إجمالي المهام
+  completedTasks  Int @default(0) /// المهام المنجزة
+  inProgressTasks Int @default(0) /// المهام قيد التنفيذ
+  blockedTasks    Int @default(0) /// المهام المحظورة
+  pendingTasks    Int @default(0) /// المهام المعلقة
+
+  overallProgress Float @default(0) /// نسبة الإنجاز الكلية (0-100)
+
+  // تفاصيل التقدم
+  completedTasksList  String[] /// قائمة المهام المنجزة (IDs)
+  inProgressTasksList String[] /// قائمة المهام قيد التنفيذ (IDs)
+  blockedTasksList    String[] /// قائمة المهام المحظورة (IDs)
+  pendingTasksList    String[] /// قائمة المهام المعلقة (IDs)
+
+  // التحليل
+  summary         String? @db.Text /// ملخص التقدم
+  achievements    String? @db.Text /// الإنجازات
+  challenges      String? @db.Text /// التحديات والمعوقات
+  nextSteps       String? @db.Text /// الخطوات التالية
+  recommendations String? @db.Text /// التوصيات
+
+  // التواريخ
+  startDate   DateTime? /// تاريخ البدء
+  targetDate  DateTime? /// التاريخ المستهدف للإنجاز
+  lastUpdated DateTime  @default(now()) /// آخر تحديث
+  createdAt   DateTime  @default(now())
+
+  // التدقيق
+  createdBy String
+  updatedBy String?
+
+  @@index([system])
+  @@index([project])
+  @@index([overallProgress])
+  @@index([createdAt])
+  @@map("task_progress_reports")
 }
 
-model MagicTimelineEvent {
-  id          String   @id @default(cuid())
-  eventType   String
-  entityType  String
-  entityId    String
-  title       String
-  description String?
-  metadata    Json?
-  occurredAt  DateTime @default(now())
-  userId      String
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@index([userId])
-  @@index([entityType])
-  @@index([entityId])
-  @@index([occurredAt])
-  @@map("magic_timeline_events")
+// ============================================================================
+// UNIFIED NOTEBOOK (الدفتر الشامل المتكامل)
+// ============================================================================
+
+/// صفحات الدفتر - ملاحظات حرة مثل OneNote
+model NotebookPage {
+  id      String @id @default(cuid())
+  title   String /// عنوان الصفحة
+  content String @db.Text /// المحتوى (Markdown)
+
+  // التنظيم
+  section String? /// القسم/المجلد
+  tags    String[] /// الوسوم
+  color   String? /// لون الصفحة
+  icon    String? /// أيقونة الصفحة
+
+  // الربط
+  conversationId String? /// ربط بمحادثة
+  ideaId         String? /// ربط بفكرة
+  taskId         String? /// ربط بمهمة
+
+  // الحالة
+  isPinned   Boolean @default(false) /// مثبتة
+  isArchived Boolean @default(false) /// مؤرشفة
+  isFavorite Boolean @default(false) /// مفضلة
+
+  // التواريخ
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastViewedAt DateTime? /// آخر مشاهدة
+
+  // التدقيق
+  createdBy String
+  updatedBy String?
+
+  // العلاقات
+  stickyNotes    StickyNote[]
+  timelineEvents TimelineEvent[]
+
+  @@index([section])
+  @@index([createdBy])
+  @@index([isPinned])
+  @@index([createdAt])
+  @@map("notebook_pages")
 }
 
-model MagicStickyNote {
-  id        String   @id @default(cuid())
-  content   String   @db.Text
-  color     String   @default("#FFEB3B")
-  position  Json?
-  pageId    String?
-  page      MagicPage? @relation(fields: [pageId], references: [id], onDelete: Cascade)
+/// الملصقات - ملاحظات سريعة مثل Sticky Notes
+model StickyNote {
+  id      String @id @default(cuid())
+  content String @db.Text /// المحتوى
+
+  // التنسيق
+  color    String @default("yellow") /// اللون
+  position Json? /// الموقع على الشاشة {x, y}
+  size     Json? /// الحجم {width, height}
+
+  // الربط
+  pageId String? /// ربط بصفحة دفتر
+  page   NotebookPage? @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  conversationId String? /// ربط بمحادثة
+  ideaId         String? /// ربط بفكرة
+  taskId         String? /// ربط بمهمة
+
+  // الحالة
+  isDismissed Boolean @default(false) /// تم إخفاؤها
+
+  // التواريخ
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  userId    String
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@index([userId])
+
+  // التدقيق
+  createdBy String
+
   @@index([pageId])
-  @@map("magic_sticky_notes")
+  @@index([createdBy])
+  @@index([isDismissed])
+  @@map("sticky_notes")
+}
+
+/// الخط الزمني - تتبع تطور الأشياء
+model TimelineEvent {
+  id String @id @default(cuid())
+
+  // نوع الحدث
+  eventType   TimelineEventType /// نوع الحدث
+  title       String /// عنوان الحدث
+  description String?           @db.Text /// وصف الحدث
+
+  // الربط بالكيانات
+  conversationId String? /// المحادثة
+  ideaId         String? /// الفكرة
+  taskId         String? /// المهمة
+  pageId         String? /// صفحة الدفتر
+  page           NotebookPage? @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  // البيانات الإضافية
+  metadata Json? /// بيانات إضافية
+
+  // التواريخ
+  eventDate DateTime @default(now()) /// تاريخ الحدث
+  createdAt DateTime @default(now())
+
+  // التدقيق
+  createdBy String
+
+  @@index([eventType])
+  @@index([conversationId])
+  @@index([ideaId])
+  @@index([taskId])
+  @@index([eventDate])
+  @@index([createdBy])
+  @@map("timeline_events")
+}
+
+enum TimelineEventType {
+  CONVERSATION_CREATED /// محادثة أُنشئت
+  CONVERSATION_UPDATED /// محادثة حُدثت
+  CONVERSATION_ARCHIVED /// محادثة أُرشفت
+
+  IDEA_EXTRACTED /// فكرة استُخلصت
+  IDEA_APPROVED /// فكرة اعتُمدت
+  IDEA_REJECTED /// فكرة رُفضت
+
+  TASK_CREATED /// مهمة أُنشئت
+  TASK_STARTED /// مهمة بدأت
+  TASK_PROGRESS /// تقدم في المهمة
+  TASK_BLOCKED /// مهمة حُظرت
+  TASK_COMPLETED /// مهمة أُنجزت
+
+  NOTE_CREATED /// ملاحظة أُنشئت
+  NOTE_UPDATED /// ملاحظة حُدثت
+
+  REPORT_GENERATED /// تقرير وُلّد
+
+  OTHER /// حدث آخر
+}
+
+// ========================================
+// Smart Notebook Additional Models
+// ========================================
+
+model Notebook {
+  id          String     @id @default(uuid())
+  title       String     @db.VarChar(255)
+  description String?    @db.Text
+  ownerId     String
+  status      String     @default("active") @db.VarChar(50)
+  isShared    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  parentId    String?
+  parent      Notebook?  @relation("NotebookHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Notebook[] @relation("NotebookHierarchy")
+  sections    Section[]
+
+  @@unique([ownerId, title])
+  @@index([ownerId])
+}
+
+model Section {
+  id         String   @id @default(uuid())
+  name       String
+  rank       Int      @default(0)
+  notebookId String
+  notebook   Notebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([notebookId, rank])
+  @@index([notebookId])
+}
+
+model Archive {
+  id         String    @id @default(uuid())
+  entityType String
+  entityId   String
+  entityData Json
+  archivedBy String
+  archivedAt DateTime  @default(now())
+  reason     String?   @db.Text
+  isRestored Boolean   @default(false)
+  restoredAt DateTime?
+  restoredBy String?
+
+  @@index([entityType, entityId])
+  @@index([archivedBy])
+}
+
+model AutoLink {
+  id         String   @id @default(uuid())
+  sourceType String
+  sourceId   String
+  targetType String
+  targetId   String
+  linkType   String
+  confidence Float    @default(0.0)
+  createdAt  DateTime @default(now())
+
+  @@unique([sourceType, sourceId, targetType, targetId])
+  @@index([sourceType, sourceId])
+  @@index([targetType, targetId])
+}
+
+model DashboardStats {
+  id        String   @id @default(uuid())
+  userId    String
+  statType  String
+  statValue Json
+  period    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, statType, period])
+  @@index([userId])
+}
+
+model ExportJob {
+  id          String    @id @default(uuid())
+  userId      String
+  exportType  String
+  format      String
+  status      String    @default("pending")
+  filePath    String?
+  error       String?   @db.Text
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@index([userId])
+  @@index([status])
+}
+
+model SearchIndex {
+  id         String   @id @default(uuid())
+  entityType String
+  entityId   String
+  content    String   @db.Text
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([entityType, entityId])
+  @@index([entityType])
 }

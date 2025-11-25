@@ -1,29 +1,26 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    // Create PostgreSQL connection pool with explicit configuration
-    const connectionString = process.env.DATABASE_URL;
-    
-    const pool = new Pool({ 
-      connectionString,
-      // Ensure password is treated as string
-      connectionTimeoutMillis: 5000,
+    const pool = new Pool({
+      host: "localhost",
+      port: 5432,
+      database: "semop_db",
+      user: "semop_user",
+      password: "semop123456",
     });
     
-    // Create Prisma adapter for PostgreSQL
     const adapter = new PrismaPg(pool);
-    
-    // Initialize PrismaClient with adapter
     super({ adapter });
   }
 
   async onModuleInit() {
     await this.$connect();
+    console.log("✅ Connected to database successfully");
   }
 
   async onModuleDestroy() {

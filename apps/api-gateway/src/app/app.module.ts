@@ -12,14 +12,9 @@ import { ProjectsModule } from './projects/projects.module';
 import { CustomersModule } from './customers/customers.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { ItemsModule } from './items/items.module';
-import { SmartNotebookModule } from '../modules/smart-notebook/smart-notebook.module';
 import { ReportsModule } from '../modules/reports/reports.module';
-import { SearchModule } from '../modules/search/search.module';
-import { NotificationsModule } from '../modules/notifications/notifications.module';
-import { ConversationsModule } from '../conversations/conversations.module';
-import { AchievementReportsModule } from '../achievement-reports/achievement-reports.module';
-import { TaskProgressReportsModule } from '../task-progress-reports/task-progress-reports.module';
-import { UnifiedNotebookModule } from '../unified-notebook/unified-notebook.module';
+import { SalesOrdersModule } from '../modules/sales-orders/sales-orders.module';
+import { MagicNotebookModule } from "../magic-notebook/magic-notebook.module";
 
 @Module({
   imports: [
@@ -34,14 +29,9 @@ import { UnifiedNotebookModule } from '../unified-notebook/unified-notebook.modu
     CustomersModule,
     SuppliersModule,
     ItemsModule,
-    SmartNotebookModule,
     ReportsModule,
-    SearchModule,
-    NotificationsModule,
-    ConversationsModule,
-    AchievementReportsModule,
-    TaskProgressReportsModule,
-    UnifiedNotebookModule,
+    SalesOrdersModule,
+    MagicNotebookModule,
   ],
   controllers: [AppController],
   providers: [AppService],
