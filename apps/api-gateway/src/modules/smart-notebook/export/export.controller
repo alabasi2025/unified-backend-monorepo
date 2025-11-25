@@ -1,0 +1,51 @@
+import { Controller, Get, Post, Param, Body, Query, Res } from '@nestjs/common';
+import { Response } from 'express';
+
+// DTOs for request bodies and queries would typically be imported here.
+// For this task, we will use placeholder types.
+
+@Controller('export')
+export class ExportController {
+  // POST /export/pdf
+  @Post('pdf')
+  async exportPdf(@Body() body: any) {
+    // Logic to start PDF export
+    return { message: 'PDF export initiated', data: body };
+  }
+
+  // POST /export/word
+  @Post('word')
+  async exportWord(@Body() body: any) {
+    // Logic to start Word export
+    return { message: 'Word export initiated', data: body };
+  }
+
+  // POST /export/json
+  @Post('json')
+  async exportJson(@Body() body: any) {
+    // Logic to start JSON export
+    return { message: 'JSON export initiated', data: body };
+  }
+
+  // POST /export/markdown
+  @Post('markdown')
+  async exportMarkdown(@Body() body: any) {
+    // Logic to start Markdown export
+    return { message: 'Markdown export initiated', data: body };
+  }
+
+  // GET /export/:id/status
+  @Get(':id/status')
+  async getExportStatus(@Param('id') id: string) {
+    // Logic to check export status by ID
+    return { id, status: 'processing' };
+  }
+
+  // GET /export/:id/download
+  @Get(':id/download')
+  async downloadExport(@Param('id') id: string, @Res() res: Response) {
+    // Logic to stream the file for download
+    // Example: res.download(filePath);
+    return { message: `Download link for export ID: ${id}` };
+  }
+}

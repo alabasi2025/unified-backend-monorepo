@@ -1,0 +1,48 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../../prisma/prisma.service';
+
+// تعريف أنواع البيانات الأساسية للـ StickyNote
+// يجب استبدال هذه الأنواع بأنواع Prisma الفعلية عند توفرها
+type StickyNote = any;
+type CreateStickyNoteDto = any;
+type UpdateStickyNoteDto = any;
+
+@Injectable()
+export class StickyNotesService {
+  constructor(private prisma: PrismaService) {}
+
+  // 1. إنشاء ملاحظة جديدة
+  async create(data: CreateStickyNoteDto): Promise<StickyNote> {
+    // نفترض أن اسم نموذج Prisma هو StickyNote
+    return this.prisma.stickyNote.create({ data });
+  }
+
+  // 2. جلب جميع الملاحظات
+  async findAll(): Promise<StickyNote[]> {
+    return this.prisma.stickyNote.findMany();
+  }
+
+  // 3. جلب ملاحظة واحدة بالمعرف
+  async findOne(id: number): Promise<StickyNote | null> {
+    return this.prisma.stickyNote.findUnique({ where: { id } });
+  }
+
+  // 4. تحديث ملاحظة بالمعرف
+  async update(id: number, data: UpdateStickyNoteDto): Promise<StickyNote> {
+    return this.prisma.stickyNote.update({ where: { id }, data });
+  }
+
+  // 5. حذف ملاحظة بالمعرف
+  async delete(id: number): Promise<StickyNote> {
+    return this.prisma.stickyNote.delete({ where: { id } });
+  }
+
+  // 6. تحديث موقع الملاحظة
+  async updatePosition(id: number, x: number, y: number): Promise<StickyNote> {
+    // نفترض وجود حقول x_position و y_position في نموذج StickyNote
+    return this.prisma.stickyNote.update({
+      where: { id },
+      data: { x_position: x, y_position: y },
+    });
+  }
+}

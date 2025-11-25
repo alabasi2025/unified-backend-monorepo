@@ -1,0 +1,36 @@
+import { IsString, IsOptional, IsNumber, IsArray, ValidateNested, ArrayMinSize } from 'class-validator';
+import { Type } from 'class-transformer';
+
+// DTO لتحديد ترتيب قسم واحد
+export class SectionOrderDto {
+  @IsNumber()
+  id: number;
+
+  @IsNumber()
+  order: number;
+}
+
+// 1. CreateSectionDto
+export class CreateSectionDto {
+  @IsString()
+  name: string;
+
+  @IsNumber()
+  notebookId: number; // افتراض أن القسم ينتمي إلى دفتر ملاحظات
+}
+
+// 2. UpdateSectionDto
+export class UpdateSectionDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+}
+
+// 3. ReorderSectionsDto
+export class ReorderSectionsDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => SectionOrderDto)
+  sections: SectionOrderDto[];
+}

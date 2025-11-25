@@ -1,0 +1,74 @@
+import { Controller, Get, Post, Delete, Param, Body, Query } from '@nestjs/common';
+
+// ملاحظة: في بيئة عمل حقيقية، سيتم استيراد DTOs و Service
+// ولكن لغرض هذه المهمة، سنستخدم أنواع بيانات أساسية أو 'any'
+
+// تعريف DTOs وهمية لغرض الإكمال
+class ArchiveItemDto {
+  entityType: string;
+  entityId: string;
+}
+
+class RestoreItemDto {
+  // يمكن أن يحتوي على بيانات إضافية لعملية الاستعادة
+}
+
+@Controller('archive')
+export class ArchiveController {
+  // في بيئة عمل حقيقية، سيتم حقن (inject) خدمة (Service) هنا
+  // constructor(private readonly archiveService: ArchiveService) {}
+
+  /**
+   * GET /archive
+   * استرجاع جميع العناصر المؤرشفة مع إمكانية التصفية والبحث.
+   */
+  @Get()
+  findAll(@Query() query: any) {
+    console.log('Finding all archived items with query:', query);
+    return { message: 'List of all archived items', query };
+  }
+
+  /**
+   * GET /archive/:entityType
+   * استرجاع العناصر المؤرشفة لنوع كيان محدد (مثل 'note', 'task', 'document').
+   */
+  @Get(':entityType')
+  findByEntityType(@Param('entityType') entityType: string, @Query() query: any) {
+    console.log('Finding archived items for entity type:', entityType, 'with query:', query);
+    return { message: `List of archived items for type: ${entityType}`, entityType, query };
+  }
+
+  /**
+   * POST /archive/:entityType/:entityId
+   * أرشفة كيان محدد.
+   */
+  @Post(':entityType/:entityId')
+  archiveItem(
+    @Param('entityType') entityType: string,
+    @Param('entityId') entityId: string,
+    @Body() body: ArchiveItemDto, // يمكن استخدام Body لإرسال بيانات إضافية للأرشفة
+  ) {
+    console.log('Archiving item:', entityType, entityId, body);
+    return { message: `Item ${entityId} of type ${entityType} archived successfully`, entityType, entityId, body };
+  }
+
+  /**
+   * POST /archive/:id/restore
+   * استعادة عنصر مؤرشف باستخدام معرف الأرشيف.
+   */
+  @Post(':id/restore')
+  restoreItem(@Param('id') id: string, @Body() body: RestoreItemDto) {
+    console.log('Restoring archived item with ID:', id, body);
+    return { message: `Archived item ${id} restored successfully`, id, body };
+  }
+
+  /**
+   * DELETE /archive/:id
+   * حذف عنصر مؤرشف نهائياً باستخدام معرف الأرشيف.
+   */
+  @Delete(':id')
+  deleteItem(@Param('id') id: string) {
+    console.log('Deleting archived item with ID:', id);
+    return { message: `Archived item ${id} deleted permanently`, id };
+  }
+}

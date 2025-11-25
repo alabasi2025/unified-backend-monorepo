@@ -1,0 +1,37 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../prisma/prisma.service';
+
+@Injectable()
+export class SearchService {
+  constructor(private prisma: PrismaService) {}
+
+  async globalSearch(query: string) {
+    // Logic for global search across all entities
+    // Example: return this.prisma.$queryRaw`...`;
+    return { message: `Performing global search for: ${query}` };
+  }
+
+  async searchNotebooks(query: string) {
+    // Logic for searching notebooks
+    // Example: return this.prisma.notebook.findMany({ where: { title: { contains: query } } });
+    return { message: `Searching notebooks for: ${query}` };
+  }
+
+  async searchPages(query: string) {
+    // Logic for searching pages
+    // Example: return this.prisma.page.findMany({ where: { content: { contains: query } } });
+    return { message: `Searching pages for: ${query}` };
+  }
+
+  async searchIdeas(query: string) {
+    // Logic for searching ideas
+    // Example: return this.prisma.idea.findMany({ where: { description: { contains: query } } });
+    return { message: `Searching ideas for: ${query}` };
+  }
+
+  async searchTasks(query: string) {
+    // Logic for searching tasks
+    // Example: return this.prisma.task.findMany({ where: { title: { contains: query } } });
+    return { message: `Searching tasks for: ${query}` };
+  }
+}

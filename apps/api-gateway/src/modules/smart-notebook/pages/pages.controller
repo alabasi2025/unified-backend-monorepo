@@ -1,0 +1,74 @@
+import { Controller, Get, Post, Put, Delete, Param, Body, Query } from '@nestjs/common';
+
+// يُفترض وجود خدمة (Service) و DTOs للعمل مع البيانات، لكن سيتم استخدام placeholders هنا
+// import { PagesService } from './pages.service';
+// import { CreatePageDto, UpdatePageDto } from './dto/page.dto';
+
+@Controller('pages')
+export class PagesController {
+  // constructor(private readonly pagesService: PagesService) {}
+
+  // POST /notebooks/:id/pages
+  // يتم استخدام @Controller('pages') كمسار أساسي، لذا يجب أن يكون المسار هنا هو /notebooks/:notebookId
+  // ولكن بما أن المسار المطلوب هو POST /notebooks/:id/pages، والـ Controller هو PagesController،
+  // يجب أن يكون المسار الأساسي للـ Controller هو 'notebooks/:notebookId/pages' أو استخدام مسار كامل هنا.
+  // سأفترض أن المسار الأساسي للـ Controller هو 'pages' وسأستخدم مساراً كاملاً أو معدلاً.
+  // بناءً على أفضل ممارسات NestJS، يجب أن يكون المسار الأساسي للـ Controller هو 'pages'
+  // وسأستخدم @Post('notebooks/:notebookId') لتمثيل POST /notebooks/:id/pages
+  // أو سأستخدم @Controller('notebooks/:notebookId/pages')
+  // سألتزم بالمسار الأساسي 'pages' وأستخدم @Post() مع المسار الكامل.
+
+  // Endpoint 1: POST /notebooks/:id/pages
+  @Post('notebooks/:notebookId')
+  createPageInNotebook(
+    @Param('notebookId') notebookId: string,
+    @Body() createPageDto: any, // Placeholder for CreatePageDto
+  ) {
+    return `This action creates a new page in notebook ${notebookId}`;
+  }
+
+  // Endpoint 2: GET /notebooks/:id/pages
+  @Get('notebooks/:notebookId')
+  findAllPagesInNotebook(
+    @Param('notebookId') notebookId: string,
+    @Query() query: any,
+  ) {
+    return `This action returns all pages for notebook ${notebookId} with query ${JSON.stringify(query)}`;
+  }
+
+  // Endpoint 3: GET /sections/:id/pages
+  @Get('sections/:sectionId')
+  findAllPagesInSection(
+    @Param('sectionId') sectionId: string,
+    @Query() query: any,
+  ) {
+    return `This action returns all pages for section ${sectionId} with query ${JSON.stringify(query)}`;
+  }
+
+  // Endpoint 4: GET /pages/:id
+  @Get(':pageId')
+  findOnePage(@Param('pageId') pageId: string) {
+    return `This action returns a single page with ID ${pageId}`;
+  }
+
+  // Endpoint 5: PUT /pages/:id
+  @Put(':pageId')
+  updatePage(
+    @Param('pageId') pageId: string,
+    @Body() updatePageDto: any, // Placeholder for UpdatePageDto
+  ) {
+    return `This action updates page ${pageId}`;
+  }
+
+  // Endpoint 6: DELETE /pages/:id
+  @Delete(':pageId')
+  deletePage(@Param('pageId') pageId: string) {
+    return `This action removes page ${pageId}`;
+  }
+
+  // Endpoint 7: POST /pages/:id/archive
+  @Post(':pageId/archive')
+  archivePage(@Param('pageId') pageId: string) {
+    return `This action archives page ${pageId}`;
+  }
+}

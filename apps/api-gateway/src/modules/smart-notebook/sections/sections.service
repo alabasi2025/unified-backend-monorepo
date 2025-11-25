@@ -1,0 +1,49 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../prisma/prisma.service';
+
+@Injectable()
+export class SectionsService {
+  constructor(private prisma: PrismaService) {}
+
+  // The actual types for data, where, and params would be defined in DTOs and other types,
+  // but for this task, we use 'any' as a placeholder based on the example.
+
+  async create(data: any) {
+    // Assuming 'section' is the model name in Prisma schema
+    return this.prisma.section.create({ data });
+  }
+
+  async findAll() {
+    return this.prisma.section.findMany();
+  }
+
+  async findOne(where: any) {
+    return this.prisma.section.findUnique({ where });
+  }
+
+  async update(params: { where: any; data: any }) {
+    const { where, data } = params;
+    return this.prisma.section.update({ where, data });
+  }
+
+  async delete(where: any) {
+    return this.prisma.section.delete({ where });
+  }
+
+  async reorder(data: any) {
+    // This method would typically handle a transaction to update the order of multiple sections.
+    // For a basic implementation, we'll assume it takes an array of updates.
+    // A real implementation would require more complex logic and transaction handling.
+    console.log('Reordering sections with data:', data);
+    // Placeholder for reorder logic (e.g., updating 'order' field for multiple items)
+    // return this.prisma.$transaction(
+    //   data.map((item: { id: number; order: number }) =>
+    //     this.prisma.section.update({
+    //       where: { id: item.id },
+    //       data: { order: item.order },
+    //     }),
+    //   ),
+    // );
+    return { message: 'Reorder logic placeholder executed', data };
+  }
+}

@@ -1,0 +1,59 @@
+import { Controller, Get, Post, Param, Query, Body } from '@nestjs/common';
+
+// افتراضياً، سنستخدم TimelineService و DTOs غير موجودة حالياً
+// في بيئة عمل حقيقية، يجب إنشاء هذه الملفات أولاً.
+// سنقوم بتعريف أنواع (types) وهمية لتمثيل DTOs.
+
+interface CreateTimelineEventDto {
+  type: string;
+  data: any;
+}
+
+@Controller('timeline')
+export class TimelineController {
+  // يجب حقن الخدمة (Service) هنا، لكن لغرض هذه المهمة سنتركها فارغة
+  // constructor(private readonly timelineService: TimelineService) {}
+
+  /**
+   * GET /timeline
+   * الوصف: استرجاع جميع عناصر الخط الزمني.
+   */
+  @Get()
+  findAllTimelineItems() {
+    // return this.timelineService.findAll();
+    return { message: 'Get all timeline items' };
+  }
+
+  /**
+   * GET /timeline/filter
+   * الوصف: تصفية عناصر الخط الزمني بناءً على معايير محددة.
+   */
+  @Get('filter')
+  filterTimelineItems(@Query() query: any) {
+    // return this.timelineService.filter(query);
+    return { message: 'Filter timeline items', query };
+  }
+
+  /**
+   * GET /timeline/:entityType/:entityId
+   * الوصف: استرجاع الخط الزمني لكيان محدد (مثل مستند، مهمة، إلخ).
+   */
+  @Get(':entityType/:entityId')
+  getTimelineForEntity(
+    @Param('entityType') entityType: string,
+    @Param('entityId') entityId: string,
+  ) {
+    // return this.timelineService.findByEntity(entityType, entityId);
+    return { message: `Get timeline for entity: ${entityType} with ID: ${entityId}` };
+  }
+
+  /**
+   * POST /timeline/event
+   * الوصف: إضافة حدث جديد إلى الخط الزمني.
+   */
+  @Post('event')
+  addTimelineEvent(@Body() createEventDto: CreateTimelineEventDto) {
+    // return this.timelineService.addEvent(createEventDto);
+    return { message: 'Add new timeline event', event: createEventDto };
+  }
+}

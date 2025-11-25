@@ -1,0 +1,87 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../prisma/prisma.service';
+
+@Injectable()
+export class ArchiveService {
+  // يجب استبدال 'archive' باسم نموذج Prisma الصحيح للكيان الذي يتم أرشفته.
+  // نفترض أن هناك نموذجًا يسمى 'Archive' أو 'ArchivedItem' في Prisma Schema.
+  // سنستخدم 'ArchivedItem' كاسم افتراضي للنموذج.
+
+  constructor(private prisma: PrismaService) {}
+
+  /**
+   * أرشفة كيان معين (مثل ملاحظة أو قسم).
+   * @param entityId معرّف الكيان المراد أرشفته.
+   * @param entityType نوع الكيان (مثل 'NOTE' أو 'SECTION').
+   */
+  async archive(entityId: string, entityType: string) {
+    // مثال على عملية أرشفة: قد تكون تحديث حقل 'isArchived' إلى true
+    // أو نقل السجل إلى جدول أرشيف منفصل.
+    // هنا نفترض تحديث حقل isArchived في نموذج الكيان الأصلي.
+    // بما أننا لا نعرف اسم النموذج الأصلي، سنستخدم نموذج 'ArchivedItem' الافتراضي
+    // لتمثيل سجل الأرشيف.
+
+    // ملاحظة: في تطبيق حقيقي، قد تحتاج إلى استخدام نموذج الكيان الأصلي (مثل Note)
+    // وتحديث حقل isArchived:
+    /*
+    return this.prisma.note.update({
+      where: { id: entityId },
+      data: { isArchived: true },
+    });
+    */
+
+    // لغرض هذا التمرين، سنفترض أن 'ArchivedItem' هو النموذج الذي يتم التعامل معه
+    // وسنستخدم عملية إنشاء لتمثيل سجل الأرشيف.
+    return this.prisma.archivedItem.create({
+      data: {
+        entityId,
+        entityType,
+        archivedAt: new Date(),
+      },
+    });
+  }
+
+  /**
+   * استرجاع جميع سجلات الأرشيف.
+   */
+  async findAll() {
+    return this.prisma.archivedItem.findMany();
+  }
+
+  /**
+   * استرجاع سجلات الأرشيف حسب النوع.
+   * @param type نوع الكيان المراد استرجاع سجلات أرشيفه.
+   */
+  async findByType(type: string) {
+    return this.prisma.archivedItem.findMany({
+      where: { entityType: type },
+    });
+  }
+
+  /**
+   * استعادة كيان من الأرشيف.
+   * @param entityId معرّف الكيان المراد استعادته.
+   */
+  async restore(entityId: string) {
+    // مثال على عملية استعادة: حذف سجل الأرشيف
+    return this.prisma.archivedItem.delete({
+      where: { entityId },
+    });
+
+    // في تطبيق حقيقي، قد تحتاج أيضًا إلى تحديث حقل 'isArchived' إلى false
+    // في نموذج الكيان الأصلي.
+  }
+
+  /**
+   * حذف كيان بشكل دائم من الأرشيف (أو من قاعدة البيانات).
+   * @param entityId معرّف الكيان المراد حذفه بشكل دائم.
+   */
+  async permanentDelete(entityId: string) {
+    // هذه العملية قد تتضمن حذف سجل الأرشيف أولاً (إذا كان موجودًا)
+    // ثم حذف الكيان الأصلي بشكل دائم.
+    // لغرض هذا التمرين، سنفترض أنها عملية حذف لسجل الأرشيف.
+    return this.prisma.archivedItem.deleteMany({
+      where: { entityId },
+    });
+  }
+}
