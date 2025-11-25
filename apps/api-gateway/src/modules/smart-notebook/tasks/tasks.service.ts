@@ -10,7 +10,18 @@ export class TasksService {
   async create(createTaskDto: CreateTaskDto, userId: string) {
     const task = await this.prisma.task.create({
       data: {
-        ...createTaskDto,
+        title: createTaskDto.title,
+        description: createTaskDto.description,
+        status: createTaskDto.status,
+        priority: createTaskDto.priority,
+        dueDate: createTaskDto.dueDate ? new Date(createTaskDto.dueDate) : undefined,
+        startDate: createTaskDto.startDate ? new Date(createTaskDto.startDate) : undefined,
+        pageId: createTaskDto.pageId,
+        chatLogId: createTaskDto.chatLogId,
+        parentTaskId: createTaskDto.parentTaskId,
+        tags: createTaskDto.tags,
+        assignee: createTaskDto.assignedTo,
+        notes: createTaskDto.notes,
         createdBy: userId,
       },
       include: {
