@@ -236,8 +236,6 @@ export class ChatLogsService {
         title: taskData.title,
         description: taskData.description || chatLog.summary || '',
         priority: (taskData.priority as any) || 'MEDIUM',
-        sourceType: 'CHAT',
-        sourceId: chatLog.id,
         chatLogId: chatLog.id,
         pageId: chatLog.pageId,
         tags: chatLog.tags,
