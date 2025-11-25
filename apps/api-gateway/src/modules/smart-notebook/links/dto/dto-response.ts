@@ -81,12 +81,12 @@ export class AutoLinkResponseDto {
    * @example 'mentions'
    */
   @ApiProperty({
-    description: 'بيانات إضافية حول عملية الربط التلقائي',
-    required: false,
-    type: () => Object,
-    example: { confidence: 0.95, algorithm: 'NLP' },
+    description: 'نوع العلاقة بين العنصرين',
+    example: 'mentions',
   })
-  metadata: any;
+  linkType: string;
+
+
 
   /**
    * @constructor
