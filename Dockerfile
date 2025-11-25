@@ -18,7 +18,7 @@ COPY . .
 RUN npx prisma generate
 
 # Build application
-RUN npm run build
+RUN npx nx build api-gateway --prod
 
 # Production stage
 FROM node:22-alpine
