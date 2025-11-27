@@ -22,6 +22,13 @@ import { PurchaseOrdersModule } from './purchase-orders/purchase-orders.module';
 import { AccountHierarchyModule } from './account-hierarchy/account-hierarchy.module';
 import { RolePermissionsModule } from './role-permissions/role-permissions.module';
 import { CustomerContactsModule } from './customer-contacts/customer-contacts.module';
+// v2.3.0 - New Modules
+import { BillingModule } from '../billing/billing.module';
+import { WalletModule } from '../wallet/wallet.module';
+import { AssetsModule } from '../assets/assets.module';
+import { ScmModule } from '../scm/scm.module';
+import { NotificationsModule } from '../notifications/notifications.module';
+import { ConfigurationModule } from '../configuration/configuration.module';
 
 @Module({
   imports: [
@@ -46,6 +53,13 @@ import { CustomerContactsModule } from './customer-contacts/customer-contacts.mo
     AccountHierarchyModule,
     RolePermissionsModule,
     CustomerContactsModule,
+    // v2.3.0 - New Modules
+    BillingModule,
+    WalletModule,
+    AssetsModule,
+    ScmModule,
+    NotificationsModule,
+    ConfigurationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
