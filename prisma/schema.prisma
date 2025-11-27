@@ -8,6 +8,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ============================================
@@ -111,4 +112,191 @@ model CustomerContact {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("customer_contacts")
+}
+
+
+// ============================================
+// Magic Notebook System (11 tables)
+// Date: 2025-11-27
+// ============================================
+
+// 1. Notebooks
+model Notebook {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  color       String?   @db.VarChar(50)
+  isArchived  Boolean   @default(false) @map("is_archived")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  pages           Page[]
+  sections        Section[]
+  tasks           Task[]
+  reports         NotebookReport[]
+
+  @@index([userId])
+  @@map("notebooks")
+}
+
+// 2. Pages
+model Page {
+  id          String   @id @default(uuid())
+  notebookId  String   @map("notebook_id")
+  sectionId   String?  @map("section_id")
+  title       String   @default("Untitled Page")
+  content     String   @default("") @db.Text
+  order       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  notebook    Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  section     Section?  @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@index([notebookId])
+  @@index([sectionId])
+  @@map("pages")
+}
+
+// 3. Sections
+model Section {
+  id          String   @id @default(uuid())
+  title       String   @db.VarChar(255)
+  order       Int      @default(0)
+  notebookId  String   @map("notebook_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  notebook    Notebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  pages       Page[]
+
+  @@index([notebookId])
+  @@map("sections")
+}
+
+// 4. Sticky Notes
+model StickyNote {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  content   String   @db.Text
+  color     String   @default("#FFFF00")
+  isPinned  Boolean  @default(false) @map("is_pinned")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("sticky_notes")
+}
+
+// 5. Ideas
+model Idea {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  isArchived  Boolean   @default(false) @map("is_archived")
+  tags        String[]
+  priority    Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("ideas")
+}
+
+// 6. Notebook Tasks
+model Task {
+  id          String    @id @default(uuid())
+  notebookId  String    @map("notebook_id")
+  title       String
+  description String?
+  isCompleted Boolean   @default(false) @map("is_completed")
+  dueDate     DateTime? @map("due_date")
+  priority    Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  notebook    Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+
+  @@index([notebookId])
+  @@map("notebook_tasks")
+}
+
+// 7. Notebook Reports
+model NotebookReport {
+  id            String    @id @default(uuid())
+  notebookId    String    @map("notebook_id")
+  reportType    String    @map("report_type")
+  status        String    @default("pending")
+  fileUrl       String?   @map("file_url")
+  generatedAt   DateTime? @map("generated_at")
+  metadata      Json?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  notebook      Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+
+  @@index([notebookId])
+  @@map("notebook_reports")
+}
+
+// 8. Chat Logs
+model ChatLog {
+  id          String   @id @default(uuid())
+  notebookId  String   @map("notebook_id")
+  sessionId   String   @map("session_id")
+  role        String
+  content     String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([notebookId])
+  @@index([sessionId])
+  @@map("chat_logs")
+}
+
+// 9. Timeline Entries
+model TimelineEntry {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  type        String   @map("entry_type")
+  content     String   @db.Text
+  timestamp   DateTime @default(now()) @map("entry_timestamp")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([timestamp])
+  @@map("timeline_entries")
+}
+
+// 10. Archives
+model Archive {
+  id          String   @id @default(uuid())
+  entityId    String   @map("entity_id")
+  entityType  String   @map("entity_type")
+  archivedAt  DateTime @default(now()) @map("archived_at")
+  archivedBy  String?  @map("archived_by")
+  data        Json
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([entityId, entityType])
+  @@map("archives")
+}
+
+// 11. Search Indexes
+model SearchIndex {
+  id          String    @id @default(uuid())
+  entityId    String    @map("entity_id")
+  entityType  String    @map("entity_type")
+  content     String    @db.Text
+  userId      String    @map("user_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([entityId, entityType])
+  @@map("search_indexes")
 }

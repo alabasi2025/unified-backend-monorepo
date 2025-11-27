@@ -9,6 +9,7 @@ import { ReportsModule } from './reports/reports.module';
 import { ArchiveModule } from './archive/archive.module';
 import { TimelineModule } from './timeline/timeline.module';
 import { StickyNotesModule } from './sticky-notes/sticky-notes.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { StickyNotesModule } from './sticky-notes/sticky-notes.module';
     ArchiveModule,
     TimelineModule,
     StickyNotesModule,
+    SearchModule,
   ],
 })
 export class MagicNotebookModule {}

@@ -1,60 +1,79 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateNotebookDto } from './dto/create-notebook.dto';
+import { UpdateNotebookDto } from './dto/update-notebook.dto';
 
 @Injectable()
 export class NotebooksService {
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Creates a new notebook record in the database.
+   * @param createNotebookDto The data transfer object for creating a notebook.
+   * @returns The created notebook object.
+   */
+  async create(createNotebookDto: CreateNotebookDto) {
+    // Assuming the Prisma model is named 'notebook'
+    return this.prisma.notebook.create({
+      data: createNotebookDto,
+    });
+  }
+
+  /**
+   * Retrieves all notebook records from the database.
+   * @returns A list of all notebooks.
+   */
   async findAll() {
-    return this.prisma.magicNotebook.findMany({
-      include: {
-        user: { select: { id: true, username: true } },
-
-      },
-      orderBy: { createdAt: 'desc' }
-    });
+    return this.prisma.notebook.findMany();
   }
 
+  /**
+   * Retrieves a single notebook by its ID.
+   * Throws NotFoundException if the notebook does not exist.
+   * @param id The unique identifier of the notebook.
+   * @returns The found notebook object.
+   */
   async findOne(id: string) {
-    return this.prisma.magicNotebook.findUnique({
+    const notebook = await this.prisma.notebook.findUnique({
       where: { id },
-      include: {
-        user: { select: { id: true, username: true } },
-        sections: {
-          include: {
-            pages: { orderBy: { createdAt: 'asc' } }
-          },
-          orderBy: { order: 'asc' }
-        }
-      }
     });
+
+    if (!notebook) {
+      throw new NotFoundException(`Notebook with ID ${id} not found`);
+    }
+
+    return notebook;
   }
 
-  async create(data: { title: string; description?: string; userId: string; createdBy: string }) {
-    return this.prisma.magicNotebook.create({
-      data: {
-        title: data.title,
-        description: data.description,
-        createdBy: data.createdBy || data.userId,
-        user: { connect: { id: data.userId } }
-      },
-      include: {
-        user: { select: { id: true, username: true } }
-      }
-    });
-  }
+  /**
+   * Updates an existing notebook record by its ID.
+   * Checks for existence first using findOne.
+   * @param id The unique identifier of the notebook to update.
+   * @param updateNotebookDto The data transfer object for updating the notebook.
+   * @returns The updated notebook object.
+   */
+  async update(id: string, updateNotebookDto: UpdateNotebookDto) {
+    // Check if the notebook exists before attempting to update
+    await this.findOne(id); 
 
-  async update(id: string, data: { title?: string; description?: string }) {
-    return this.prisma.magicNotebook.update({
+    return this.prisma.notebook.update({
       where: { id },
-      data,
-      include: {
-        user: { select: { id: true, username: true } }
-      }
+      data: updateNotebookDto,
     });
   }
 
+  /**
+   * Removes a notebook record by its ID.
+   * Checks for existence first using findOne.
+   * @param id The unique identifier of the notebook to remove.
+   * @returns The deleted notebook object.
+   */
   async remove(id: string) {
-    return this.prisma.magicNotebook.delete({ where: { id } });
+    // Check if the notebook exists before attempting to delete
+    await this.findOne(id); 
+
+    return this.prisma.notebook.delete({
+      where: { id },
+    });
   }
 }
