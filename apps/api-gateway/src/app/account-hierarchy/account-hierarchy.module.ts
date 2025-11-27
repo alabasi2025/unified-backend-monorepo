@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AccountHierarchy } from './account_hierarchy.entity';
-import { AccountHierarchyService } from './account_hierarchy.service';
 import { AccountHierarchyController } from './account_hierarchy.controller';
+import { AccountHierarchyService } from './account_hierarchy.service';
+import { PrismaModule } from '../prisma/prisma.module'; // افتراض وجود PrismaModule
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AccountHierarchy])],
+  imports: [PrismaModule], // استيراد PrismaModule لتوفير PrismaService
   controllers: [AccountHierarchyController],
   providers: [AccountHierarchyService],
   exports: [AccountHierarchyService],

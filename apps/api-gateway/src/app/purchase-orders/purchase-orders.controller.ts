@@ -1,41 +1,38 @@
+// /home/ubuntu/purchase_orders/src/purchase-orders.controller.ts
+
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { PurchaseOrdersService } from './purchase-orders.service';
-import { CreatePurchaseOrderDto, UpdatePurchaseOrderDto } from './dto/purchase-order.dto';
-import { PurchaseOrder } from './purchase-order.entity';
+import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
+import { UpdatePurchaseOrderDto } from './dto/update-purchase-order.dto';
 
 @Controller('purchase-orders')
 export class PurchaseOrdersController {
   constructor(private readonly purchaseOrdersService: PurchaseOrdersService) {}
 
-  // POST /purchase-orders
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createPurchaseOrderDto: CreatePurchaseOrderDto): Promise<PurchaseOrder> {
+  create(@Body() createPurchaseOrderDto: CreatePurchaseOrderDto) {
     return this.purchaseOrdersService.create(createPurchaseOrderDto);
   }
 
-  // GET /purchase-orders
   @Get()
-  findAll(): Promise<PurchaseOrder[]> {
+  findAll() {
     return this.purchaseOrdersService.findAll();
   }
 
-  // GET /purchase-orders/:id
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<PurchaseOrder> {
+  findOne(@Param('id') id: string) {
     return this.purchaseOrdersService.findOne(id);
   }
 
-  // PATCH /purchase-orders/:id
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePurchaseOrderDto: UpdatePurchaseOrderDto): Promise<PurchaseOrder> {
+  update(@Param('id') id: string, @Body() updatePurchaseOrderDto: UpdatePurchaseOrderDto) {
     return this.purchaseOrdersService.update(id, updatePurchaseOrderDto);
   }
 
-  // DELETE /purchase-orders/:id
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string): Promise<void> {
+  remove(@Param('id') id: string) {
     return this.purchaseOrdersService.remove(id);
   }
 }

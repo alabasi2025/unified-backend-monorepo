@@ -1,66 +1,71 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { PurchaseOrder, PurchaseOrderStatus } from '../purchase-order.entity';
-import { CreatePurchaseOrderDto, UpdatePurchaseOrderDto } from '../dto/purchase-order.dto';
+// /home/ubuntu/purchase_orders/src/purchase-orders.service.ts
+
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service'; // افتراض مسار PrismaService
+import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
+import { UpdatePurchaseOrderDto } from './dto/update-purchase-order.dto';
+import { PurchaseOrder } from '@prisma/client'; // افتراض أن Prisma Client تم توليده
 
 @Injectable()
 export class PurchaseOrdersService {
-  constructor(
-    @InjectRepository(PurchaseOrder)
-    private purchaseOrderRepository: Repository<PurchaseOrder>,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  // CREATE
-  async create(createDto: CreatePurchaseOrderDto): Promise<PurchaseOrder> {
-    // توليد رقم طلب افتراضي إذا لم يتم توفيره
-    const orderNumber = createDto.order_number || \`PO-\${Date.now()}\`;
+  async create(createPurchaseOrderDto: CreatePurchaseOrderDto): Promise<PurchaseOrder> {
+    return this.prisma.purchaseOrder.create({
+      data: {
+        ...createPurchaseOrderDto,
+        // تحويل orderDate إلى Date إذا كان موجودًا
+        orderDate: createPurchaseOrderDto.orderDate ? new Date(createPurchaseOrderDto.orderDate) : undefined,
+      },
+    });
+  }
 
-    const newOrder = this.purchaseOrderRepository.create({
-      ...createDto,
-      order_number: orderNumber,
-      status: createDto.status || PurchaseOrderStatus.DRAFT,
-      // total_amount سيتم حسابه لاحقاً عند إضافة البنود
-      total_amount: 0.0,
+  async findAll(): Promise<PurchaseOrder[]> {
+    return this.prisma.purchaseOrder.findMany();
+  }
+
+  async findOne(id: string): Promise<PurchaseOrder> {
+    const order = await this.prisma.purchaseOrder.findUnique({
+      where: { id },
     });
 
-    return this.purchaseOrderRepository.save(newOrder);
-  }
-
-  // READ ALL
-  async findAll(): Promise<PurchaseOrder[]> {
-    return this.purchaseOrderRepository.find();
-  }
-
-  // READ ONE
-  async findOne(id: string): Promise<PurchaseOrder> {
-    const order = await this.purchaseOrderRepository.findOne({ where: { id } });
     if (!order) {
-      throw new NotFoundException(\`Purchase Order with ID "\${id}" not found\`);
+      throw new NotFoundException(`Purchase Order with ID "${id}" not found`);
     }
+
     return order;
   }
 
-  // UPDATE
-  async update(id: string, updateDto: UpdatePurchaseOrderDto): Promise<PurchaseOrder> {
-    const order = await this.findOne(id);
-
-    // تحديث الحقول المسموح بها
-    Object.assign(order, updateDto);
-
-    // تحديث حقل last_modified_by_user_id
-    if (updateDto.last_modified_by_user_id) {
-      order.last_modified_by_user_id = updateDto.last_modified_by_user_id;
+  async update(id: string, updatePurchaseOrderDto: UpdatePurchaseOrderDto): Promise<PurchaseOrder> {
+    try {
+      return await this.prisma.purchaseOrder.update({
+        where: { id },
+        data: {
+          ...updatePurchaseOrderDto,
+          // تحويل orderDate إلى Date إذا كان موجودًا
+          orderDate: updatePurchaseOrderDto.orderDate ? new Date(updatePurchaseOrderDto.orderDate) : undefined,
+        },
+      });
+    } catch (error) {
+      // يمكن أن يكون الخطأ بسبب عدم وجود السجل
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Purchase Order with ID "${id}" not found`);
+      }
+      throw error;
     }
-
-    return this.purchaseOrderRepository.save(order);
   }
 
-  // DELETE
-  async remove(id: string): Promise<void> {
-    const result = await this.purchaseOrderRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(\`Purchase Order with ID "\${id}" not found\`);
+  async remove(id: string): Promise<PurchaseOrder> {
+    try {
+      return await this.prisma.purchaseOrder.delete({
+        where: { id },
+      });
+    } catch (error) {
+      // يمكن أن يكون الخطأ بسبب عدم وجود السجل
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Purchase Order with ID "${id}" not found`);
+      }
+      throw error;
     }
   }
 }

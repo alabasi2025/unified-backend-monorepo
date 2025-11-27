@@ -15,6 +15,13 @@ import { ItemsModule } from './items/items.module';
 import { ReportsModule } from '../modules/reports/reports.module';
 import { SalesOrdersModule } from '../modules/sales-orders/sales-orders.module';
 import { MagicNotebookModule } from "../magic-notebook/magic-notebook.module";
+// Cycle 4 - New Modules (Prisma-based)
+import { GenesModule } from './genes/genes.module';
+import { LatitudePointsModule } from './latitude-points/latitude-points.module';
+import { PurchaseOrdersModule } from './purchase-orders/purchase-orders.module';
+import { AccountHierarchyModule } from './account-hierarchy/account-hierarchy.module';
+import { RolePermissionsModule } from './role-permissions/role-permissions.module';
+import { CustomerContactsModule } from './customer-contacts/customer-contacts.module';
 
 @Module({
   imports: [
@@ -32,6 +39,13 @@ import { MagicNotebookModule } from "../magic-notebook/magic-notebook.module";
     ReportsModule,
     SalesOrdersModule,
     MagicNotebookModule,
+    // Cycle 4 - New Modules
+    GenesModule,
+    LatitudePointsModule,
+    PurchaseOrdersModule,
+    AccountHierarchyModule,
+    RolePermissionsModule,
+    CustomerContactsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

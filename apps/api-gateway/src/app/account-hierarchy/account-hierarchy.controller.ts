@@ -1,41 +1,50 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { AccountHierarchyService } from './account_hierarchy.service';
 import { CreateAccountHierarchyDto, UpdateAccountHierarchyDto } from './account_hierarchy.dto';
-import { AccountHierarchy } from './account_hierarchy.entity';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+@ApiTags('account-hierarchy')
 @Controller('account-hierarchy')
 export class AccountHierarchyController {
   constructor(private readonly accountHierarchyService: AccountHierarchyService) {}
 
-  // POST /account-hierarchy
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createDto: CreateAccountHierarchyDto): Promise<AccountHierarchy> {
-    return this.accountHierarchyService.create(createDto);
+  @ApiOperation({ summary: 'إنشاء هيكلية حسابات جديدة' })
+  @ApiResponse({ status: 201, description: 'تم إنشاء الهيكلية بنجاح.' })
+  create(@Body() createAccountHierarchyDto: CreateAccountHierarchyDto) {
+    return this.accountHierarchyService.create(createAccountHierarchyDto);
   }
 
-  // GET /account-hierarchy?institutionId=...
   @Get()
-  findAll(@Query('institutionId') institutionId?: string): Promise<AccountHierarchy[]> {
-    return this.accountHierarchyService.findAll(institutionId);
+  @ApiOperation({ summary: 'الحصول على جميع هيكليات الحسابات' })
+  @ApiResponse({ status: 200, description: 'قائمة بهيكليات الحسابات.' })
+  findAll() {
+    return this.accountHierarchyService.findAll();
   }
 
-  // GET /account-hierarchy/:id
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<AccountHierarchy> {
+  @ApiOperation({ summary: 'الحصول على هيكلية حسابات بواسطة ID' })
+  @ApiResponse({ status: 200, description: 'الهيكلية المطلوبة.' })
+  @ApiResponse({ status: 404, description: 'لم يتم العثور على الهيكلية.' })
+  findOne(@Param('id') id: string) {
     return this.accountHierarchyService.findOne(id);
   }
 
-  // PUT /account-hierarchy/:id
-  @Put(':id')
-  update(@Param('id') id: string, @Body() updateDto: UpdateAccountHierarchyDto): Promise<AccountHierarchy> {
-    return this.accountHierarchyService.update(id, updateDto);
+  @Patch(':id')
+  @ApiOperation({ summary: 'تحديث هيكلية حسابات بواسطة ID' })
+  @ApiResponse({ status: 200, description: 'تم تحديث الهيكلية بنجاح.' })
+  @ApiResponse({ status: 404, description: 'لم يتم العثور على الهيكلية.' })
+  update(@Param('id') id: string, @Body() updateAccountHierarchyDto: UpdateAccountHierarchyDto) {
+    return this.accountHierarchyService.update(id, updateAccountHierarchyDto);
   }
 
-  // DELETE /account-hierarchy/:id
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string): Promise<void> {
+  @ApiOperation({ summary: 'حذف هيكلية حسابات بواسطة ID' })
+  @ApiResponse({ status: 204, description: 'تم حذف الهيكلية بنجاح.' })
+  @ApiResponse({ status: 404, description: 'لم يتم العثور على الهيكلية.' })
+  remove(@Param('id') id: string) {
     return this.accountHierarchyService.remove(id);
   }
 }

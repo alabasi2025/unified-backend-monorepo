@@ -1,13 +1,12 @@
+// /home/ubuntu/purchase_orders/src/purchase-orders.module.ts
+
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { PurchaseOrdersController } from './purchase-orders.controller';
 import { PurchaseOrdersService } from './purchase-orders.service';
-import { PurchaseOrder } from './purchase-order.entity';
+import { PurchaseOrdersController } from './purchase-orders.controller';
+import { PrismaService } from '../prisma/prisma.service'; // افتراض مسار PrismaService
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PurchaseOrder])],
   controllers: [PurchaseOrdersController],
-  providers: [PurchaseOrdersService],
-  exports: [PurchaseOrdersService], // لتصدير الخدمة واستخدامها في وحدات أخرى
+  providers: [PurchaseOrdersService, PrismaService], // يجب توفير PrismaService هنا
 })
 export class PurchaseOrdersModule {}

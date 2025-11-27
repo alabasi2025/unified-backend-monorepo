@@ -1,77 +1,58 @@
-import { IsUUID, IsString, IsNotEmpty, IsOptional, IsBoolean, IsInt, Min, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsInt, MinLength, IsUUID } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
-// DTO لإنشاء حساب جديد في الهيكلية
 export class CreateAccountHierarchyDto {
-  @IsUUID('4', { message: 'institutionId يجب أن يكون UUID صالحاً.' })
-  @IsNotEmpty({ message: 'institutionId مطلوب.' })
-  institutionId: string;
-
-  @IsOptional()
-  @IsUUID('4', { message: 'parentId يجب أن يكون UUID صالحاً.' })
-  parentId?: string;
-
-  @IsUUID('4', { message: 'accountTypeId يجب أن يكون UUID صالحاً.' })
-  @IsNotEmpty({ message: 'accountTypeId مطلوب.' })
-  accountTypeId: string;
-
-  @IsString({ message: 'code يجب أن يكون نصاً.' })
-  @IsNotEmpty({ message: 'code مطلوب.' })
-  @MaxLength(50, { message: 'code يجب ألا يتجاوز 50 حرفاً.' })
-  code: string;
-
-  @IsString({ message: 'name يجب أن يكون نصاً.' })
-  @IsNotEmpty({ message: 'name مطلوب.' })
-  @MaxLength(255, { message: 'name يجب ألا يتجاوز 255 حرفاً.' })
+  @ApiProperty({ description: 'اسم الهيكلية', minLength: 3 })
+  @IsString()
+  @MinLength(3)
   name: string;
 
-  @IsInt({ message: 'level يجب أن يكون عدداً صحيحاً.' })
-  @Min(1, { message: 'level يجب أن يكون أكبر من أو يساوي 1.' })
-  @IsNotEmpty({ message: 'level مطلوب.' })
-  level: number;
-
+  @ApiProperty({ description: 'وصف الهيكلية', required: false })
   @IsOptional()
-  @IsBoolean({ message: 'isGroup يجب أن يكون قيمة منطقية.' })
-  isGroup?: boolean;
+  @IsString()
+  description?: string;
 
+  @ApiProperty({ description: 'معرف الهيكلية الأب (UUID)', required: false })
   @IsOptional()
-  @IsBoolean({ message: 'isActive يجب أن يكون قيمة منطقية.' })
-  isActive?: boolean;
-}
+  @IsUUID()
+  parent_id?: string;
 
-// DTO لتحديث حساب موجود في الهيكلية
-export class UpdateAccountHierarchyDto {
+  @ApiProperty({ description: 'مستوى الهيكلية (رقم صحيح)', required: false, default: 1 })
   @IsOptional()
-  @IsUUID('4', { message: 'institutionId يجب أن يكون UUID صالحاً.' })
-  institutionId?: string;
-
-  @IsOptional()
-  @IsUUID('4', { message: 'parentId يجب أن يكون UUID صالحاً.' })
-  parentId?: string;
-
-  @IsOptional()
-  @IsUUID('4', { message: 'accountTypeId يجب أن يكون UUID صالحاً.' })
-  accountTypeId?: string;
-
-  @IsOptional()
-  @IsString({ message: 'code يجب أن يكون نصاً.' })
-  @MaxLength(50, { message: 'code يجب ألا يتجاوز 50 حرفاً.' })
-  code?: string;
-
-  @IsOptional()
-  @IsString({ message: 'name يجب أن يكون نصاً.' })
-  @MaxLength(255, { message: 'name يجب ألا يتجاوز 255 حرفاً.' })
-  name?: string;
-
-  @IsOptional()
-  @IsInt({ message: 'level يجب أن يكون عدداً صحيحاً.' })
-  @Min(1, { message: 'level يجب أن يكون أكبر من أو يساوي 1.' })
+  @IsInt()
   level?: number;
 
+  @ApiProperty({ description: 'حالة التفعيل', required: false, default: true })
   @IsOptional()
-  @IsBoolean({ message: 'isGroup يجب أن يكون قيمة منطقية.' })
-  isGroup?: boolean;
+  @IsBoolean()
+  is_active?: boolean;
+}
 
+// Update DTO يجعل جميع الحقول اختيارية
+export class UpdateAccountHierarchyDto {
+  @ApiProperty({ description: 'اسم الهيكلية', minLength: 3, required: false })
   @IsOptional()
-  @IsBoolean({ message: 'isActive يجب أن يكون قيمة منطقية.' })
-  isActive?: boolean;
+  @IsString()
+  @MinLength(3)
+  name?: string;
+
+  @ApiProperty({ description: 'وصف الهيكلية', required: false })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiProperty({ description: 'معرف الهيكلية الأب (UUID)', required: false })
+  @IsOptional()
+  @IsUUID()
+  parent_id?: string;
+
+  @ApiProperty({ description: 'مستوى الهيكلية (رقم صحيح)', required: false })
+  @IsOptional()
+  @IsInt()
+  level?: number;
+
+  @ApiProperty({ description: 'حالة التفعيل', required: false })
+  @IsOptional()
+  @IsBoolean()
+  is_active?: boolean;
 }

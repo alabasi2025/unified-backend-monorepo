@@ -1,36 +1,58 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
-import { RolePermissionsService } from './role-permissions.service';
-import { CreateRolePermissionDto, UpdateRolePermissionDto } from './role-permissions.dto';
-import { RolePermission } from './role-permissions.entity';
+// role_permissions.controller.ts
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
+import { RolePermissionsService } from './role_permissions.service';
+import { CreateRolePermissionDto, UpdateRolePermissionDto } from './role_permissions.dto';
 
 @Controller('role-permissions')
 export class RolePermissionsController {
   constructor(private readonly rolePermissionsService: RolePermissionsService) {}
 
   @Post()
-  @HttpCode(HttpStatus.CREATED)
-  create(@Body() createRolePermissionDto: CreateRolePermissionDto): Promise<RolePermission> {
+  create(@Body() createRolePermissionDto: CreateRolePermissionDto) {
     return this.rolePermissionsService.create(createRolePermissionDto);
   }
 
   @Get()
-  findAll(): Promise<RolePermission[]> {
+  findAll() {
     return this.rolePermissionsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string): Promise<RolePermission> {
-    return this.rolePermissionsService.findOne(id);
+  @Get(':roleId/:permissionId')
+  findOne(
+    @Param('roleId', ParseIntPipe) roleId: number,
+    @Param('permissionId', ParseIntPipe) permissionId: number,
+  ) {
+    return this.rolePermissionsService.findOne(roleId, permissionId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRolePermissionDto: UpdateRolePermissionDto): Promise<RolePermission> {
-    return this.rolePermissionsService.update(id, updateRolePermissionDto);
+  @Patch(':roleId/:permissionId')
+  update(
+    @Param('roleId', ParseIntPipe) roleId: number,
+    @Param('permissionId', ParseIntPipe) permissionId: number,
+    @Body() updateRolePermissionDto: UpdateRolePermissionDto,
+  ) {
+    return this.rolePermissionsService.update(
+      roleId,
+      permissionId,
+      updateRolePermissionDto,
+    );
   }
 
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string): Promise<void> {
-    return this.rolePermissionsService.remove(id);
+  @Delete(':roleId/:permissionId')
+  remove(
+    @Param('roleId', ParseIntPipe) roleId: number,
+    @Param('permissionId', ParseIntPipe) permissionId: number,
+  ) {
+    return this.rolePermissionsService.remove(roleId, permissionId);
   }
 }

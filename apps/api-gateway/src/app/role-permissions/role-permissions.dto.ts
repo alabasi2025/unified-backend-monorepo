@@ -1,29 +1,26 @@
-import { IsUUID, IsBoolean, IsOptional } from 'class-validator';
+// role_permissions.dto.ts
 
+import { IsInt, IsString, IsOptional } from 'class-validator';
+
+// DTO لإنشاء علاقة جديدة بين الدور والصلاحية
 export class CreateRolePermissionDto {
-  @IsUUID()
-  roleId: string;
+  @IsInt()
+  roleId: number;
 
-  @IsUUID()
-  permissionId: string;
+  @IsInt()
+  permissionId: number;
 
-  @IsOptional()
-  @IsBoolean()
-  is_active?: boolean;
+  @IsString()
+  assignedBy: string;
 }
 
-// يمكن استخدام PartialType من @nestjs/mapped-types لإنشاء Update DTO
-// ولكن سنقوم بإنشائه يدوياً لضمان عدم وجود اعتماديات خارجية غير ضرورية في هذا السياق
+// DTO لتحديث علاقة الدور والصلاحية.
+// بما أن المفتاح الأساسي مركب (roleId, permissionId)، فإن التحديث الفعلي للبيانات
+// سيكون محدودًا على الحقول غير المفتاحية. في هذا النموذج، الحقل الوحيد القابل للتحديث
+// هو 'assignedBy' (إذا لم يكن هناك حقول أخرى).
+// يمكن استخدام هذا DTO لتحديث حقل 'assignedBy' أو لتضمين حقول أخرى إذا أضيفت لاحقًا.
 export class UpdateRolePermissionDto {
   @IsOptional()
-  @IsUUID()
-  roleId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  permissionId?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  is_active?: boolean;
+  @IsString()
+  assignedBy?: string;
 }

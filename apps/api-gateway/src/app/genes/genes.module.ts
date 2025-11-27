@@ -1,13 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { GenesController } from './genes.controller';
 import { GenesService } from './genes.service';
-import { Gene } from './genes.entity';
+import { GenesController } from './genes.controller';
+import { PrismaModule } from '../../prisma/prisma.module'; // افتراض وجود PrismaModule في هذا المسار
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Gene])],
+  imports: [PrismaModule], // استيراد PrismaModule بدلاً من TypeOrmModule
   controllers: [GenesController],
   providers: [GenesService],
-  exports: [GenesService], // لتصدير الخدمة واستخدامها في وحدات أخرى
 })
 export class GenesModule {}

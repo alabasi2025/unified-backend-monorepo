@@ -1,72 +1,59 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Gene } from './genes.entity';
-import { CreateGeneDto, UpdateGeneDto } from './genes.dto';
+import { PrismaService } from '../../prisma/prisma.service'; // افتراض وجود PrismaService في هذا المسار
+import { CreateGeneDto, UpdateGeneDto } from './dto/genes.dto';
 
 @Injectable()
 export class GenesService {
-  constructor(
-    @InjectRepository(Gene)
-    private genesRepository: Repository<Gene>,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  /**
-   * إنشاء سجل جين جديد
-   * @param createGeneDto بيانات إنشاء الجين
-   * @returns سجل الجين الذي تم إنشاؤه
-   */
-  async create(createGeneDto: CreateGeneDto): Promise<Gene> {
-    const gene = this.genesRepository.create(createGeneDto);
-    return this.genesRepository.save(gene);
+  async create(createGeneDto: CreateGeneDto) {
+    return this.prisma.gene.create({
+      data: createGeneDto,
+    });
   }
 
-  /**
-   * استرداد جميع سجلات الجينات
-   * @returns قائمة بسجلات الجينات
-   */
-  async findAll(): Promise<Gene[]> {
-    return this.genesRepository.find();
+  async findAll() {
+    return this.prisma.gene.findMany();
   }
 
-  /**
-   * استرداد سجل جين بواسطة المعرف
-   * @param id معرف الجين
-   * @returns سجل الجين
-   * @throws NotFoundException إذا لم يتم العثور على الجين
-   */
-  async findOne(id: number): Promise<Gene> {
-    const gene = await this.genesRepository.findOne({ where: { id } });
+  async findOne(id: number) {
+    const gene = await this.prisma.gene.findUnique({
+      where: { id },
+    });
+
     if (!gene) {
-      throw new NotFoundException(`لم يتم العثور على الجين بالمعرف ${id}`);
+      throw new NotFoundException(`Gene with ID ${id} not found`);
     }
+
     return gene;
   }
 
-  /**
-   * تحديث سجل جين موجود
-   * @param id معرف الجين
-   * @param updateGeneDto بيانات التحديث
-   * @returns سجل الجين المحدث
-   * @throws NotFoundException إذا لم يتم العثور على الجين
-   */
-  async update(id: number, updateGeneDto: UpdateGeneDto): Promise<Gene> {
-    const gene = await this.findOne(id); // التحقق من وجود الجين
-    this.genesRepository.merge(gene, updateGeneDto);
-    return this.genesRepository.save(gene);
+  async update(id: number, updateGeneDto: UpdateGeneDto) {
+    try {
+      return await this.prisma.gene.update({
+        where: { id },
+        data: updateGeneDto,
+      });
+    } catch (error) {
+      // التعامل مع حالة عدم العثور على السجل
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Gene with ID ${id} not found`);
+      }
+      throw error;
+    }
   }
 
-  /**
-   * حذف سجل جين (Soft Delete)
-   * @param id معرف الجين
-   * @returns نتيجة الحذف
-   * @throws NotFoundException إذا لم يتم العثور على الجين
-   */
-  async remove(id: number): Promise<{ deleted: boolean; message?: string }> {
-    const result = await this.genesRepository.softDelete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`لم يتم العثور على الجين بالمعرف ${id} للحذف`);
+  async remove(id: number) {
+    try {
+      return await this.prisma.gene.delete({
+        where: { id },
+      });
+    } catch (error) {
+      // التعامل مع حالة عدم العثور على السجل
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Gene with ID ${id} not found`);
+      }
+      throw error;
     }
-    return { deleted: true };
   }
 }

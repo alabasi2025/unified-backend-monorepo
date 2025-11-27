@@ -1,102 +1,88 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { AccountHierarchy } from './account_hierarchy.entity';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service'; // افتراض وجود PrismaService في هذا المسار
 import { CreateAccountHierarchyDto, UpdateAccountHierarchyDto } from './account_hierarchy.dto';
+import { AccountHierarchy } from '@prisma/client'; // افتراض أن Prisma Client تم توليده
 
 @Injectable()
 export class AccountHierarchyService {
-  constructor(
-    @InjectRepository(AccountHierarchy)
-    private accountHierarchyRepository: Repository<AccountHierarchy>,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  // 1. إنشاء حساب جديد
-  async create(createDto: CreateAccountHierarchyDto): Promise<AccountHierarchy> {
-    // التحقق من وجود حساب أب إذا تم تحديده
-    if (createDto.parentId) {
-      const parent = await this.accountHierarchyRepository.findOne({ where: { id: createDto.parentId } });
-      if (!parent) {
-        throw new NotFoundException(`الحساب الأب بالمعرف ${createDto.parentId} غير موجود.`);
-      }
-      // التأكد من أن الحساب الأب ينتمي لنفس المؤسسة
-      if (parent.institutionId !== createDto.institutionId) {
-        throw new BadRequestException('الحساب الأب يجب أن ينتمي لنفس المؤسسة.');
-      }
-    }
-
-    // التحقق من عدم تكرار الرمز (Code) ضمن المؤسسة
-    const existingAccount = await this.accountHierarchyRepository.findOne({
-      where: { code: createDto.code, institutionId: createDto.institutionId },
-    });
-
-    if (existingAccount) {
-      throw new BadRequestException(`رمز الحساب ${createDto.code} موجود بالفعل في هذه المؤسسة.`);
-    }
-
-    const newAccount = this.accountHierarchyRepository.create(createDto);
-    return this.accountHierarchyRepository.save(newAccount);
-  }
-
-  // 2. الحصول على جميع الحسابات (مع إمكانية التصفية حسب المؤسسة)
-  findAll(institutionId?: string): Promise<AccountHierarchy[]> {
-    const whereCondition = institutionId ? { institutionId } : {};
-    return this.accountHierarchyRepository.find({
-      where: whereCondition,
-      relations: ['parent', 'accountType'], // جلب العلاقات
+  /**
+   * إنشاء هيكلية حسابات جديدة
+   * @param createAccountHierarchyDto بيانات الهيكلية الجديدة
+   * @returns الهيكلية التي تم إنشاؤها
+   */
+  async create(createAccountHierarchyDto: CreateAccountHierarchyDto): Promise<AccountHierarchy> {
+    return this.prisma.accountHierarchy.create({
+      data: createAccountHierarchyDto,
     });
   }
 
-  // 3. الحصول على حساب واحد بالمعرف
+  /**
+   * الحصول على جميع هيكليات الحسابات
+   * @returns قائمة بهيكليات الحسابات
+   */
+  async findAll(): Promise<AccountHierarchy[]> {
+    return this.prisma.accountHierarchy.findMany();
+  }
+
+  /**
+   * الحصول على هيكلية حسابات محددة بواسطة ID
+   * @param id معرف الهيكلية
+   * @returns الهيكلية المطلوبة
+   * @throws NotFoundException إذا لم يتم العثور على الهيكلية
+   */
   async findOne(id: string): Promise<AccountHierarchy> {
-    const account = await this.accountHierarchyRepository.findOne({
+    const hierarchy = await this.prisma.accountHierarchy.findUnique({
       where: { id },
-      relations: ['parent', 'accountType'],
     });
-    if (!account) {
-      throw new NotFoundException(`الحساب بالمعرف ${id} غير موجود.`);
+
+    if (!hierarchy) {
+      throw new NotFoundException(`AccountHierarchy with ID ${id} not found`);
     }
-    return account;
+
+    return hierarchy;
   }
 
-  // 4. تحديث حساب
-  async update(id: string, updateDto: UpdateAccountHierarchyDto): Promise<AccountHierarchy> {
-    const account = await this.findOne(id); // التحقق من وجود الحساب
-
-    // التحقق من وجود حساب أب جديد إذا تم تحديده
-    if (updateDto.parentId && updateDto.parentId !== account.parentId) {
-      const parent = await this.accountHierarchyRepository.findOne({ where: { id: updateDto.parentId } });
-      if (!parent) {
-        throw new NotFoundException(`الحساب الأب بالمعرف ${updateDto.parentId} غير موجود.`);
-      }
-      // التأكد من أن الحساب الأب ينتمي لنفس المؤسسة (أو المؤسسة المحدثة)
-      const targetInstitutionId = updateDto.institutionId || account.institutionId;
-      if (parent.institutionId !== targetInstitutionId) {
-        throw new BadRequestException('الحساب الأب يجب أن ينتمي لنفس المؤسسة.');
-      }
-    }
-
-    // التحقق من عدم تكرار الرمز (Code) إذا تم تحديثه
-    if (updateDto.code && updateDto.code !== account.code) {
-      const targetInstitutionId = updateDto.institutionId || account.institutionId;
-      const existingAccount = await this.accountHierarchyRepository.findOne({
-        where: { code: updateDto.code, institutionId: targetInstitutionId },
+  /**
+   * تحديث هيكلية حسابات محددة
+   * @param id معرف الهيكلية
+   * @param updateAccountHierarchyDto بيانات التحديث
+   * @returns الهيكلية المحدثة
+   * @throws NotFoundException إذا لم يتم العثور على الهيكلية
+   */
+  async update(id: string, updateAccountHierarchyDto: UpdateAccountHierarchyDto): Promise<AccountHierarchy> {
+    try {
+      return await this.prisma.accountHierarchy.update({
+        where: { id },
+        data: updateAccountHierarchyDto,
       });
-
-      if (existingAccount && existingAccount.id !== id) {
-        throw new BadRequestException(`رمز الحساب ${updateDto.code} موجود بالفعل في هذه المؤسسة.`);
+    } catch (error) {
+      // التعامل مع حالة عدم العثور على السجل
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`AccountHierarchy with ID ${id} not found`);
       }
+      throw error;
     }
-
-    Object.assign(account, updateDto);
-    return this.accountHierarchyRepository.save(account);
   }
 
-  // 5. حذف حساب
-  async remove(id: string): Promise<void> {
-    const result = await this.accountHierarchyRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`الحساب بالمعرف ${id} غير موجود.`);
+  /**
+   * حذف هيكلية حسابات محددة
+   * @param id معرف الهيكلية
+   * @returns الهيكلية المحذوفة
+   * @throws NotFoundException إذا لم يتم العثور على الهيكلية
+   */
+  async remove(id: string): Promise<AccountHierarchy> {
+    try {
+      return await this.prisma.accountHierarchy.delete({
+        where: { id },
+      });
+    } catch (error) {
+      // التعامل مع حالة عدم العثور على السجل
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`AccountHierarchy with ID ${id} not found`);
+      }
+      throw error;
     }
   }
 }
