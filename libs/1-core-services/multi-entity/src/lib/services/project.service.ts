@@ -56,8 +56,9 @@ export class ProjectService {
     where?: Prisma.ProjectWhereInput;
     orderBy?: Prisma.ProjectOrderByWithRelationInput;
     include?: Prisma.ProjectInclude;
+    select?: Prisma.ProjectSelect;
   } = {}): Promise<Project[]> {
-    const { skip, take, where, orderBy, include } = params;
+    const { skip, take, where, orderBy, include, select } = params;
 
     return this.prisma.project.findMany({
       skip,
@@ -65,6 +66,7 @@ export class ProjectService {
       where,
       orderBy,
       include,
+      select,
     });
   }
 

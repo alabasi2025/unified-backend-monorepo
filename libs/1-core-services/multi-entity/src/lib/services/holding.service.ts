@@ -53,8 +53,9 @@ export class HoldingService {
     where?: Prisma.HoldingWhereInput;
     orderBy?: Prisma.HoldingOrderByWithRelationInput;
     include?: Prisma.HoldingInclude;
+    select?: Prisma.HoldingSelect;
   } = {}): Promise<Holding[]> {
-    const { skip, take, where, orderBy, include } = params;
+    const { skip, take, where, orderBy, include, select } = params;
 
     return this.prisma.holding.findMany({
       skip,
@@ -62,6 +63,7 @@ export class HoldingService {
       where,
       orderBy,
       include,
+      select,
     });
   }
 

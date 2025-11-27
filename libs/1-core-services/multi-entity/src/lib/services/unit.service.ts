@@ -56,8 +56,9 @@ export class UnitService {
     where?: Prisma.UnitWhereInput;
     orderBy?: Prisma.UnitOrderByWithRelationInput;
     include?: Prisma.UnitInclude;
+    select?: Prisma.UnitSelect;
   } = {}): Promise<Unit[]> {
-    const { skip, take, where, orderBy, include } = params;
+    const { skip, take, where, orderBy, include, select } = params;
 
     return this.prisma.unit.findMany({
       skip,
@@ -65,6 +66,7 @@ export class UnitService {
       where,
       orderBy,
       include,
+      select,
     });
   }
 
