@@ -9,7 +9,7 @@ export class NotebooksService {
     return this.prisma.magicNotebook.findMany({
       include: {
         user: { select: { id: true, username: true } },
-        sections: { include: { pages: true } }
+
       },
       orderBy: { createdAt: 'desc' }
     });
