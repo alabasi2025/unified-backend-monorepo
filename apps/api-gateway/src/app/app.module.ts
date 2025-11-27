@@ -51,3 +51,7 @@ import { CustomerContactsModule } from './customer-contacts/customer-contacts.mo
   providers: [AppService],
 })
 export class AppModule {}
+
+// Dummy APIs for quick testing
+import * as express from 'express';
+const dummyRouter = require('../dummy-apis');
