@@ -1,1 +1,10 @@
-{"name":"semop-backend","version":"2.1.11","devDependencies":{"prisma":"5.22.0"},"dependencies":{"@prisma/client":"5.22.0"}}
+{
+  "name": "semop-backend",
+  "version": "2.3.0",
+  "devDependencies": {
+    "prisma": "5.22.0"
+  },
+  "dependencies": {
+    "@prisma/client": "5.22.0"
+  }
+}
