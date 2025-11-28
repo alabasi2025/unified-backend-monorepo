@@ -300,3 +300,100 @@ model SearchIndex {
   @@index([entityId, entityType])
   @@map("search_indexes")
 }
+
+
+// ============================================
+// AI News Aggregator Module
+// Version: 2.5.0
+// Date: 2024-11-28
+// ============================================
+
+// News Sources
+model NewsSource {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  url         String
+  sourceType  String   @map("source_type") // RSS, WEB_SCRAPE, API
+  category    String   // AI, ML, TECH, RESEARCH
+  isActive    Boolean  @default(true) @map("is_active")
+  lastFetched DateTime? @map("last_fetched")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  news AINews[]
+
+  @@map("news_sources")
+}
+
+// AI News Articles
+model AINews {
+  id            Int      @id @default(autoincrement())
+  title         String
+  url           String   @unique
+  content       String?  @db.Text
+  summary       String?  @db.Text
+  author        String?
+  publishedAt   DateTime @map("published_at")
+  category      String   // AI_RESEARCH, ML_TOOLS, INDUSTRY_NEWS, STARTUPS
+  tags          String[] // Array of tags
+  sentiment     String?  // POSITIVE, NEUTRAL, NEGATIVE
+  importance    Int      @default(5) // 1-10 scale
+  sourceId      Int      @map("source_id")
+  isRead        Boolean  @default(false) @map("is_read")
+  isSaved       Boolean  @default(false) @map("is_saved")
+  notebookId    Int?     @map("notebook_id") // Link to Magic Notebook
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  source   NewsSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  summaries NewsSummary[]
+
+  @@index([publishedAt])
+  @@index([category])
+  @@index([sourceId])
+  @@map("ai_news")
+}
+
+// AI-Generated Summaries
+model NewsSummary {
+  id          Int      @id @default(autoincrement())
+  newsId      Int      @map("news_id")
+  summaryType String   @map("summary_type") // SHORT, LONG, BULLET_POINTS
+  content     String   @db.Text
+  model       String   // gpt-4, gpt-3.5-turbo
+  tokensUsed  Int      @map("tokens_used")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  news AINews @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  @@index([newsId])
+  @@map("news_summaries")
+}
+
+// News Categories
+model NewsCategory {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  icon        String?
+  color       String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("news_categories")
+}
+
+// Daily News Digest
+model NewsDailyDigest {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @unique
+  totalNews   Int      @map("total_news")
+  summary     String   @db.Text
+  topStories  String[] @map("top_stories")
+  categories  String[]
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([date])
+  @@map("news_daily_digests")
+}
