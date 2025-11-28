@@ -5,6 +5,8 @@
     "prisma": "5.22.0"
   },
   "dependencies": {
-    "@prisma/client": "5.22.0"
+    "@nestjs/swagger": "^11.2.3",
+    "@prisma/client": "5.22.0",
+    "swagger-ui-express": "^5.0.1"
   }
 }
