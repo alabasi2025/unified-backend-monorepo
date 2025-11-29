@@ -301,6 +301,59 @@ model SearchIndex {
   @@map("search_indexes")
 }
 
+// 12. Attachments
+model Attachment {
+  id          String   @id @default(uuid())
+  entityId    String   @map("entity_id")
+  entityType  String   @map("entity_type") // PAGE, IDEA, TASK
+  fileName    String   @map("file_name")
+  fileUrl     String   @map("file_url")
+  fileSize    Int      @map("file_size") // in bytes
+  mimeType    String   @map("mime_type")
+  uploadedBy  String   @map("uploaded_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([entityId, entityType])
+  @@map("attachments")
+}
+
+// 13. Reminders
+model Reminder {
+  id          String    @id @default(uuid())
+  entityId    String    @map("entity_id")
+  entityType  String    @map("entity_type") // PAGE, IDEA, TASK
+  userId      String    @map("user_id")
+  title       String
+  description String?   @db.Text
+  remindAt    DateTime  @map("remind_at")
+  isCompleted Boolean   @default(false) @map("is_completed")
+  isSent      Boolean   @default(false) @map("is_sent")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([remindAt])
+  @@index([entityId, entityType])
+  @@map("reminders")
+}
+
+// 14. Version History
+model VersionHistory {
+  id          String   @id @default(uuid())
+  entityId    String   @map("entity_id")
+  entityType  String   @map("entity_type") // PAGE, NOTEBOOK
+  version     Int
+  content     Json
+  changedBy   String   @map("changed_by")
+  changeType  String   @map("change_type") // CREATE, UPDATE, DELETE
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([entityId, entityType])
+  @@index([createdAt])
+  @@map("version_history")
+}
+
 
 // ============================================
 // AI News Aggregator Module

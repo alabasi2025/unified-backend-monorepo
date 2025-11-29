@@ -10,6 +10,9 @@ import { ArchiveModule } from './archive/archive.module';
 import { TimelineModule } from './timeline/timeline.module';
 import { StickyNotesModule } from './sticky-notes/sticky-notes.module';
 import { SearchModule } from './search/search.module';
+import { AttachmentsModule } from './attachments/attachments.module';
+import { RemindersModule } from './reminders/reminders.module';
+import { VersionHistoryModule } from './version-history/version-history.module';
 
 @Module({
   imports: [
@@ -24,6 +27,9 @@ import { SearchModule } from './search/search.module';
     TimelineModule,
     StickyNotesModule,
     SearchModule,
+    AttachmentsModule,
+    RemindersModule,
+    VersionHistoryModule,
   ],
 })
 export class MagicNotebookModule {}
