@@ -1,0 +1,452 @@
+// Prisma Schema for SEMOP ERP System
+// Version: 2.1.10
+// Date: 2025-11-27
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// Cycle 4 - New Models (6 tables)
+// ============================================
+
+// 1. Genes System
+model Gene {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  symbol      String   @unique
+  description String?
+  category    String   // ACCOUNTING, INVENTORY, SALES, PURCHASES
+  geneType    String   @map("gene_type") // PUBLIC, PRIVATE
+  sectorId    String?  @map("sector_id")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("genes")
+}
+
+// 2. Latitude Points (Maps System)
+model LatitudePoint {
+  id          Int      @id @default(autoincrement())
+  latitude    Float
+  longitude   Float
+  pointName   String   @unique @map("point_name")
+  description String?
+  address     String?
+  city        String?
+  country     String?  @default("Yemen")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("latitude_points")
+}
+
+// 3. Purchase Orders
+model PurchaseOrder {
+  id           String   @id @default(uuid())
+  orderNumber  String   @unique @map("order_number")
+  supplierId   String   @map("supplier_id")
+  orderDate    DateTime @default(now()) @map("order_date")
+  deliveryDate DateTime? @map("delivery_date")
+  status       String   @default("Pending") // Pending, Approved, Rejected, Completed
+  totalAmount  Float    @map("total_amount")
+  notes        String?
+  createdBy    String?  @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("purchase_orders")
+}
+
+// 4. Account Hierarchy
+model AccountHierarchy {
+  id            String   @id @default(uuid())
+  accountId     String   @unique @map("account_id")
+  parentId      String?  @map("parent_id")
+  level         Int      @default(1)
+  path          String   // e.g., "1.2.3"
+  name          String
+  description   String?
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("account_hierarchy")
+}
+
+// 5. Role Permissions
+model RolePermission {
+  id           String   @id @default(uuid())
+  roleId       String   @map("role_id")
+  permissionId String   @map("permission_id")
+  canCreate    Boolean  @default(false) @map("can_create")
+  canRead      Boolean  @default(true) @map("can_read")
+  canUpdate    Boolean  @default(false) @map("can_update")
+  canDelete    Boolean  @default(false) @map("can_delete")
+  assignedBy   String?  @map("assigned_by")
+  assignedAt   DateTime @default(now()) @map("assigned_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// 6. Customer Contacts
+model CustomerContact {
+  id          Int      @id @default(autoincrement())
+  customerId  String   @map("customer_id")
+  contactName String   @map("contact_name")
+  email       String?
+  phone       String?
+  position    String?
+  isPrimary   Boolean  @default(false) @map("is_primary")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("customer_contacts")
+}
+
+
+// ============================================
+// Magic Notebook System (11 tables)
+// Date: 2025-11-27
+// ============================================
+
+// 1. Notebooks
+model Notebook {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  color       String?   @db.VarChar(50)
+  isArchived  Boolean   @default(false) @map("is_archived")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  pages           Page[]
+  sections        Section[]
+  tasks           Task[]
+  reports         NotebookReport[]
+
+  @@index([userId])
+  @@map("notebooks")
+}
+
+// 2. Pages
+model Page {
+  id          String   @id @default(uuid())
+  notebookId  String   @map("notebook_id")
+  sectionId   String?  @map("section_id")
+  title       String   @default("Untitled Page")
+  content     String   @default("") @db.Text
+  order       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  notebook    Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  section     Section?  @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@index([notebookId])
+  @@index([sectionId])
+  @@map("pages")
+}
+
+// 3. Sections
+model Section {
+  id          String   @id @default(uuid())
+  title       String   @db.VarChar(255)
+  order       Int      @default(0)
+  notebookId  String   @map("notebook_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  notebook    Notebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  pages       Page[]
+
+  @@index([notebookId])
+  @@map("sections")
+}
+
+// 4. Sticky Notes
+model StickyNote {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  content   String   @db.Text
+  color     String   @default("#FFFF00")
+  isPinned  Boolean  @default(false) @map("is_pinned")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("sticky_notes")
+}
+
+// 5. Ideas
+model Idea {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  isArchived  Boolean   @default(false) @map("is_archived")
+  tags        String[]
+  priority    Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("ideas")
+}
+
+// 6. Notebook Tasks
+model Task {
+  id          String    @id @default(uuid())
+  notebookId  String    @map("notebook_id")
+  title       String
+  description String?
+  isCompleted Boolean   @default(false) @map("is_completed")
+  dueDate     DateTime? @map("due_date")
+  priority    Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  notebook    Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+
+  @@index([notebookId])
+  @@map("notebook_tasks")
+}
+
+// 7. Notebook Reports
+model NotebookReport {
+  id            String    @id @default(uuid())
+  notebookId    String    @map("notebook_id")
+  reportType    String    @map("report_type")
+  status        String    @default("pending")
+  fileUrl       String?   @map("file_url")
+  generatedAt   DateTime? @map("generated_at")
+  metadata      Json?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  notebook      Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+
+  @@index([notebookId])
+  @@map("notebook_reports")
+}
+
+// 8. Chat Logs
+model ChatLog {
+  id          String   @id @default(uuid())
+  notebookId  String   @map("notebook_id")
+  sessionId   String   @map("session_id")
+  role        String
+  content     String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([notebookId])
+  @@index([sessionId])
+  @@map("chat_logs")
+}
+
+// 9. Timeline Entries
+model TimelineEntry {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  type        String   @map("entry_type")
+  content     String   @db.Text
+  timestamp   DateTime @default(now()) @map("entry_timestamp")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([timestamp])
+  @@map("timeline_entries")
+}
+
+// 10. Archives
+model Archive {
+  id          String   @id @default(uuid())
+  entityId    String   @map("entity_id")
+  entityType  String   @map("entity_type")
+  archivedAt  DateTime @default(now()) @map("archived_at")
+  archivedBy  String?  @map("archived_by")
+  data        Json
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([entityId, entityType])
+  @@map("archives")
+}
+
+// 11. Search Indexes
+model SearchIndex {
+  id          String    @id @default(uuid())
+  entityId    String    @map("entity_id")
+  entityType  String    @map("entity_type")
+  content     String    @db.Text
+  userId      String    @map("user_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([entityId, entityType])
+  @@map("search_indexes")
+}
+
+// 12. Attachments
+model Attachment {
+  id          String   @id @default(uuid())
+  entityId    String   @map("entity_id")
+  entityType  String   @map("entity_type") // PAGE, IDEA, TASK
+  fileName    String   @map("file_name")
+  fileUrl     String   @map("file_url")
+  fileSize    Int      @map("file_size") // in bytes
+  mimeType    String   @map("mime_type")
+  uploadedBy  String   @map("uploaded_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([entityId, entityType])
+  @@map("attachments")
+}
+
+// 13. Reminders
+model Reminder {
+  id          String    @id @default(uuid())
+  entityId    String    @map("entity_id")
+  entityType  String    @map("entity_type") // PAGE, IDEA, TASK
+  userId      String    @map("user_id")
+  title       String
+  description String?   @db.Text
+  remindAt    DateTime  @map("remind_at")
+  isCompleted Boolean   @default(false) @map("is_completed")
+  isSent      Boolean   @default(false) @map("is_sent")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([remindAt])
+  @@index([entityId, entityType])
+  @@map("reminders")
+}
+
+// 14. Version History
+model VersionHistory {
+  id          String   @id @default(uuid())
+  entityId    String   @map("entity_id")
+  entityType  String   @map("entity_type") // PAGE, NOTEBOOK
+  version     Int
+  content     Json
+  changedBy   String   @map("changed_by")
+  changeType  String   @map("change_type") // CREATE, UPDATE, DELETE
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([entityId, entityType])
+  @@index([createdAt])
+  @@map("version_history")
+}
+
+
+// ============================================
+// AI News Aggregator Module
+// Version: 2.5.0
+// Date: 2024-11-28
+// ============================================
+
+// News Sources
+model NewsSource {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  url         String
+  sourceType  String   @map("source_type") // RSS, WEB_SCRAPE, API
+  category    String   // AI, ML, TECH, RESEARCH
+  isActive    Boolean  @default(true) @map("is_active")
+  lastFetched DateTime? @map("last_fetched")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  news AINews[]
+
+  @@map("news_sources")
+}
+
+// AI News Articles
+model AINews {
+  id            Int      @id @default(autoincrement())
+  title         String
+  url           String   @unique
+  content       String?  @db.Text
+  summary       String?  @db.Text
+  author        String?
+  publishedAt   DateTime @map("published_at")
+  category      String   // AI_RESEARCH, ML_TOOLS, INDUSTRY_NEWS, STARTUPS
+  tags          String[] // Array of tags
+  sentiment     String?  // POSITIVE, NEUTRAL, NEGATIVE
+  importance    Int      @default(5) // 1-10 scale
+  sourceId      Int      @map("source_id")
+  isRead        Boolean  @default(false) @map("is_read")
+  isSaved       Boolean  @default(false) @map("is_saved")
+  notebookId    Int?     @map("notebook_id") // Link to Magic Notebook
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  source   NewsSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  summaries NewsSummary[]
+
+  @@index([publishedAt])
+  @@index([category])
+  @@index([sourceId])
+  @@map("ai_news")
+}
+
+// AI-Generated Summaries
+model NewsSummary {
+  id          Int      @id @default(autoincrement())
+  newsId      Int      @map("news_id")
+  summaryType String   @map("summary_type") // SHORT, LONG, BULLET_POINTS
+  content     String   @db.Text
+  model       String   // gpt-4, gpt-3.5-turbo
+  tokensUsed  Int      @map("tokens_used")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  news AINews @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  @@index([newsId])
+  @@map("news_summaries")
+}
+
+// News Categories
+model NewsCategory {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  icon        String?
+  color       String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("news_categories")
+}
+
+// Daily News Digest
+model NewsDailyDigest {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @unique
+  totalNews   Int      @map("total_news")
+  summary     String   @db.Text
+  topStories  String[] @map("top_stories")
+  categories  String[]
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([date])
+  @@map("news_daily_digests")
+}
