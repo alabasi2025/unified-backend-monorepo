@@ -1,8 +1,10 @@
 {
   "name": "semop-backend",
-  "version": "2.4.0",
+  "version": "2.16.0",
   "devDependencies": {
-    "prisma": "5.22.0"
+    "esbuild": "^0.27.0",
+    "prisma": "5.22.0",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@nestjs/swagger": "^11.2.3",
