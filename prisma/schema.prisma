@@ -450,3 +450,39 @@ model NewsDailyDigest {
   @@index([date])
   @@map("news_daily_digests")
 }
+
+// ============================================
+// Gene System Extensions - v2.17.0
+// Date: 2025-11-30
+// ============================================
+
+// Gene Activation History - تاريخ تفعيل/تعطيل الجينات
+model GeneActivationHistory {
+  id          String   @id @default(uuid())
+  geneId      String   @map("gene_id")
+  action      String   // ACTIVATED, DEACTIVATED
+  performedBy String?  @map("performed_by")
+  reason      String?  @db.Text
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([geneId])
+  @@index([createdAt])
+  @@map("gene_activation_history")
+}
+
+// Gene Dependencies - الاعتماديات بين الجينات
+model GeneDependency {
+  id              String   @id @default(uuid())
+  geneId          String   @map("gene_id")
+  dependsOnGeneId String   @map("depends_on_gene_id")
+  dependencyType  String   @map("dependency_type") // REQUIRED, OPTIONAL, RECOMMENDED
+  description     String?  @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([geneId, dependsOnGeneId])
+  @@index([geneId])
+  @@index([dependsOnGeneId])
+  @@map("gene_dependencies")
+}

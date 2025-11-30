@@ -86,4 +86,42 @@ export class GenesController {
   deactivateGene(@Param('id', ParseIntPipe) id: number) {
     return this.genesService.deactivateGene(id);
   }
+
+  @Get('usage-report')
+  @ApiOperation({ summary: 'تقرير استخدام الجينات' })
+  @ApiResponse({ status: 200, description: 'تقرير شامل عن استخدام الجينات' })
+  getUsageReport() {
+    return this.genesService.getUsageReport();
+  }
+
+  @Get(':id/history')
+  @ApiOperation({ summary: 'تاريخ تفعيل/تعطيل الجين' })
+  @ApiResponse({ status: 200, description: 'قائمة بالتغييرات' })
+  getGeneHistory(@Param('id') id: string) {
+    return this.genesService.getGeneHistory(id);
+  }
+
+  @Get(':id/dependencies')
+  @ApiOperation({ summary: 'الحصول على اعتماديات الجين' })
+  @ApiResponse({ status: 200, description: 'قائمة الجينات التي يعتمد عليها هذا الجين' })
+  getGeneDependencies(@Param('id') id: string) {
+    return this.genesService.getGeneDependencies(id);
+  }
+
+  @Post(':id/dependencies')
+  @ApiOperation({ summary: 'إضافة اعتمادية للجين' })
+  @ApiResponse({ status: 201, description: 'تم إضافة الاعتمادية بنجاح' })
+  addDependency(
+    @Param('id') id: string,
+    @Body() body: { dependsOnGeneId: string; dependencyType: string; description?: string },
+  ) {
+    return this.genesService.addDependency(id, body.dependsOnGeneId, body.dependencyType, body.description);
+  }
+
+  @Get(':id/can-activate')
+  @ApiOperation({ summary: 'التحقق من إمكانية تفعيل الجين' })
+  @ApiResponse({ status: 200, description: 'نتيجة التحقق' })
+  canActivateGene(@Param('id') id: string) {
+    return this.genesService.canActivateGene(id);
+  }
 }

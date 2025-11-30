@@ -118,12 +118,17 @@ export class GenesService {
   /**
    * تفعيل جين معين
    */
-  async activateGene(id: number) {
+  async activateGene(id: number, performedBy?: string, reason?: string) {
     try {
-      return await this.prisma.gene.update({
+      const gene = await this.prisma.gene.update({
         where: { id },
         data: { isActive: true },
       });
+
+      // تسجيل التاريخ
+      await this.logActivationHistory(id.toString(), 'ACTIVATED', performedBy, reason);
+
+      return gene;
     } catch (error) {
       if (error.code === 'P2025') {
         throw new NotFoundException(`Gene with ID ${id} not found`);
@@ -135,17 +140,148 @@ export class GenesService {
   /**
    * تعطيل جين معين
    */
-  async deactivateGene(id: number) {
+  async deactivateGene(id: number, performedBy?: string, reason?: string) {
     try {
-      return await this.prisma.gene.update({
+      const gene = await this.prisma.gene.update({
         where: { id },
         data: { isActive: false },
       });
+
+      // تسجيل التاريخ
+      await this.logActivationHistory(id.toString(), 'DEACTIVATED', performedBy, reason);
+
+      return gene;
     } catch (error) {
       if (error.code === 'P2025') {
         throw new NotFoundException(`Gene with ID ${id} not found`);
       }
       throw error;
     }
+  }
+
+  /**
+   * تسجيل تاريخ تفعيل/تعطيل الجين
+   */
+  private async logActivationHistory(
+    geneId: string,
+    action: string,
+    performedBy?: string,
+    reason?: string,
+  ) {
+    try {
+      await this.prisma.geneActivationHistory.create({
+        data: {
+          geneId,
+          action,
+          performedBy,
+          reason,
+          metadata: {
+            timestamp: new Date().toISOString(),
+            source: 'api',
+          },
+        },
+      });
+    } catch (error) {
+      // تسجيل الخطأ لكن لا نوقف العملية
+      console.error('Failed to log activation history:', error);
+    }
+  }
+
+  /**
+   * الحصول على تاريخ التفعيل/التعطيل لجين معين
+   */
+  async getGeneHistory(geneId: string) {
+    return this.prisma.geneActivationHistory.findMany({
+      where: { geneId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * إضافة اعتمادية بين جينين
+   */
+  async addDependency(
+    geneId: string,
+    dependsOnGeneId: string,
+    dependencyType: string,
+    description?: string,
+  ) {
+    return this.prisma.geneDependency.create({
+      data: {
+        geneId,
+        dependsOnGeneId,
+        dependencyType,
+        description,
+      },
+    });
+  }
+
+  /**
+   * الحصول على اعتماديات جين معين
+   */
+  async getGeneDependencies(geneId: string) {
+    return this.prisma.geneDependency.findMany({
+      where: { geneId },
+    });
+  }
+
+  /**
+   * التحقق من إمكانية تفعيل جين (بناءً على الاعتماديات)
+   */
+  async canActivateGene(geneId: string): Promise<{ canActivate: boolean; missingDependencies: string[] }> {
+    const dependencies = await this.prisma.geneDependency.findMany({
+      where: {
+        geneId,
+        dependencyType: 'REQUIRED',
+      },
+    });
+
+    const missingDependencies: string[] = [];
+
+    for (const dep of dependencies) {
+      const dependentGene = await this.prisma.gene.findUnique({
+        where: { id: parseInt(dep.dependsOnGeneId) },
+      });
+
+      if (!dependentGene || !dependentGene.isActive) {
+        missingDependencies.push(dep.dependsOnGeneId);
+      }
+    }
+
+    return {
+      canActivate: missingDependencies.length === 0,
+      missingDependencies,
+    };
+  }
+
+  /**
+   * تقرير استخدام الجينات
+   */
+  async getUsageReport() {
+    const totalGenes = await this.prisma.gene.count();
+    const activeGenes = await this.prisma.gene.count({ where: { isActive: true } });
+    const inactiveGenes = totalGenes - activeGenes;
+
+    const genesByCategory = await this.prisma.gene.groupBy({
+      by: ['category'],
+      _count: true,
+    });
+
+    const recentActivations = await this.prisma.geneActivationHistory.findMany({
+      where: { action: 'ACTIVATED' },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+
+    return {
+      summary: {
+        total: totalGenes,
+        active: activeGenes,
+        inactive: inactiveGenes,
+        activationRate: totalGenes > 0 ? (activeGenes / totalGenes) * 100 : 0,
+      },
+      byCategory: genesByCategory,
+      recentActivations,
+    };
   }
 }
