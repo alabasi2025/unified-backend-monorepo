@@ -56,4 +56,96 @@ export class GenesService {
       throw error;
     }
   }
+
+  /**
+   * ربط الجين بقطاع معين
+   * @param id معرف الجين
+   * @param sectorCode رمز القطاع
+   */
+  async linkGeneToSector(id: number, sectorCode: string) {
+    try {
+      return await this.prisma.gene.update({
+        where: { id },
+        data: { sectorCode },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Gene with ID ${id} not found`);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * الحصول على جميع الجينات المرتبطة بقطاع معين
+   * @param sectorCode رمز القطاع
+   */
+  async getGenesBySector(sectorCode: string) {
+    return this.prisma.gene.findMany({
+      where: { sectorCode },
+      include: {
+        modules: true, // تضمين الوحدات المرتبطة بالجين
+      },
+    });
+  }
+
+  /**
+   * الحصول على الجينات النشطة
+   */
+  async getActiveGenes() {
+    return this.prisma.gene.findMany({
+      where: { isActive: true },
+      include: {
+        modules: true,
+      },
+    });
+  }
+
+  /**
+   * الحصول على جميع القطاعات
+   */
+  async getAllSectors() {
+    // هذا مثال افتراضي - يجب إنشاء جدول Sector في قاعدة البيانات
+    return [
+      { id: '1', code: 'GENERAL', nameAr: 'عام', nameEn: 'General', icon: '🏛️', isActive: true },
+      { id: '2', code: 'SUPERMARKET', nameAr: 'سوبر ماركت', nameEn: 'Supermarket', icon: '🛒', isActive: true },
+      { id: '3', code: 'PHARMACY', nameAr: 'صيدلية', nameEn: 'Pharmacy', icon: '💊', isActive: true },
+      { id: '4', code: 'RESTAURANT', nameAr: 'مطعم', nameEn: 'Restaurant', icon: '🍴', isActive: true },
+      { id: '5', code: 'HOSPITAL', nameAr: 'مستشفى', nameEn: 'Hospital', icon: '🏥', isActive: true },
+    ];
+  }
+
+  /**
+   * تفعيل جين معين
+   */
+  async activateGene(id: number) {
+    try {
+      return await this.prisma.gene.update({
+        where: { id },
+        data: { isActive: true },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Gene with ID ${id} not found`);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * تعطيل جين معين
+   */
+  async deactivateGene(id: number) {
+    try {
+      return await this.prisma.gene.update({
+        where: { id },
+        data: { isActive: false },
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Gene with ID ${id} not found`);
+      }
+      throw error;
+    }
+  }
 }
