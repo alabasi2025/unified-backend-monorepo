@@ -1,4 +1,15 @@
-// role_permissions.controller.ts
+/**
+ * PHASE-11: Complete Backend Fixes
+ * COMPONENT: Role Permissions Controller
+ * IMPACT: Medium
+ * 
+ * Changes:
+ * - Updated imports to use @semop/contracts
+ * - Removed local DTO imports
+ * 
+ * Date: 2025-12-03
+ * Author: Development Team
+ */
 
 import {
   Controller,
@@ -11,7 +22,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { RolePermissionsService } from './role_permissions.service';
-import { CreateRolePermissionDto, UpdateRolePermissionDto } from './role_permissions.dto';
+import { CreateRolePermissionDto, UpdateRolePermissionDto } from '@semop/contracts';
 
 @Controller('role-permissions')
 export class RolePermissionsController {

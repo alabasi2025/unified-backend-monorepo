@@ -6,7 +6,7 @@
  * Changes:
  * - Removed Layer 0 (NO Layer 0 allowed per Sacred Book)
  * - Fixed PrismaModule import to Layer 1
- * - Removed broken modules (Items, OrganizationalStructure)
+ * - Added OrganizationalStructure module back (now working)
  * - Updated all imports to use @semop/contracts
  * 
  * Date: 2025-12-03
@@ -24,6 +24,7 @@ import { RolesModule } from '../../../../libs/1-core-services/roles/roles.module
 import { PermissionsModule } from '../../../../libs/1-core-services/permissions/permissions.module';
 import { RolePermissionsModule } from '../../../../libs/1-core-services/role-permissions/role-permissions.module';
 import { DashboardModule } from '../../../../libs/1-core-services/dashboard/dashboard.module';
+import { OrganizationalStructureModule } from '../../../../libs/1-core-services/organizational-structure/organizational-structure.module';
 
 // Layer 2: OCMP
 import { GenesModule } from '../../../../libs/2-ocmp/genes/genes.module';
@@ -58,6 +59,7 @@ import { ProjectsModule } from '../../../../libs/3-vertical-applications/project
     PermissionsModule,
     RolePermissionsModule,
     DashboardModule,
+    OrganizationalStructureModule,
     
     // Layer 2: OCMP
     GenesModule,

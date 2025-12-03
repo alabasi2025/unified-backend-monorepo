@@ -1,6 +1,19 @@
+/**
+ * PHASE-11: Complete Backend Fixes
+ * COMPONENT: Customer Contact Controller
+ * IMPACT: Medium
+ * 
+ * Changes:
+ * - Updated imports to use @semop/contracts
+ * - Removed local DTO imports
+ * 
+ * Date: 2025-12-03
+ * Author: Development Team
+ */
+
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { CustomerContactService } from './customer-contact.service';
-import { CreateCustomerContactDto, UpdateCustomerContactDto } from './customer-contact.dto';
+import { CreateCustomerContactDto, UpdateCustomerContactDto } from '@semop/contracts';
 import { CustomerContact } from './customer-contact.entity';
 
 @Controller('customer-contacts')
