@@ -1,7 +1,20 @@
+/**
+ * PHASE-11: Complete Backend Fixes
+ * COMPONENT: Genes Controller
+ * IMPACT: Critical
+ * 
+ * Changes:
+ * - Updated imports to use @semop/contracts
+ * - Removed local DTOs
+ * 
+ * Date: 2025-12-03
+ * Author: Development Team
+ */
+
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { GenesService } from './genes.service';
-import { CreateGeneDto, UpdateGeneDto } from './dto/genes.dto';
-import { LinkGeneSectorDto } from './dto/link-gene-sector.dto';
+import { CreateGeneDto, UpdateGeneDto } from '@semop/contracts';
+import { LinkGeneSectorDto } from '@semop/contracts';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('genes')

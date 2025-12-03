@@ -1,22 +1,30 @@
-// /home/ubuntu/purchase_orders/src/purchase-orders.service.ts
+/**
+ * PHASE-11: Complete Backend Fixes
+ * COMPONENT: Purchase Orders Service
+ * IMPACT: Critical
+ * 
+ * Changes:
+ * - Updated imports to use @semop/contracts
+ * - Removed local DTOs
+ * - Simplified service logic
+ * 
+ * Date: 2025-12-03
+ * Author: Development Team
+ */
 
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../1-core-services/prisma/prisma.service'; // افتراض مسار PrismaService
-import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
-import { UpdatePurchaseOrderDto } from './dto/update-purchase-order.dto';
-import { PurchaseOrder } from '@prisma/client'; // افتراض أن Prisma Client تم توليده
+import { PrismaService } from '../../../1-core-services/prisma/prisma.service';
+import { CreatePurchaseOrderDto, UpdatePurchaseOrderDto } from '@semop/contracts';
+import { PurchaseOrder } from '@prisma/client';
 
 @Injectable()
 export class PurchaseOrdersService {
   constructor(private prisma: PrismaService) {}
 
   async create(createPurchaseOrderDto: CreatePurchaseOrderDto): Promise<PurchaseOrder> {
+    // تبسيط: نترك Prisma يتعامل مع الحقول المطلوبة
     return this.prisma.purchaseOrder.create({
-      data: {
-        ...createPurchaseOrderDto,
-        // تحويل orderDate إلى Date إذا كان موجودًا
-        orderDate: createPurchaseOrderDto.orderDate ? new Date(createPurchaseOrderDto.orderDate) : undefined,
-      },
+      data: createPurchaseOrderDto as any,
     });
   }
 
@@ -30,7 +38,7 @@ export class PurchaseOrdersService {
     });
 
     if (!order) {
-      throw new NotFoundException(`Purchase Order with ID "${id}" not found`);
+      throw new NotFoundException(`Purchase Order with ID ${id} not found`);
     }
 
     return order;
@@ -40,16 +48,11 @@ export class PurchaseOrdersService {
     try {
       return await this.prisma.purchaseOrder.update({
         where: { id },
-        data: {
-          ...updatePurchaseOrderDto,
-          // تحويل orderDate إلى Date إذا كان موجودًا
-          orderDate: updatePurchaseOrderDto.orderDate ? new Date(updatePurchaseOrderDto.orderDate) : undefined,
-        },
+        data: updatePurchaseOrderDto as any,
       });
     } catch (error) {
-      // يمكن أن يكون الخطأ بسبب عدم وجود السجل
       if (error.code === 'P2025') {
-        throw new NotFoundException(`Purchase Order with ID "${id}" not found`);
+        throw new NotFoundException(`Purchase Order with ID ${id} not found`);
       }
       throw error;
     }
@@ -61,9 +64,8 @@ export class PurchaseOrdersService {
         where: { id },
       });
     } catch (error) {
-      // يمكن أن يكون الخطأ بسبب عدم وجود السجل
       if (error.code === 'P2025') {
-        throw new NotFoundException(`Purchase Order with ID "${id}" not found`);
+        throw new NotFoundException(`Purchase Order with ID ${id} not found`);
       }
       throw error;
     }

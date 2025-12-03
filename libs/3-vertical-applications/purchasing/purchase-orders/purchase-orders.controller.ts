@@ -1,9 +1,19 @@
-// /home/ubuntu/purchase_orders/src/purchase-orders.controller.ts
+/**
+ * PHASE-11: Complete Backend Fixes
+ * COMPONENT: Purchase Orders Controller
+ * IMPACT: Critical
+ * 
+ * Changes:
+ * - Updated imports to use @semop/contracts
+ * - Removed local DTOs
+ * 
+ * Date: 2025-12-03
+ * Author: Development Team
+ */
 
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { PurchaseOrdersService } from './purchase-orders.service';
-import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
-import { UpdatePurchaseOrderDto } from './dto/update-purchase-order.dto';
+import { CreatePurchaseOrderDto, UpdatePurchaseOrderDto } from '@semop/contracts';
 
 @Controller('purchase-orders')
 export class PurchaseOrdersController {

@@ -1,6 +1,20 @@
+/**
+ * PHASE-11: Complete Backend Fixes
+ * COMPONENT: Latitude Points Controller
+ * IMPACT: Critical
+ * 
+ * Changes:
+ * - Updated imports to use @semop/contracts
+ * - Removed local DTOs
+ * - Fixed service import path
+ * 
+ * Date: 2025-12-03
+ * Author: Development Team
+ */
+
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
-import { LatitudePointsService } from './latitude_points.service';
-import { CreateLatitudePointDto, UpdateLatitudePointDto } from './dto/latitude_point.dto';
+import { LatitudePointsService } from './latitude-points.service';
+import { CreateLatitudePointDto, UpdateLatitudePointDto } from '@semop/contracts';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('latitude-points')

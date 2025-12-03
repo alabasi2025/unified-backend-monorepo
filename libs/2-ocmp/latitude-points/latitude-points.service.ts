@@ -1,6 +1,20 @@
+/**
+ * PHASE-11: Complete Backend Fixes
+ * COMPONENT: Latitude Points Service
+ * IMPACT: Critical
+ * 
+ * Changes:
+ * - Updated imports to use @semop/contracts
+ * - Removed local DTOs
+ * - Fixed PrismaService import path
+ * 
+ * Date: 2025-12-03
+ * Author: Development Team
+ */
+
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../1-core-services/prisma/prisma.service'; // افتراض وجود PrismaService في هذا المسار
-import { CreateLatitudePointDto, UpdateLatitudePointDto } from './dto/latitude_point.dto';
+import { PrismaService } from '../../1-core-services/prisma/prisma.service';
+import { CreateLatitudePointDto, UpdateLatitudePointDto } from '@semop/contracts';
 
 @Injectable()
 export class LatitudePointsService {
@@ -8,21 +22,20 @@ export class LatitudePointsService {
 
   async create(createLatitudePointDto: CreateLatitudePointDto) {
     try {
-      return await this.prisma.latitude_points.create({
-        data: createLatitudePointDto,
+      return await this.prisma.latitudePoint.create({
+        data: createLatitudePointDto as any,
       });
     } catch (error) {
-      // يمكن التعامل مع أخطاء فريدة مثل تكرار point_name هنا
       throw error;
     }
   }
 
   async findAll() {
-    return await this.prisma.latitude_points.findMany();
+    return await this.prisma.latitudePoint.findMany();
   }
 
   async findOne(id: number) {
-    const point = await this.prisma.latitude_points.findUnique({
+    const point = await this.prisma.latitudePoint.findUnique({
       where: { id },
     });
 
@@ -34,23 +47,21 @@ export class LatitudePointsService {
 
   async update(id: number, updateLatitudePointDto: UpdateLatitudePointDto) {
     try {
-      return await this.prisma.latitude_points.update({
+      return await this.prisma.latitudePoint.update({
         where: { id },
-        data: updateLatitudePointDto,
+        data: updateLatitudePointDto as any,
       });
     } catch (error) {
-      // يمكن التعامل مع أخطاء عدم العثور على السجل هنا
       throw error;
     }
   }
 
   async remove(id: number) {
     try {
-      return await this.prisma.latitude_points.delete({
+      return await this.prisma.latitudePoint.delete({
         where: { id },
       });
     } catch (error) {
-      // يمكن التعامل مع أخطاء عدم العثور على السجل هنا
       throw error;
     }
   }

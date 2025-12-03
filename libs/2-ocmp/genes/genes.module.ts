@@ -3,7 +3,7 @@ import { GenesService } from './genes.service';
 import { GenesController } from './genes.controller';
 import { PricingService } from './pricing.service';
 import { PricingController } from './pricing.controller';
-import { PrismaModule } from '../../../1-core-services/prisma/prisma.module'; // افتراض وجود PrismaModule في هذا المسار
+import { PrismaModule } from '../../1-core-services/prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule], // استيراد PrismaModule بدلاً من TypeOrmModule
