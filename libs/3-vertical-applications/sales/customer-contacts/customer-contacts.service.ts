@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../0-shared/prisma/prisma.service'; // افتراض وجود PrismaService في مسار '../prisma/prisma.service'
+import { PrismaService } from '../../../1-core-services/prisma/prisma.service'; // افتراض وجود PrismaService في مسار '../prisma/prisma.service'
 import { CreateCustomerContactDto, UpdateCustomerContactDto } from './customer_contacts.dto';
 
 @Injectable()

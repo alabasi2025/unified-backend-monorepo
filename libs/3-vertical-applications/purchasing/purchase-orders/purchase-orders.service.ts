@@ -1,7 +1,7 @@
 // /home/ubuntu/purchase_orders/src/purchase-orders.service.ts
 
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../0-shared/prisma/prisma.service'; // افتراض مسار PrismaService
+import { PrismaService } from '../../../1-core-services/prisma/prisma.service'; // افتراض مسار PrismaService
 import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
 import { UpdatePurchaseOrderDto } from './dto/update-purchase-order.dto';
 import { PurchaseOrder } from '@prisma/client'; // افتراض أن Prisma Client تم توليده

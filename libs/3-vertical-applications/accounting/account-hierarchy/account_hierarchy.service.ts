@@ -1,6 +1,6 @@
 // PHASE 10: Account Hierarchy Service
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../0-shared/prisma/prisma.service';
+import { PrismaService } from '../../../1-core-services/prisma/prisma.service';
 
 @Injectable()
 export class AccountHierarchyService {
