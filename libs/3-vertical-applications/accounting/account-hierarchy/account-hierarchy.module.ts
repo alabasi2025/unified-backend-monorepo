@@ -1,0 +1,12 @@
+import { Module } from '@nestjs/common';
+import { AccountHierarchyController } from './account_hierarchy.controller';
+import { AccountHierarchyService } from './account_hierarchy.service';
+import { PrismaModule } from '../prisma/prisma.module'; // افتراض وجود PrismaModule
+
+@Module({
+  imports: [PrismaModule], // استيراد PrismaModule لتوفير PrismaService
+  controllers: [AccountHierarchyController],
+  providers: [AccountHierarchyService],
+  exports: [AccountHierarchyService],
+})
+export class AccountHierarchyModule {}
