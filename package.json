@@ -3,12 +3,17 @@
   "version": "2.16.0",
   "devDependencies": {
     "esbuild": "^0.27.0",
+    "husky": "^9.1.7",
     "prisma": "5.22.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@nestjs/swagger": "^11.2.3",
     "@prisma/client": "5.22.0",
+    "@semop/contracts": "^0.1.0",
     "swagger-ui-express": "^5.0.1"
+  },
+  "scripts": {
+    "prepare": "husky"
   }
 }
