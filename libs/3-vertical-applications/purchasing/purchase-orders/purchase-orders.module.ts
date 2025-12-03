@@ -3,7 +3,7 @@
 import { Module } from '@nestjs/common';
 import { PurchaseOrdersService } from './purchase-orders.service';
 import { PurchaseOrdersController } from './purchase-orders.controller';
-import { PrismaService } from '../prisma/prisma.service'; // افتراض مسار PrismaService
+import { PrismaService } from '../../../0-shared/prisma/prisma.service'; // افتراض مسار PrismaService
 
 @Module({
   controllers: [PurchaseOrdersController],
