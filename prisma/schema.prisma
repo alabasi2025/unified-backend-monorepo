@@ -486,3 +486,83 @@ model GeneDependency {
   @@index([dependsOnGeneId])
   @@map("gene_dependencies")
 }
+
+// ============================================
+// Organizational Structure - PHASE 10
+// Date: 2025-12-03
+// ============================================
+
+// Department - الأقسام
+model Department {
+  id                  String      @id @default(uuid())
+  code                String      @unique
+  nameAr              String      @map("name_ar")
+  nameEn              String      @map("name_en")
+  description         String?     @db.Text
+  parentDepartmentId  String?     @map("parent_department_id")
+  managerId           String?     @map("manager_id")
+  isActive            Boolean     @default(true) @map("is_active")
+  level               Int         @default(1)
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  parentDepartment    Department?  @relation("DepartmentHierarchy", fields: [parentDepartmentId], references: [id])
+  subDepartments      Department[] @relation("DepartmentHierarchy")
+  employees           Employee[]
+  
+  @@index([parentDepartmentId])
+  @@index([managerId])
+  @@map("departments")
+}
+
+// Position - المناصب الوظيفية
+model Position {
+  id          String     @id @default(uuid())
+  code        String     @unique
+  titleAr     String     @map("title_ar")
+  titleEn     String     @map("title_en")
+  description String?    @db.Text
+  level       Int        @default(1) // 1 = Executive, 2 = Manager, 3 = Staff
+  isActive    Boolean    @default(true) @map("is_active")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  employees   Employee[]
+
+  @@map("positions")
+}
+
+// Employee - الموظفين
+model Employee {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  firstNameAr   String    @map("first_name_ar")
+  lastNameAr    String    @map("last_name_ar")
+  firstNameEn   String?   @map("first_name_en")
+  lastNameEn    String?   @map("last_name_en")
+  email         String    @unique
+  phone         String
+  departmentId  String    @map("department_id")
+  positionId    String    @map("position_id")
+  managerId     String?   @map("manager_id")
+  hireDate      DateTime  @map("hire_date")
+  salary        Float?
+  isActive      Boolean   @default(true) @map("is_active")
+  userId        String?   @unique @map("user_id") // Link to system user
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  department    Department @relation(fields: [departmentId], references: [id])
+  position      Position   @relation(fields: [positionId], references: [id])
+  manager       Employee?  @relation("EmployeeHierarchy", fields: [managerId], references: [id])
+  subordinates  Employee[] @relation("EmployeeHierarchy")
+
+  @@index([departmentId])
+  @@index([positionId])
+  @@index([managerId])
+  @@index([email])
+  @@map("employees")
+}
