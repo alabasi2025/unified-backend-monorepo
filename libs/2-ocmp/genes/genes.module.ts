@@ -1,3 +1,4 @@
+// PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Module } from '@nestjs/common';
 import { GenesService } from './genes.service';
 import { GenesController } from './genes.controller';

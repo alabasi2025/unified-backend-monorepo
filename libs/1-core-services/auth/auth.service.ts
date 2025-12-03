@@ -1,6 +1,7 @@
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
+import { LoginDto } from '@semop/contracts';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +22,7 @@ export class AuthService {
     }
   ];
 
-  async login(loginDto: { username: string; password: string }) {
+  async login(loginDto: LoginDto) {
     const { username, password } = loginDto;
 
     // Find user

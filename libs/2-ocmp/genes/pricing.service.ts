@@ -1,3 +1,4 @@
+// PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../1-core-services/prisma/prisma.service';
 

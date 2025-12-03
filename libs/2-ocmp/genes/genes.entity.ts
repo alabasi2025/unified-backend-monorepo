@@ -1,3 +1,4 @@
+// PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from 'typeorm';
 import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsDate } from 'class-validator';
 
