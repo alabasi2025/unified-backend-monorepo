@@ -1,63 +1,101 @@
 /**
  * PHASE 10: Organizational Structure Development
- * Controller for organizational structure endpoints
  */
-
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { OrganizationalStructureService } from './organizational-structure.service';
+import { CreateDepartmentDto, UpdateDepartmentDto, CreatePositionDto, UpdatePositionDto, CreateEmployeeDto, UpdateEmployeeDto } from '@semop/contracts';
 
 @Controller('organizational-structure')
 export class OrganizationalStructureController {
-  constructor(
-    private readonly organizationalStructureService: OrganizationalStructureService,
-  ) {}
+  constructor(private readonly service: OrganizationalStructureService) {}
 
-  // Departments
+  @Post('departments')
+  createDepartment(@Body() dto: CreateDepartmentDto) {
+    return this.service.createDepartment(dto);
+  }
+
   @Get('departments')
-  async getAllDepartments() {
-    return this.organizationalStructureService.findAllDepartments();
+  getAllDepartments() {
+    return this.service.getAllDepartments();
   }
 
   @Get('departments/:id')
-  async getDepartmentById(@Param('id') id: string) {
-    return this.organizationalStructureService.findDepartmentById(id);
+  getDepartmentById(@Param('id') id: string) {
+    return this.service.getDepartmentById(id);
   }
 
-  @Get('chart')
-  async getOrganizationalChart() {
-    return this.organizationalStructureService.getOrganizationalChart();
+  @Put('departments/:id')
+  updateDepartment(@Param('id') id: string, @Body() dto: UpdateDepartmentDto) {
+    return this.service.updateDepartment(id, dto);
   }
 
-  // Positions
+  @Delete('departments/:id')
+  deleteDepartment(@Param('id') id: string) {
+    return this.service.deleteDepartment(id);
+  }
+
+  @Get('departments/hierarchy/tree')
+  getDepartmentHierarchy() {
+    return this.service.getDepartmentHierarchy();
+  }
+
+  @Post('positions')
+  createPosition(@Body() dto: CreatePositionDto) {
+    return this.service.createPosition(dto);
+  }
+
   @Get('positions')
-  async getAllPositions() {
-    return this.organizationalStructureService.findAllPositions();
+  getAllPositions() {
+    return this.service.getAllPositions();
   }
 
   @Get('positions/:id')
-  async getPositionById(@Param('id') id: string) {
-    return this.organizationalStructureService.findPositionById(id);
+  getPositionById(@Param('id') id: string) {
+    return this.service.getPositionById(id);
   }
 
-  // Employees
+  @Put('positions/:id')
+  updatePosition(@Param('id') id: string, @Body() dto: UpdatePositionDto) {
+    return this.service.updatePosition(id, dto);
+  }
+
+  @Delete('positions/:id')
+  deletePosition(@Param('id') id: string) {
+    return this.service.deletePosition(id);
+  }
+
+  @Post('employees')
+  createEmployee(@Body() dto: CreateEmployeeDto) {
+    return this.service.createEmployee(dto);
+  }
+
   @Get('employees')
-  async getAllEmployees() {
-    return this.organizationalStructureService.findAllEmployees();
+  getAllEmployees() {
+    return this.service.getAllEmployees();
   }
 
   @Get('employees/:id')
-  async getEmployeeById(@Param('id') id: string) {
-    return this.organizationalStructureService.findEmployeeById(id);
+  getEmployeeById(@Param('id') id: string) {
+    return this.service.getEmployeeById(id);
+  }
+
+  @Put('employees/:id')
+  updateEmployee(@Param('id') id: string, @Body() dto: UpdateEmployeeDto) {
+    return this.service.updateEmployee(id, dto);
+  }
+
+  @Delete('employees/:id')
+  deleteEmployee(@Param('id') id: string) {
+    return this.service.deleteEmployee(id);
   }
 
   @Get('departments/:id/employees')
-  async getEmployeesByDepartment(@Param('id') id: string) {
-    return this.organizationalStructureService.findEmployeesByDepartment(id);
+  getEmployeesByDepartment(@Param('id') id: string) {
+    return this.service.getEmployeesByDepartment(id);
   }
 
-  // Statistics
   @Get('statistics')
-  async getStatistics() {
-    return this.organizationalStructureService.getStatistics();
+  getStatistics() {
+    return this.service.getStatistics();
   }
 }

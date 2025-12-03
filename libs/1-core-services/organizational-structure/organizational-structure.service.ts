@@ -1,240 +1,312 @@
 /**
  * PHASE 10: Organizational Structure Development
- * Service for managing organizational structure (departments, employees, positions)
+ * Service for managing organizational structure with Prisma
  */
 
 import { Injectable } from '@nestjs/common';
-import { Department } from './department.entity';
-import { Employee } from './employee.entity';
-import { Position } from './position.entity';
+import { PrismaClient } from '@prisma/client';
+import {
+  CreateDepartmentDto,
+  UpdateDepartmentDto,
+  CreatePositionDto,
+  UpdatePositionDto,
+  CreateEmployeeDto,
+  UpdateEmployeeDto,
+} from '@semop/contracts';
 
 @Injectable()
 export class OrganizationalStructureService {
-  // Mock data for now - will be replaced with Prisma later
-  private departments: Department[] = [
-    {
-      id: '1',
-      code: 'EXEC',
-      nameAr: 'الإدارة التنفيذية',
-      nameEn: 'Executive Management',
-      description: 'الإدارة العليا للشركة',
-      isActive: true,
-      level: 1,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-01'),
-    },
-    {
-      id: '2',
-      code: 'FIN',
-      nameAr: 'الإدارة المالية',
-      nameEn: 'Finance Department',
-      description: 'إدارة الشؤون المالية والمحاسبة',
-      parentDepartmentId: '1',
-      isActive: true,
-      level: 2,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-01'),
-    },
-    {
-      id: '3',
-      code: 'HR',
-      nameAr: 'الموارد البشرية',
-      nameEn: 'Human Resources',
-      description: 'إدارة شؤون الموظفين',
-      parentDepartmentId: '1',
-      isActive: true,
-      level: 2,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-01'),
-    },
-    {
-      id: '4',
-      code: 'IT',
-      nameAr: 'تقنية المعلومات',
-      nameEn: 'Information Technology',
-      description: 'إدارة الأنظمة والتقنية',
-      parentDepartmentId: '1',
-      isActive: true,
-      level: 2,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-01'),
-    },
-    {
-      id: '5',
-      code: 'SALES',
-      nameAr: 'المبيعات',
-      nameEn: 'Sales Department',
-      description: 'إدارة المبيعات والعملاء',
-      parentDepartmentId: '1',
-      isActive: true,
-      level: 2,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-01'),
-    },
-  ];
+  private prisma = new PrismaClient();
 
-  private positions: Position[] = [
-    {
-      id: '1',
-      code: 'CEO',
-      titleAr: 'المدير التنفيذي',
-      titleEn: 'Chief Executive Officer',
-      level: 1,
-      isActive: true,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-01'),
-    },
-    {
-      id: '2',
-      code: 'CFO',
-      titleAr: 'المدير المالي',
-      titleEn: 'Chief Financial Officer',
-      level: 1,
-      isActive: true,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-01'),
-    },
-    {
-      id: '3',
-      code: 'MGR',
-      titleAr: 'مدير',
-      titleEn: 'Manager',
-      level: 2,
-      isActive: true,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-01'),
-    },
-    {
-      id: '4',
-      code: 'STAFF',
-      titleAr: 'موظف',
-      titleEn: 'Staff',
-      level: 3,
-      isActive: true,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-01'),
-    },
-  ];
+  // ============================================
+  // Department Methods
+  // ============================================
 
-  private employees: Employee[] = [
-    {
-      id: '1',
-      code: 'EMP-001',
-      firstNameAr: 'أحمد',
-      lastNameAr: 'محمد',
-      firstNameEn: 'Ahmed',
-      lastNameEn: 'Mohammed',
-      email: 'ahmed.mohammed@semop.com',
-      phone: '+967771234567',
-      departmentId: '1',
-      positionId: '1',
-      hireDate: new Date('2020-01-01'),
-      salary: 5000,
-      isActive: true,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-01'),
-    },
-    {
-      id: '2',
-      code: 'EMP-002',
-      firstNameAr: 'فاطمة',
-      lastNameAr: 'علي',
-      firstNameEn: 'Fatima',
-      lastNameEn: 'Ali',
-      email: 'fatima.ali@semop.com',
-      phone: '+967771234568',
-      departmentId: '2',
-      positionId: '2',
-      managerId: '1',
-      hireDate: new Date('2021-03-15'),
-      salary: 4000,
-      isActive: true,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-01'),
-    },
-    {
-      id: '3',
-      code: 'EMP-003',
-      firstNameAr: 'خالد',
-      lastNameAr: 'حسن',
-      firstNameEn: 'Khaled',
-      lastNameEn: 'Hassan',
-      email: 'khaled.hassan@semop.com',
-      phone: '+967771234569',
-      departmentId: '3',
-      positionId: '3',
-      managerId: '1',
-      hireDate: new Date('2021-06-01'),
-      salary: 3000,
-      isActive: true,
-      createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-01'),
-    },
-  ];
-
-  // Departments
-  async findAllDepartments(): Promise<Department[]> {
-    return this.departments;
+  async createDepartment(dto: CreateDepartmentDto) {
+    return this.prisma.department.create({
+      data: {
+        code: dto.code,
+        nameAr: dto.nameAr,
+        nameEn: dto.nameEn,
+        description: dto.description,
+        parentDepartmentId: dto.parentDepartmentId,
+        managerId: dto.managerId,
+        isActive: dto.isActive,
+        level: dto.level,
+      },
+    });
   }
 
-  async findDepartmentById(id: string): Promise<Department | null> {
-    return this.departments.find((d) => d.id === id) || null;
+  async getAllDepartments() {
+    return this.prisma.department.findMany({
+      where: { isActive: true },
+      include: {
+        parentDepartment: {
+          select: {
+            id: true,
+            nameAr: true,
+            nameEn: true,
+          },
+        },
+        subDepartments: {
+          select: {
+            id: true,
+            code: true,
+            nameAr: true,
+            nameEn: true,
+          },
+        },
+        employees: {
+          select: {
+            id: true,
+            code: true,
+            firstNameAr: true,
+            lastNameAr: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: { level: 'asc' },
+    });
   }
 
-  async getOrganizationalChart(): Promise<any> {
-    // Build hierarchical structure
-    const buildTree = (parentId?: string): any[] => {
-      return this.departments
+  async getDepartmentById(id: string) {
+    return this.prisma.department.findUnique({
+      where: { id },
+      include: {
+        parentDepartment: true,
+        subDepartments: true,
+        employees: true,
+      },
+    });
+  }
+
+  async updateDepartment(id: string, dto: UpdateDepartmentDto) {
+    return this.prisma.department.update({
+      where: { id },
+      data: dto,
+    });
+  }
+
+  async deleteDepartment(id: string) {
+    return this.prisma.department.update({
+      where: { id },
+      data: { isActive: false },
+    });
+  }
+
+  async getDepartmentHierarchy() {
+    const departments = await this.prisma.department.findMany({
+      where: { isActive: true },
+      include: {
+        subDepartments: true,
+        employees: {
+          select: {
+            id: true,
+            firstNameAr: true,
+            lastNameAr: true,
+          },
+        },
+      },
+      orderBy: { level: 'asc' },
+    });
+
+    // Build tree structure
+    const buildTree = (parentId: string | null): any[] => {
+      return departments
         .filter((d) => d.parentDepartmentId === parentId)
-        .map((dept) => ({
-          ...dept,
-          children: buildTree(dept.id),
-          employeeCount: this.employees.filter(
-            (e) => e.departmentId === dept.id,
-          ).length,
+        .map((d) => ({
+          ...d,
+          children: buildTree(d.id),
         }));
     };
 
-    return buildTree();
+    return buildTree(null);
   }
 
-  // Positions
-  async findAllPositions(): Promise<Position[]> {
-    return this.positions;
+  // ============================================
+  // Position Methods
+  // ============================================
+
+  async createPosition(dto: CreatePositionDto) {
+    return this.prisma.position.create({
+      data: {
+        code: dto.code,
+        titleAr: dto.titleAr,
+        titleEn: dto.titleEn,
+        description: dto.description,
+        level: dto.level,
+        isActive: dto.isActive,
+      },
+    });
   }
 
-  async findPositionById(id: string): Promise<Position | null> {
-    return this.positions.find((p) => p.id === id) || null;
+  async getAllPositions() {
+    return this.prisma.position.findMany({
+      where: { isActive: true },
+      include: {
+        employees: {
+          select: {
+            id: true,
+            firstNameAr: true,
+            lastNameAr: true,
+          },
+        },
+      },
+      orderBy: { level: 'asc' },
+    });
   }
 
-  // Employees
-  async findAllEmployees(): Promise<Employee[]> {
-    return this.employees;
+  async getPositionById(id: string) {
+    return this.prisma.position.findUnique({
+      where: { id },
+      include: {
+        employees: true,
+      },
+    });
   }
 
-  async findEmployeeById(id: string): Promise<Employee | null> {
-    return this.employees.find((e) => e.id === id) || null;
+  async updatePosition(id: string, dto: UpdatePositionDto) {
+    return this.prisma.position.update({
+      where: { id },
+      data: dto,
+    });
   }
 
-  async findEmployeesByDepartment(departmentId: string): Promise<Employee[]> {
-    return this.employees.filter((e) => e.departmentId === departmentId);
+  async deletePosition(id: string) {
+    return this.prisma.position.update({
+      where: { id },
+      data: { isActive: false },
+    });
   }
 
+  // ============================================
+  // Employee Methods
+  // ============================================
+
+  async createEmployee(dto: CreateEmployeeDto) {
+    return this.prisma.employee.create({
+      data: {
+        code: dto.code,
+        firstNameAr: dto.firstNameAr,
+        lastNameAr: dto.lastNameAr,
+        firstNameEn: dto.firstNameEn,
+        lastNameEn: dto.lastNameEn,
+        email: dto.email,
+        phone: dto.phone,
+        departmentId: dto.departmentId,
+        positionId: dto.positionId,
+        managerId: dto.managerId,
+        hireDate: new Date(dto.hireDate),
+        salary: dto.salary,
+        isActive: dto.isActive,
+        userId: dto.userId,
+      },
+    });
+  }
+
+  async getAllEmployees() {
+    return this.prisma.employee.findMany({
+      where: { isActive: true },
+      include: {
+        department: {
+          select: {
+            id: true,
+            nameAr: true,
+            nameEn: true,
+          },
+        },
+        position: {
+          select: {
+            id: true,
+            titleAr: true,
+            titleEn: true,
+          },
+        },
+        manager: {
+          select: {
+            id: true,
+            firstNameAr: true,
+            lastNameAr: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getEmployeeById(id: string) {
+    return this.prisma.employee.findUnique({
+      where: { id },
+      include: {
+        department: true,
+        position: true,
+        manager: true,
+        subordinates: true,
+      },
+    });
+  }
+
+  async updateEmployee(id: string, dto: UpdateEmployeeDto) {
+    const data: any = { ...dto };
+    if (dto.hireDate) {
+      data.hireDate = new Date(dto.hireDate);
+    }
+    return this.prisma.employee.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async deleteEmployee(id: string) {
+    return this.prisma.employee.update({
+      where: { id },
+      data: { isActive: false },
+    });
+  }
+
+  async getEmployeesByDepartment(departmentId: string) {
+    return this.prisma.employee.findMany({
+      where: {
+        departmentId,
+        isActive: true,
+      },
+      include: {
+        position: true,
+        manager: {
+          select: {
+            id: true,
+            firstNameAr: true,
+            lastNameAr: true,
+          },
+        },
+      },
+    });
+  }
+
+  // ============================================
   // Statistics
-  async getStatistics(): Promise<any> {
+  // ============================================
+
+  async getStatistics() {
+    const [
+      totalDepartments,
+      totalPositions,
+      totalEmployees,
+      activeEmployees,
+    ] = await Promise.all([
+      this.prisma.department.count({ where: { isActive: true } }),
+      this.prisma.position.count({ where: { isActive: true } }),
+      this.prisma.employee.count(),
+      this.prisma.employee.count({ where: { isActive: true } }),
+    ]);
+
     return {
-      totalDepartments: this.departments.length,
-      activeDepartments: this.departments.filter((d) => d.isActive).length,
-      totalEmployees: this.employees.length,
-      activeEmployees: this.employees.filter((e) => e.isActive).length,
-      totalPositions: this.positions.length,
-      departmentDistribution: this.departments.map((dept) => ({
-        departmentId: dept.id,
-        departmentName: dept.nameAr,
-        employeeCount: this.employees.filter(
-          (e) => e.departmentId === dept.id,
-        ).length,
-      })),
+      totalDepartments,
+      totalPositions,
+      totalEmployees,
+      activeEmployees,
+      inactiveEmployees: totalEmployees - activeEmployees,
     };
   }
 }
