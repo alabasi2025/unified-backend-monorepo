@@ -1,69 +1,83 @@
+/**
+ * PHASE 10: Clean Architecture - All modules from libs/
+ * Following strict rules: all business logic in libs/, apps/ is thin layer only
+ */
+
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { DashboardModule } from './dashboard/dashboard.module';
-import { RolesModule } from './roles/roles.module';
-import { PermissionsModule } from './permissions/permissions.module';
-import { HoldingsModule } from './holdings/holdings.module';
-import { UnitsModule } from './units/units.module';
-import { ProjectsModule } from './projects/projects.module';
-import { CustomersModule } from './customers/customers.module';
-import { SuppliersModule } from './suppliers/suppliers.module';
-import { ItemsModule } from './items/items.module';
-import { ReportsModule } from '../modules/reports/reports.module';
-import { SalesOrdersModule } from '../modules/sales-orders/sales-orders.module';
-import { MagicNotebookModule } from "../magic-notebook/magic-notebook.module";
-// Cycle 4 - New Modules (Prisma-based)
-import { GenesModule } from './genes/genes.module';
-import { LatitudePointsModule } from './latitude-points/latitude-points.module';
-import { PurchaseOrdersModule } from './purchase-orders/purchase-orders.module';
-import { AccountHierarchyModule } from './account-hierarchy/account-hierarchy.module';
-import { RolePermissionsModule } from './role-permissions/role-permissions.module';
-import { CustomerContactsModule } from './customer-contacts/customer-contacts.module';
-// v2.3.0 - New Modules
-import { BillingModule } from '../billing/billing.module';
-import { WalletModule } from '../wallet/wallet.module';
-import { AssetsModule } from '../assets/assets.module';
-import { ScmModule } from '../scm/scm.module';
-import { NotificationsModule } from '../notifications/notifications.module';
-import { ConfigurationModule } from '../configuration/configuration.module';
-// PHASE 10 - Organizational Structure
+
+// Layer 1: Core Services
+import { AuthModule } from '../../../../libs/1-core-services/auth/auth.module';
+import { RolesModule } from '../../../../libs/1-core-services/roles/roles.module';
+import { PermissionsModule } from '../../../../libs/1-core-services/permissions/permissions.module';
+import { RolePermissionsModule } from '../../../../libs/1-core-services/role-permissions/role-permissions.module';
+import { DashboardModule } from '../../../../libs/1-core-services/dashboard/dashboard.module';
 import { OrganizationalStructureModule } from '../../../../libs/1-core-services/organizational-structure/organizational-structure.module';
+
+// Layer 2: OCMP
+import { GenesModule } from '../../../../libs/2-ocmp/genes/genes.module';
+import { HoldingsModule } from '../../../../libs/2-ocmp/holdings/holdings.module';
+import { LatitudePointsModule } from '../../../../libs/2-ocmp/latitude-points/latitude-points.module';
+
+// Layer 3: Vertical Applications - Accounting
+import { AccountsModule } from '../../../../libs/3-vertical-applications/accounting/accounts/accounts.module';
+import { AccountHierarchyModule } from '../../../../libs/3-vertical-applications/accounting/account-hierarchy/account-hierarchy.module';
+import { FiscalYearsModule } from '../../../../libs/3-vertical-applications/accounting/fiscal-years/fiscal-years.module';
+import { FiscalPeriodsModule } from '../../../../libs/3-vertical-applications/accounting/fiscal-periods/fiscal-periods.module';
+import { CostCentersModule } from '../../../../libs/3-vertical-applications/accounting/cost-centers/cost-centers.module';
+import { JournalEntriesModule } from '../../../../libs/3-vertical-applications/accounting/journal-entries/journal-entries.module';
+
+// Layer 3: Vertical Applications - Inventory
+import { ItemsModule } from '../../../../libs/3-vertical-applications/inventory/items/items.module';
+
+// Layer 3: Vertical Applications - Purchasing
+import { SuppliersModule } from '../../../../libs/3-vertical-applications/purchasing/suppliers/suppliers.module';
+import { PurchaseOrdersModule } from '../../../../libs/3-vertical-applications/purchasing/purchase-orders/purchase-orders.module';
+
+// Layer 3: Vertical Applications - Sales
+import { CustomersModule } from '../../../../libs/3-vertical-applications/sales/customers/customers.module';
+import { CustomerContactsModule } from '../../../../libs/3-vertical-applications/sales/customer-contacts/customer-contacts.module';
+
+// Layer 3: Vertical Applications - Projects
+import { ProjectsModule } from '../../../../libs/3-vertical-applications/projects/projects/projects.module';
 
 @Module({
   imports: [
+    // Layer 1: Core Services
     AuthModule,
-    UsersModule,
-    DashboardModule,
     RolesModule,
     PermissionsModule,
-    HoldingsModule,
-    UnitsModule,
-    ProjectsModule,
-    CustomersModule,
-    SuppliersModule,
-    ItemsModule,
-    ReportsModule,
-    SalesOrdersModule,
-    MagicNotebookModule,
-    // Cycle 4 - New Modules
-    GenesModule,
-    LatitudePointsModule,
-    PurchaseOrdersModule,
-    AccountHierarchyModule,
     RolePermissionsModule,
-    CustomerContactsModule,
-    // v2.3.0 - New Modules
-    BillingModule,
-    WalletModule,
-    AssetsModule,
-    ScmModule,
-    NotificationsModule,
-    ConfigurationModule,
-    // PHASE 10 - Organizational Structure
+    DashboardModule,
     OrganizationalStructureModule,
+    
+    // Layer 2: OCMP
+    GenesModule,
+    HoldingsModule,
+    LatitudePointsModule,
+    
+    // Layer 3: Accounting
+    AccountsModule,
+    AccountHierarchyModule,
+    FiscalYearsModule,
+    FiscalPeriodsModule,
+    CostCentersModule,
+    JournalEntriesModule,
+    
+    // Layer 3: Inventory
+    ItemsModule,
+    
+    // Layer 3: Purchasing
+    SuppliersModule,
+    PurchaseOrdersModule,
+    
+    // Layer 3: Sales
+    CustomersModule,
+    CustomerContactsModule,
+    
+    // Layer 3: Projects
+    ProjectsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
