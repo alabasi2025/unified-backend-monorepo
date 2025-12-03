@@ -1,0 +1,8 @@
+// PHASE 10: Account Hierarchy Controller
+import { Controller } from '@nestjs/common';
+import { AccountHierarchyService } from './account_hierarchy.service';
+
+@Controller('account-hierarchy')
+export class AccountHierarchyController {
+  constructor(private readonly service: AccountHierarchyService) {}
+}
