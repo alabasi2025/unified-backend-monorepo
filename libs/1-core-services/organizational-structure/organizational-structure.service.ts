@@ -1,6 +1,7 @@
 /**
  * PHASE 10: Organizational Structure Development
  * Service for managing organizational structure with Prisma
+ * Maps between DTOs (@semop/contracts) and Prisma models
  */
 
 import { Injectable } from '@nestjs/common';
@@ -26,13 +27,13 @@ export class OrganizationalStructureService {
     return this.prisma.department.create({
       data: {
         code: dto.code,
-        nameAr: dto.nameAr,
-        nameEn: dto.nameEn,
+        nameAr: dto.name, // Map name -> nameAr
+        nameEn: dto.name, // Use same for both (can be enhanced later)
         description: dto.description,
-        parentDepartmentId: dto.parentDepartmentId,
+        parentDepartmentId: dto.parentId,
         managerId: dto.managerId,
-        isActive: dto.isActive,
-        level: dto.level,
+        isActive: true,
+        level: 1, // Will be calculated based on parent
       },
     });
   }
@@ -82,9 +83,19 @@ export class OrganizationalStructureService {
   }
 
   async updateDepartment(id: string, dto: UpdateDepartmentDto) {
+    const data: any = {};
+    if (dto.name) {
+      data.nameAr = dto.name;
+      data.nameEn = dto.name;
+    }
+    if (dto.description !== undefined) data.description = dto.description;
+    if (dto.parentId !== undefined) data.parentDepartmentId = dto.parentId;
+    if (dto.managerId !== undefined) data.managerId = dto.managerId;
+    if (dto.isActive !== undefined) data.isActive = dto.isActive;
+
     return this.prisma.department.update({
       where: { id },
-      data: dto,
+      data,
     });
   }
 
@@ -132,11 +143,11 @@ export class OrganizationalStructureService {
     return this.prisma.position.create({
       data: {
         code: dto.code,
-        titleAr: dto.titleAr,
-        titleEn: dto.titleEn,
+        titleAr: dto.title, // Map title -> titleAr
+        titleEn: dto.title, // Use same for both
         description: dto.description,
-        level: dto.level,
-        isActive: dto.isActive,
+        level: dto.level || 1,
+        isActive: true,
       },
     });
   }
@@ -167,9 +178,18 @@ export class OrganizationalStructureService {
   }
 
   async updatePosition(id: string, dto: UpdatePositionDto) {
+    const data: any = {};
+    if (dto.title) {
+      data.titleAr = dto.title;
+      data.titleEn = dto.title;
+    }
+    if (dto.description !== undefined) data.description = dto.description;
+    if (dto.level !== undefined) data.level = dto.level;
+    if (dto.isActive !== undefined) data.isActive = dto.isActive;
+
     return this.prisma.position.update({
       where: { id },
-      data: dto,
+      data,
     });
   }
 
@@ -188,19 +208,19 @@ export class OrganizationalStructureService {
     return this.prisma.employee.create({
       data: {
         code: dto.code,
-        firstNameAr: dto.firstNameAr,
-        lastNameAr: dto.lastNameAr,
-        firstNameEn: dto.firstNameEn,
-        lastNameEn: dto.lastNameEn,
+        firstNameAr: dto.firstName, // Map firstName -> firstNameAr
+        lastNameAr: dto.lastName, // Map lastName -> lastNameAr
+        firstNameEn: dto.firstName, // Use same for both
+        lastNameEn: dto.lastName,
         email: dto.email,
-        phone: dto.phone,
-        departmentId: dto.departmentId,
-        positionId: dto.positionId,
-        managerId: dto.managerId,
+        phone: dto.phone || dto.mobile || '',
+        departmentId: (dto as any).departmentId, // From extended DTO
+        positionId: (dto as any).positionId, // From extended DTO
+        managerId: (dto as any).managerId,
         hireDate: new Date(dto.hireDate),
-        salary: dto.salary,
-        isActive: dto.isActive,
-        userId: dto.userId,
+        salary: (dto as any).salary,
+        isActive: true,
+        userId: (dto as any).userId,
       },
     });
   }
@@ -248,10 +268,23 @@ export class OrganizationalStructureService {
   }
 
   async updateEmployee(id: string, dto: UpdateEmployeeDto) {
-    const data: any = { ...dto };
-    if (dto.hireDate) {
-      data.hireDate = new Date(dto.hireDate);
+    const data: any = {};
+    if ((dto as any).firstName) {
+      data.firstNameAr = (dto as any).firstName;
+      data.firstNameEn = (dto as any).firstName;
     }
+    if ((dto as any).lastName) {
+      data.lastNameAr = (dto as any).lastName;
+      data.lastNameEn = (dto as any).lastName;
+    }
+    if ((dto as any).email) data.email = (dto as any).email;
+    if ((dto as any).phone) data.phone = (dto as any).phone;
+    if ((dto as any).departmentId) data.departmentId = (dto as any).departmentId;
+    if ((dto as any).positionId) data.positionId = (dto as any).positionId;
+    if ((dto as any).managerId !== undefined) data.managerId = (dto as any).managerId;
+    if ((dto as any).salary !== undefined) data.salary = (dto as any).salary;
+    if ((dto as any).isActive !== undefined) data.isActive = (dto as any).isActive;
+
     return this.prisma.employee.update({
       where: { id },
       data,
