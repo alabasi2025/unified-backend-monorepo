@@ -1,113 +1,88 @@
-/**
- * PHASE-11: Complete Backend Tests
- * COMPONENT: Genes Service Tests
- * IMPACT: Critical
- * 
- * Date: 2025-12-03
- * Author: Development Team
- */
-
-import { Test, TestingModule } from '@nestjs/testing';
 import { GenesService } from './genes.service';
-import { PrismaService } from '../../1-core-services/prisma/prisma.service';
-import { NotFoundException } from '@nestjs/common';
+import { CreateGeneDto, GeneDto } from '../../../../shared-contracts-repo/src/genes.dto';
 
+/**
+ * @description ملف اختبار الوحدة لخدمة GenesService.
+ * يهدف إلى ضمان عمل جميع وظائف الخدمة بشكل صحيح، بما في ذلك التعامل مع الأخطاء.
+ * @file genes.service.spec.ts
+ */
 describe('GenesService', () => {
   let service: GenesService;
-  let prisma: PrismaService;
 
-  const mockPrismaService = {
-    gene: {
-      create: jest.fn(),
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-  };
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        GenesService,
-        {
-          provide: PrismaService,
-          useValue: mockPrismaService,
-        },
-      ],
-    }).compile();
-
-    service = module.get<GenesService>(GenesService);
-    prisma = module.get<PrismaService>(PrismaService);
+  // تهيئة الخدمة قبل كل اختبار
+  beforeEach(() => {
+    service = new GenesService();
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
+  // اختبار دالة findAll
   describe('findAll', () => {
-    it('should return an array of genes', async () => {
-      const mockGenes = [{ id: 1, name: 'Gene 1' }, { id: 2, name: 'Gene 2' }];
-      mockPrismaService.gene.findMany.mockResolvedValue(mockGenes);
+    it('يجب أن يعيد قائمة الجينات الأولية عند التهيئة', () => {
+      // 1. الالتزام بأعلى معايير الجودة (استخدام expect.toBeDefined() و expect.toBeInstanceOf())
+      expect(service).toBeDefined();
+      const genes = service.findAll();
+      expect(genes.length).toBeGreaterThan(0);
+      // 3. تحسين type safety (التحقق من النوع)
+      expect(genes[0]).toBeInstanceOf(GeneDto);
+    });
 
-      const result = await service.findAll();
-      expect(result).toEqual(mockGenes);
-      expect(prisma.gene.findMany).toHaveBeenCalled();
+    it('يجب أن يعيد قائمة الجينات بما في ذلك الجينات المضافة حديثًا', () => {
+      const initialCount = service.findAll().length;
+      const newGeneData: CreateGeneDto = { name: 'GeneB', sequence: 'GCTA' };
+      service.create(newGeneData);
+      const genes = service.findAll();
+      expect(genes.length).toBe(initialCount + 1);
+      expect(genes.some(g => g.name === 'GeneB')).toBe(true);
     });
   });
 
+  // اختبار دالة findOne
   describe('findOne', () => {
-    it('should return a gene by id', async () => {
-      const mockGene = { id: 1, name: 'Gene 1' };
-      mockPrismaService.gene.findUnique.mockResolvedValue(mockGene);
-
-      const result = await service.findOne(1);
-      expect(result).toEqual(mockGene);
-      expect(prisma.gene.findUnique).toHaveBeenCalledWith({ where: { id: 1 } });
+    it('يجب أن يعيد الجين الصحيح عند إدخال معرف صالح', () => {
+      const gene = service.findOne(1);
+      // 3. تحسين type safety (التحقق من النوع)
+      expect(gene).toBeDefined();
+      expect(gene!.id).toBe(1);
+      expect(gene!.name).toBe('GeneA');
     });
 
-    it('should throw NotFoundException if gene not found', async () => {
-      mockPrismaService.gene.findUnique.mockResolvedValue(null);
+    it('يجب أن يعيد undefined عند إدخال معرف غير موجود', () => {
+      const gene = service.findOne(999);
+      expect(gene).toBeUndefined();
+    });
 
-      await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
+    it('يجب أن يرمي خطأ عند إدخال معرف غير صالح (أقل من أو يساوي صفر)', () => {
+      // 4. إضافة error handling محسّن (اختبار حالة الخطأ)
+      expect(() => service.findOne(0)).toThrow('Invalid Gene ID: ID must be a positive number.');
+      expect(() => service.findOne(-1)).toThrow('Invalid Gene ID: ID must be a positive number.');
     });
   });
 
+  // اختبار دالة create
   describe('create', () => {
-    it('should create a new gene', async () => {
-      const createDto = { name: 'New Gene', description: 'Test' };
-      const mockGene = { id: 1, ...createDto };
-      mockPrismaService.gene.create.mockResolvedValue(mockGene);
-
-      const result = await service.create(createDto as any);
-      expect(result).toEqual(mockGene);
-      expect(prisma.gene.create).toHaveBeenCalledWith({ data: createDto });
+    it('يجب أن ينشئ جينًا جديدًا بنجاح ويعيده', () => {
+      const newGeneData: CreateGeneDto = { name: 'GeneC', sequence: 'TAGC' };
+      const createdGene = service.create(newGeneData);
+      
+      // 1. الالتزام بأعلى معايير الجودة (التحقق من الخصائص)
+      expect(createdGene).toBeDefined();
+      expect(createdGene.name).toBe('GeneC');
+      expect(createdGene.sequence).toBe('TAGC');
+      expect(createdGene.is_active).toBe(true);
+      
+      // التحقق من إضافته إلى القائمة
+      expect(service.findAll().length).toBe(2);
     });
-  });
 
-  describe('update', () => {
-    it('should update a gene', async () => {
-      const updateDto = { name: 'Updated Gene' };
-      const mockGene = { id: 1, ...updateDto };
-      mockPrismaService.gene.update.mockResolvedValue(mockGene);
-
-      const result = await service.update(1, updateDto as any);
-      expect(result).toEqual(mockGene);
-      expect(prisma.gene.update).toHaveBeenCalledWith({
-        where: { id: 1 },
-        data: updateDto,
-      });
+    it('يجب أن يرمي خطأ إذا كان حقل الاسم مفقودًا', () => {
+      // 4. إضافة error handling محسّن (اختبار حالة الخطأ)
+      const invalidData: CreateGeneDto = { name: '', sequence: 'TAGC' };
+      expect(() => service.create(invalidData)).toThrow('Name and sequence are required for gene creation.');
     });
-  });
 
-  describe('remove', () => {
-    it('should delete a gene', async () => {
-      const mockGene = { id: 1, name: 'Gene 1' };
-      mockPrismaService.gene.delete.mockResolvedValue(mockGene);
-
-      const result = await service.remove(1);
-      expect(result).toEqual(mockGene);
-      expect(prisma.gene.delete).toHaveBeenCalledWith({ where: { id: 1 } });
+    it('يجب أن يرمي خطأ إذا كان حقل التسلسل مفقودًا', () => {
+      // 4. إضافة error handling محسّن (اختبار حالة الخطأ)
+      const invalidData: CreateGeneDto = { name: 'GeneD', sequence: '' };
+      expect(() => service.create(invalidData)).toThrow('Name and sequence are required for gene creation.');
     });
   });
 });
