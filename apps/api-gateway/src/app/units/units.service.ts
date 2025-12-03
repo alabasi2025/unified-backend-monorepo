@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Unit } from './entities/unit.entity';
-import { CreateUnitDto, UpdateUnitDto } from './dto/unit.dto';
+import { CreateUnitDto, UpdateUnitDto } from '@semop/contracts';
 
 @Injectable()
 export class UnitsService {

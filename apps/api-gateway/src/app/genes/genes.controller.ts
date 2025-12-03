@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { GenesService } from './genes.service';
-import { CreateGeneDto, UpdateGeneDto } from './dto/genes.dto';
-import { LinkGeneSectorDto } from './dto/link-gene-sector.dto';
+import { CreateGeneDto, UpdateGeneDto } from '@semop/contracts';
+import { LinkGeneSectorDto } from '@semop/contracts';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('genes')

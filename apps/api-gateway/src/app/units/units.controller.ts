@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { UnitsService } from './units.service';
-import { CreateUnitDto, UpdateUnitDto } from './dto/unit.dto';
+import { CreateUnitDto, UpdateUnitDto } from '@semop/contracts';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Units')

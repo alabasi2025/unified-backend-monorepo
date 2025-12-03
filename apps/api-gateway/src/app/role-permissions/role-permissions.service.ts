@@ -2,7 +2,7 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'; // افتراض وجود PrismaService في هذا المسار
-import { CreateRolePermissionDto, UpdateRolePermissionDto } from './role_permissions.dto';
+import { CreateRolePermissionDto, UpdateRolePermissionDto } from '@semop/contracts';
 import { RolePermissions as RolePermissionModel } from '@prisma/client'; // افتراض أن اسم الموديل في العميل هو RolePermissions
 
 @Injectable()

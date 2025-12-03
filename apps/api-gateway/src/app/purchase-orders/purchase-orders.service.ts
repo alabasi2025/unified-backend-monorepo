@@ -2,8 +2,8 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'; // افتراض مسار PrismaService
-import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
-import { UpdatePurchaseOrderDto } from './dto/update-purchase-order.dto';
+import { CreatePurchaseOrderDto } from '@semop/contracts';
+import { UpdatePurchaseOrderDto } from '@semop/contracts';
 import { PurchaseOrder } from '@prisma/client'; // افتراض أن Prisma Client تم توليده
 
 @Injectable()

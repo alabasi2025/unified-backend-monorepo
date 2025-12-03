@@ -2,8 +2,8 @@
 
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { PurchaseOrdersService } from './purchase-orders.service';
-import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
-import { UpdatePurchaseOrderDto } from './dto/update-purchase-order.dto';
+import { CreatePurchaseOrderDto } from '@semop/contracts';
+import { UpdatePurchaseOrderDto } from '@semop/contracts';
 
 @Controller('purchase-orders')
 export class PurchaseOrdersController {

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { LatitudePointsService } from './latitude_points.service';
-import { CreateLatitudePointDto, UpdateLatitudePointDto } from './dto/latitude_point.dto';
+import { CreateLatitudePointDto, UpdateLatitudePointDto } from '@semop/contracts';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('latitude-points')

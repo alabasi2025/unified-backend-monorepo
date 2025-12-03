@@ -11,7 +11,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { RolePermissionsService } from './role_permissions.service';
-import { CreateRolePermissionDto, UpdateRolePermissionDto } from './role_permissions.dto';
+import { CreateRolePermissionDto, UpdateRolePermissionDto } from '@semop/contracts';
 
 @Controller('role-permissions')
 export class RolePermissionsController {

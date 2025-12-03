@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { CustomerContactService } from './customer-contact.service';
-import { CreateCustomerContactDto, UpdateCustomerContactDto } from './customer-contact.dto';
+import { CreateCustomerContactDto, UpdateCustomerContactDto } from '@semop/contracts';
 import { CustomerContact } from './customer-contact.entity';
 
 @Controller('customer-contacts')

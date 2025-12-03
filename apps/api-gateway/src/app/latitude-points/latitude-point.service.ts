@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LatitudePoint } from './latitude_point.entity';
-import { CreateLatitudePointDto } from './dto/create-latitude-point.dto';
-import { UpdateLatitudePointDto } from './dto/update-latitude-point.dto';
+import { CreateLatitudePointDto } from '@semop/contracts';
+import { UpdateLatitudePointDto } from '@semop/contracts';
 
 @Injectable()
 export class LatitudePointService {

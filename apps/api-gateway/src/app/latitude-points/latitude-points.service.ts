@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'; // افتراض وجود PrismaService في هذا المسار
-import { CreateLatitudePointDto, UpdateLatitudePointDto } from './dto/latitude_point.dto';
+import { CreateLatitudePointDto, UpdateLatitudePointDto } from '@semop/contracts';
 
 @Injectable()
 export class LatitudePointsService {
