@@ -10,7 +10,7 @@
   "dependencies": {
     "@nestjs/swagger": "^11.2.3",
     "@prisma/client": "5.22.0",
-    "@semop/contracts": "^0.1.0",
+    "@semop/contracts": "^0.1.1",
     "swagger-ui-express": "^5.0.1"
   },
   "scripts": {
