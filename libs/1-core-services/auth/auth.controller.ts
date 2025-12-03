@@ -1,3 +1,4 @@
+// PHASE-14: إضافة Logging System شامل
 // PHASE-12: إضافة Error Handling شامل مع try-catch و logging
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
