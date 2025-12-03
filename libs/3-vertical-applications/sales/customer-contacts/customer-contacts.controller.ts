@@ -1,3 +1,4 @@
+// PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { CustomerContactsService } from './customer_contacts.service';
 import { CreateCustomerContactDto, UpdateCustomerContactDto } from './customer_contacts.dto';
