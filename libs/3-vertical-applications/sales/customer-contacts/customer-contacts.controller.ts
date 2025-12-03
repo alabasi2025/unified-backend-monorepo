@@ -1,3 +1,4 @@
+// PHASE-12: إضافة Error Handling شامل مع try-catch و logging
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { CustomerContactsService } from './customer_contacts.service';

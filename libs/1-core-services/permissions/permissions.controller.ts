@@ -1,3 +1,4 @@
+// PHASE-12: إضافة Error Handling شامل مع try-catch و logging
 import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { PermissionsService } from './permissions.service';
 
