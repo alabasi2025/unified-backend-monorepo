@@ -29,6 +29,8 @@ import { AssetsModule } from '../assets/assets.module';
 import { ScmModule } from '../scm/scm.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ConfigurationModule } from '../configuration/configuration.module';
+// PHASE 10 - Organizational Structure
+import { OrganizationalStructureModule } from '../../../../libs/1-core-services/organizational-structure/organizational-structure.module';
 
 @Module({
   imports: [
@@ -60,6 +62,8 @@ import { ConfigurationModule } from '../configuration/configuration.module';
     ScmModule,
     NotificationsModule,
     ConfigurationModule,
+    // PHASE 10 - Organizational Structure
+    OrganizationalStructureModule,
   ],
   controllers: [AppController],
   providers: [AppService],
