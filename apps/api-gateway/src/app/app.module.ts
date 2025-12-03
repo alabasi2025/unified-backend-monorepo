@@ -7,6 +7,9 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+// Layer 0: Shared Services
+import { PrismaModule } from '../../../../libs/0-shared/prisma/prisma.module';
+
 // Layer 1: Core Services
 import { AuthModule } from '../../../../libs/1-core-services/auth/auth.module';
 import { RolesModule } from '../../../../libs/1-core-services/roles/roles.module';
@@ -44,6 +47,8 @@ import { ProjectsModule } from '../../../../libs/3-vertical-applications/project
 
 @Module({
   imports: [
+    // Layer 0: Shared
+    PrismaModule,
     // Layer 1: Core Services
     AuthModule,
     RolesModule,
