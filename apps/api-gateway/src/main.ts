@@ -2,7 +2,7 @@
  * SEMOP ERP - API Gateway
  * Version: 2.4.0
  */
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
@@ -16,6 +16,15 @@ async function bootstrap() {
   // Set global prefix
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
+
+  // Global Validation Pipe for input sanitization and validation
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
   
   // Swagger Configuration
   const config = new DocumentBuilder()
