@@ -9,6 +9,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+
 }
 
 // ============================================
@@ -598,6 +599,7 @@ model JournalEntryTemplateLine {
   lineOrder           Int      @map("line_order")
   accountType         String   @map("account_type") // debit, credit
   accountId           String?  @map("account_id")
+  accountCode         String?  @map("account_code")
   accountPlaceholder  String?  @map("account_placeholder") // dynamic account
   amountSource        String   @map("amount_source") // field name from source
   descriptionTemplate String?  @map("description_template")
