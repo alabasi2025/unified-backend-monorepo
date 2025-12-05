@@ -28,6 +28,9 @@ model Gene {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  @@index([category])
+  @@index([sectorId])
+  @@index([isActive])
   @@map("genes")
 }
 
@@ -44,6 +47,8 @@ model LatitudePoint {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  @@index([city])
+  @@index([country])
   @@map("latitude_points")
 }
 
@@ -61,6 +66,9 @@ model PurchaseOrder {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
+  @@index([supplierId])
+  @@index([status])
+  @@index([orderDate])
   @@map("purchase_orders")
 }
 
@@ -77,6 +85,9 @@ model AccountHierarchy {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
+  @@index([parentId])
+  @@index([path])
+  @@index([isActive])
   @@map("account_hierarchy")
 }
 
@@ -95,6 +106,8 @@ model RolePermission {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
   @@map("role_permissions")
 }
 
@@ -111,6 +124,8 @@ model CustomerContact {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  @@index([customerId])
+  @@index([isPrimary])
   @@map("customer_contacts")
 }
 
