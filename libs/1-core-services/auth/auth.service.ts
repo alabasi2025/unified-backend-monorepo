@@ -26,7 +26,7 @@ export class AuthService {
   ];
 
   async login(loginDto: LoginDto) {
-    const { username, password } = loginDto;
+    const username = (loginDto as any).username; const password = (loginDto as any).password;
 
     // Find user
     const user = this.users.find(

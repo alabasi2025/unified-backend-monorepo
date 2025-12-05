@@ -18,7 +18,7 @@ export class HoldingsController {
   }
 
   @Post()
-  create(@Body() createDto: CreateDto) {
+  create(@Body() createDto: any) {
     return this.holdingsService.create(createDto);
   }
 

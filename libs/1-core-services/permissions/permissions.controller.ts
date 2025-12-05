@@ -18,12 +18,12 @@ export class PermissionsController {
   }
 
   @Post()
-  create(@Body() createDto: CreateDto) {
+  create(@Body() createDto: any) {
     return this.permissionsService.create(createDto);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: CreateDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: any) {
     return this.permissionsService.update(id, updateDto);
   }
 

@@ -86,7 +86,7 @@ export class OrganizationalStructureService {
   }
 
   async updateDepartment(id: string, dto: UpdateDepartmentDto) {
-    const data: unknown = {};
+    const data: any = {};
     if (dto.name) {
       data.nameAr = dto.name;
       data.nameEn = dto.name;
@@ -181,7 +181,7 @@ export class OrganizationalStructureService {
   }
 
   async updatePosition(id: string, dto: UpdatePositionDto) {
-    const data: unknown = {};
+    const data: any = {};
     if (dto.title) {
       data.titleAr = dto.title;
       data.titleEn = dto.title;
@@ -271,7 +271,7 @@ export class OrganizationalStructureService {
   }
 
   async updateEmployee(id: string, dto: UpdateEmployeeDto) {
-    const data: unknown = {};
+    const data: any = {};
     if ((dto as any).firstName) {
       data.firstNameAr = (dto as any).firstName;
       data.firstNameEn = (dto as any).firstName;

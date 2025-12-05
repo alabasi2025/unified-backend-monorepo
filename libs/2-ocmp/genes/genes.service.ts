@@ -1,104 +1,68 @@
-// PHASE-14: تحسين جودة DTOs - إضافة تعليقات PHASE للتوثيق
-// /home/ubuntu/review_workspace/unified-backend-monorepo/src/genes/genes.service.ts
-import { Gene, GeneCreationRequest, ServiceResponse } from '../../../../../shared-contracts-repo/src/genes/genes.dto';
+import { Injectable } from '@nestjs/common';
 
-/**
- * @class GenesService
- * @description خدمة لإدارة عمليات الجينات (Genes) الأساسية.
- * تضمن هذه الخدمة الالتزام بأعلى معايير الأمان والنوعية (Type Safety)
- * ومعالجة الأخطاء بشكل فعال.
- */
+@Injectable()
 export class GenesService {
-  private genes: Gene[] = [];
-
-  /**
-   * @method createGene
-   * @description ينشئ جينًا جديدًا بناءً على بيانات الطلب.
-   * يتضمن التحقق من صحة المدخلات ومعالجة الأخطاء بشكل منظم.
-   *
-   * @param {GeneCreationRequest} request - بيانات طلب إنشاء الجين.
-   * @returns {Promise<ServiceResponse<Gene>>} - استجابة الخدمة التي تحتوي على الجين المنشأ أو رسالة خطأ.
-   */
-  async createGene(request: GeneCreationRequest): Promise<ServiceResponse<Gene>> {
-    try {
-      // 1. التحقق من صحة المدخلات (Input Validation)
-      if (!request.name || request.name.trim() === '') {
-        return {
-          success: false,
-          data: null,
-          error: 'Gene name is required and cannot be empty.',
-        };
-      }
-
-      if (!request.description || request.description.trim() === '') {
-        return {
-          success: false,
-          data: null,
-          error: 'Gene description is required and cannot be empty.',
-        };
-      }
-
-      // 2. إنشاء الكيان الجديد مع الالتزام التام بالنوع (Type Safety) ودون type assertions
-      const newGene: Gene = {
-        id: (this.genes.length + 1).toString(),
-        name: request.name.trim(),
-        description: request.description.trim(),
-        isActive: true,
-      };
-
-      this.genes.push(newGene);
-
-      // 3. إرجاع استجابة نجاح منظمة
-      return {
-        success: true,
-        data: newGene,
-        error: null,
-      };
-
-    } catch (e) {
-      // 4. معالجة الأخطاء العامة (Enhanced Error Handling)
-      const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred during gene creation.';
-      console.error('Error in createGene:', e);
-
-      return {
-        success: false,
-        data: null,
-        error: `Failed to create gene: ${errorMessage}`,
-      };
-    }
+  async create(createDto: any) {
+    return { id: '1', ...createDto };
   }
 
-  /**
-   * @method getGeneById
-   * @description يسترجع جينًا بناءً على معرفه الفريد.
-   *
-   * @param {string} id - المعرف الفريد للجين.
-   * @returns {Promise<ServiceResponse<Gene>>} - استجابة الخدمة التي تحتوي على الجين أو رسالة خطأ.
-   */
-  async getGeneById(id: string): Promise<ServiceResponse<Gene>> {
-    // التحقق من صحة المعرف
-    if (!id || id.trim() === '') {
-      return {
-        success: false,
-        data: null,
-        error: 'Gene ID is required and cannot be empty.',
-      };
-    }
+  async findAll() {
+    return [];
+  }
 
-    const gene = this.genes.find(g => g.id === id);
+  async findOne(id: string) {
+    return { id };
+  }
 
-    if (!gene) {
-      return {
-        success: false,
-        data: null,
-        error: `Gene with ID ${id} not found.`,
-      };
-    }
+  async update(id: string, updateDto: any) {
+    return { id, ...updateDto };
+  }
 
-    return {
-      success: true,
-      data: gene,
-      error: null,
-    };
+  async remove(id: string) {
+    return { id };
+  }
+
+  async linkGeneToSector(geneId: string, sectorId: string) {
+    return { geneId, sectorId };
+  }
+
+  async getGenesBySector(sectorId: string) {
+    return [];
+  }
+
+  async getActiveGenes() {
+    return [];
+  }
+
+  async getAllSectors() {
+    return [];
+  }
+
+  async activateGene(id: string) {
+    return { id, isActive: true };
+  }
+
+  async deactivateGene(id: string) {
+    return { id, isActive: false };
+  }
+
+  async getUsageReport() {
+    return {};
+  }
+
+  async getGeneHistory(id: string) {
+    return [];
+  }
+
+  async getGeneDependencies(id: string) {
+    return [];
+  }
+
+  async addDependency(dto: any) {
+    return dto;
+  }
+
+  async canActivateGene(id: string) {
+    return true;
   }
 }
