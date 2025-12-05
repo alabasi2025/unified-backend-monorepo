@@ -38,6 +38,7 @@ import { FiscalYearsModule } from '../../../../libs/3-vertical-applications/acco
 import { FiscalPeriodsModule } from '../../../../libs/3-vertical-applications/accounting/fiscal-periods/fiscal-periods.module';
 import { CostCentersModule } from '../../../../libs/3-vertical-applications/accounting/cost-centers/cost-centers.module';
 import { JournalEntriesModule } from '../../../../libs/3-vertical-applications/accounting/journal-entries/journal-entries.module';
+import { SmartJournalEntriesModule } from '../../../../libs/3-vertical-applications/accounting/smart-journal-entries/smart-journal-entries.module';
 
 // Layer 3: Vertical Applications - Purchasing
 import { SuppliersModule } from '../../../../libs/3-vertical-applications/purchasing/suppliers/suppliers.module';
@@ -73,6 +74,7 @@ import { ProjectsModule } from '../../../../libs/3-vertical-applications/project
     FiscalPeriodsModule,
     CostCentersModule,
     JournalEntriesModule,
+    SmartJournalEntriesModule,
     
     // Layer 3: Purchasing
     SuppliersModule,
