@@ -1,3 +1,4 @@
+// PHASE-14: تحسين جودة DTOs - إضافة تعليقات PHASE للتوثيق
 // /home/ubuntu/review_workspace/unified-backend-monorepo/src/genes/genes.service.ts
 import { Gene, GeneCreationRequest, ServiceResponse } from '../../../../../shared-contracts-repo/src/genes/genes.dto';
 

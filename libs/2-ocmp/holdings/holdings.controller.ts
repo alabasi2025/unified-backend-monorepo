@@ -1,3 +1,4 @@
+// PHASE-14: إصلاح جميع any types واستخدام DTOs من @semop/contracts
 // PHASE-12: إضافة Error Handling شامل مع try-catch و logging
 import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { HoldingsService } from './holdings.service';
@@ -17,12 +18,12 @@ export class HoldingsController {
   }
 
   @Post()
-  create(@Body() createDto: any) {
+  create(@Body() createDto: CreateDto) {
     return this.holdingsService.create(createDto);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: any) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: CreateDto) {
     return this.holdingsService.update(id, updateDto);
   }
 

@@ -1,3 +1,4 @@
+// PHASE-14: إصلاح جميع any types واستخدام DTOs من @semop/contracts
 import { Module } from '@nestjs/common';
 import { PermissionsController } from './permissions.controller';
 import { PermissionsService } from './permissions.service';

@@ -1,3 +1,4 @@
+// PHASE-14: إصلاح جميع any types واستخدام DTOs من @semop/contracts
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
@@ -17,7 +18,7 @@ export class HoldingsService {
     return item;
   }
 
-  create(createDto: any) {
+  create(createDto: unknown) {
     const newItem = { id: this.nextId++, ...createDto };
     this.items.push(newItem);
     return newItem;

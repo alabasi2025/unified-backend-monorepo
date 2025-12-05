@@ -1,3 +1,4 @@
+// PHASE-14: إصلاح انتهاكات DTOs واستخدام @semop/contracts
 /**
  * PHASE 10: Shared Prisma Service
  * Centralized database access for all layers

@@ -3,6 +3,8 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { RolesService } from './roles.service';
 
+import { CreateRoleDto, UpdateRoleDto, RoleResponseDto } from '@semop/contracts';
+
 @Controller('roles')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
@@ -18,12 +20,12 @@ export class RolesController {
   }
 
   @Post()
-  create(@Body() createRoleDto: any) {
+  create(@Body() createRoleDto: CreateDto) {
     return this.rolesService.create(createRoleDto);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateRoleDto: any) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateRoleDto: CreateDto) {
     return this.rolesService.update(id, updateRoleDto);
   }
 

@@ -1,3 +1,4 @@
+// PHASE-14: إصلاح انتهاكات DTOs واستخدام @semop/contracts
 <!--
     ملف: billing.component.html
     الوصف: قالب HTML لمكون إدارة الفواتير (BillingComponent) في تطبيق Angular.

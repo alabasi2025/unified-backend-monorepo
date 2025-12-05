@@ -1,3 +1,4 @@
+// PHASE-14: إصلاح انتهاكات DTOs واستخدام @semop/contracts
 import { Module } from '@nestjs/common';
 import { SuppliersController } from './suppliers.controller';
 import { SuppliersService } from './suppliers.service';

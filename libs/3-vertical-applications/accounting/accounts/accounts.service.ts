@@ -1,6 +1,14 @@
+// PHASE-14: إصلاح جميع any types واستخدام DTOs من @semop/contracts
 // PHASE-13: إضافة Input Validation وتحسين Business Logic
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { 
+  CreateAccountDto, 
+  UpdateAccountDto, 
+  AccountResponseDto,
+  AccountType,
+  AccountNature
+} from '@semop/contracts';
 
 @Injectable()
 export class AccountsService {
@@ -14,7 +22,7 @@ export class AccountsService {
   ];
   private nextId = 6;
 
-  findAll(filters?: any) {
+  findAll(filters?: { accountType?: AccountType; isActive?: boolean; isParent?: boolean }): AccountResponseDto[] {
     let result = [...this.accounts];
     
     if (filters?.accountType) {
@@ -32,7 +40,7 @@ export class AccountsService {
     return result;
   }
 
-  findOne(id: string) {
+  findOne(id: string): AccountResponseDto {
     const account = this.accounts.find(a => a.id === id);
     if (!account) {
       throw new NotFoundException(`Account with ID ${id} not found`);
@@ -40,7 +48,7 @@ export class AccountsService {
     return account;
   }
 
-  create(data: any) {
+  create(data: CreateAccountDto): AccountResponseDto {
     const newAccount = {
       id: String(this.nextId++),
       code: data.code,
@@ -59,7 +67,7 @@ export class AccountsService {
     return newAccount;
   }
 
-  update(id: string, data: any) {
+  update(id: string, data: UpdateAccountDto): AccountResponseDto {
     const index = this.accounts.findIndex(a => a.id === id);
     if (index === -1) {
       throw new NotFoundException(`Account with ID ${id} not found`);
@@ -73,7 +81,7 @@ export class AccountsService {
     return this.accounts[index];
   }
 
-  remove(id: string) {
+  remove(id: string): AccountResponseDto {
     const index = this.accounts.findIndex(a => a.id === id);
     if (index === -1) {
       throw new NotFoundException(`Account with ID ${id} not found`);

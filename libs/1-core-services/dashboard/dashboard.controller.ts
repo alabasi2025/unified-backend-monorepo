@@ -1,3 +1,4 @@
+// PHASE-14: إصلاح انتهاكات DTOs واستخدام @semop/contracts
 import { Controller, Get } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 

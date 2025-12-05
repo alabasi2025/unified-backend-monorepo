@@ -39,4 +39,14 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# Check 5: DTO Quality Check (PHASE-14)
+echo "🔍 Running DTO Quality Check..."
+python3 .github/scripts/dto_quality_analyzer.py 2>/dev/null
+if [ $? -eq 0 ]; then
+  COMPLIANCE_RATE=$(python3 -c "import json; data=json.load(open('dto_analysis_report.json')); print(data['summary']['compliance_rate'])" 2>/dev/null)
+  if [ ! -z "$COMPLIANCE_RATE" ]; then
+    echo "  Compliance Rate: $COMPLIANCE_RATE%"
+  fi
+fi
+
 echo "✅ All pre-commit checks passed!"

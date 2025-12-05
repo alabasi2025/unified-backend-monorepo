@@ -1,3 +1,4 @@
+// PHASE-14: تحسين جودة DTOs - إضافة تعليقات PHASE للتوثيق
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
