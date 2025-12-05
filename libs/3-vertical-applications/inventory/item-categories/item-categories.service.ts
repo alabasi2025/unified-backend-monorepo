@@ -12,7 +12,7 @@ export class ItemCategoriesService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     return this.prisma.itemCategory.findUnique({ where: { id } });
   }
 
@@ -20,11 +20,11 @@ export class ItemCategoriesService {
     return this.prisma.itemCategory.create({ data });
   }
 
-  async update(id: number, data: UpdateItemCategoryDto) {
+  async update(id: string, data: UpdateItemCategoryDto) {
     return this.prisma.itemCategory.update({ where: { id }, data });
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     return this.prisma.itemCategory.delete({ where: { id } });
   }
 }
