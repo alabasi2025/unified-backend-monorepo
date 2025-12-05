@@ -136,3 +136,21 @@
 - **1-core-services:** `auth`, `dashboard`, `organizational-structure`, `permissions`, `prisma`, `role-permissions`, `roles`, `src`
 - **2-ocmp:** `genes`, `holdings`, `latitude-points`
 - **3-vertical-applications:** `accounting`, `projects`, `purchasing`, `sales`
+
+
+## [4.0.0] - 2025-12-05
+
+### Added
+- **Repository Consolidation:** Merged `SEMOP` documentation and scripts into `unified-backend-monorepo`.
+- **TypeScript Error Fixes:** Resolved all 18 `TS2698` spread operator errors.
+
+### Changed
+- **Version Bump:** Major version bump to `4.0.0` to reflect significant structural changes and bug fixes.
+- **Repository Structure:** Simplified from 4 repositories to 2.
+
+### Fixed
+- **DTO Quality:** Corrected 83 files to improve DTO quality and compliance.
+- **TypeScript Build:** Reduced build errors from 227 to 210.
+
+### Removed
+- **Redundant Repositories:** Archived `SEMOP` repository.
