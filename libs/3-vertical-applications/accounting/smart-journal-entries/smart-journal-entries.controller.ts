@@ -25,6 +25,7 @@ import {
 import { JournalEntryTemplateService } from './journal-entry-template.service';
 import { SmartJournalEntryService } from './smart-journal-entry.service';
 import { SmartLearningService } from './smart-learning.service';
+import { SmartJournalEntryStatsDto } from '@semop/contracts'; // Added DTO for swagger
 
 @Controller('smart-journal-entries')
 export class SmartJournalEntriesController {
@@ -135,5 +136,14 @@ export class SmartJournalEntriesController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async clearAllLearningData() {
     await this.learningService.clearAllLearningData();
+  }
+
+  // ============================================
+  // Statistics
+  // ============================================
+
+  @Get('stats')
+  async getStats(): Promise<SmartJournalEntryStatsDto> {
+    return this.smartEntryService.getStats();
   }
 }
