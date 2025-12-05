@@ -2,7 +2,7 @@
 // This module bundles all smart journal entries components
 
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '@semop/prisma';
+import { PrismaModule } from '../../../1-core-services/prisma/prisma.module';
 import { SmartJournalEntriesController } from './smart-journal-entries.controller';
 import { JournalEntryTemplateService } from './journal-entry-template.service';
 import { SmartJournalEntryService } from './smart-journal-entry.service';

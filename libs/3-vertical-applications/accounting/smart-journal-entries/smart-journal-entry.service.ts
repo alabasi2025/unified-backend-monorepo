@@ -2,7 +2,7 @@
 // This service handles smart journal entry creation and validation
 
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '@semop/prisma';
+import { PrismaService } from '../../../1-core-services/prisma/prisma.service';
 import {
   CreateJournalEntryFromTemplateDto,
   CreateJournalEntryFromOperationDto,

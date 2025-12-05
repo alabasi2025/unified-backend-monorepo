@@ -2,7 +2,7 @@
 // This service handles AI-powered learning and account suggestions
 
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@semop/prisma';
+import { PrismaService } from '../../../1-core-services/prisma/prisma.service';
 import {
   SuggestedAccountDto,
   AccountSuggestionRequestDto,
