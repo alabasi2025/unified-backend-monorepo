@@ -41,7 +41,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^11.2.3",
     "@prisma/client": "5.22.0",
-    "@semop/contracts": "link:/home/ubuntu/shared-contracts-repo",
+    "@semop/contracts": "file:./libs/contracts",
     "@types/jsonwebtoken": "^9.0.10",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",

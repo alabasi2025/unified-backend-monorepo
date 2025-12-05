@@ -1,4 +1,4 @@
-# UnifiedBackendMonorepo
+# SEMOP Unified Backend Monorepo
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
@@ -99,4 +99,48 @@ And join the Nx community:
 - [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
 - [Our Youtube channel](https://www.youtube.com/@nxdevtools)
 - [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-# Auto-Deploy Test - Sat Nov 22 15:27:16 EST 2025
+---
+
+## نظام SEMOP
+
+هذا المستودع جزء من نظام SEMOP الموحد المكون من مستودعين رئيسيين:
+
+### المستودعات
+
+1. **unified-backend-monorepo** (هذا المستودع)
+   - Backend Services (libs/1-core-services, libs/2-ocmp, libs/3-vertical-applications)
+   - Shared Contracts (libs/contracts)
+   - API Gateway
+
+2. **unified-frontend-monorepo**
+   - Frontend Application
+   - UI Components
+
+### الهيكل
+
+```
+unified-backend-monorepo/
+├── libs/
+│   ├── 1-core-services/        # الخدمات الأساسية
+│   ├── 2-ocmp/                 # نظام إدارة المنظمات
+│   ├── 3-vertical-applications/# التطبيقات العمودية
+│   └── contracts/              # العقود المشتركة (DTOs, Types)
+├── docs/                       # التوثيق
+├── scripts/                    # سكريبتات الأتمتة
+└── package.json
+```
+
+### الإصدار الحالي
+
+**v3.4.0** - تحسينات جودة DTOs الشاملة
+
+#### التغييرات الرئيسية
+- ✅ دمج العقود المشتركة من `shared-contracts-repo`
+- ✅ إصلاح 83 ملفاً لتحسين جودة الكود
+- ✅ استبدال 53 استخدام لـ `any` types
+- ✅ إضافة 20 استيراد من `@semop/contracts`
+- ✅ إضافة 83 تعليق `PHASE` للتتبع
+
+للمزيد من التفاصيل، راجع `CHANGELOG.md`.
+
+---
