@@ -633,6 +633,7 @@ model SmartLearningLog {
 model AutomatedJournalEntry {
   id              String   @id @default(uuid())
   journalEntryId  String   @unique @map("journal_entry_id")
+  journalEntry    JournalEntry @relation(fields: [journalEntryId], references: [id])
   sourceType      String   @map("source_type") // sales_invoice, purchase_order, etc.
   sourceId        String   @map("source_id")
   templateId      String?  @map("template_id")
@@ -646,4 +647,57 @@ model AutomatedJournalEntry {
   @@index([journalEntryId])
   @@index([templateId])
   @@map("automated_journal_entries")
+}
+
+
+// ============================================
+// PHASE-15: Journal Entry & Lines
+// ============================================
+
+model JournalEntry {
+  id              String    @id @default(uuid())
+  entryNumber     String    @unique
+  entryDate       DateTime
+  description     String
+  reference       String?
+  entryType       String
+  status          String
+  totalDebit      Float
+  totalCredit     Float
+  isBalanced      Boolean
+  postedAt        DateTime?
+  postedBy        String?
+  reversedAt      DateTime?
+  reversedBy      String?
+  reversalOfId    String?
+  fiscalYearId    String
+  holdingId       String?
+  unitId          String?
+  projectId       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  lines           JournalEntryLine[]
+  automatedEntry  AutomatedJournalEntry?
+
+  @@map("journal_entries")
+}
+
+model JournalEntryLine {
+  id              String    @id @default(uuid())
+  journalEntryId  String
+  lineNumber      Int
+  accountId       String
+  description     String
+  debit           Float
+  credit          Float
+  costCenterId    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  journalEntry    JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+
+  @@map("journal_entry_lines")
 }
