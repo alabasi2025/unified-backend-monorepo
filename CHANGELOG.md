@@ -116,3 +116,23 @@
 **المطورون:** فريق SEMOP ERP  
 **التاريخ:** 2025-12-05  
 **الإصدار:** v3.3.1
+
+
+---
+
+# سجل التغييرات
+
+## [3.4.0] - 2025-12-05
+
+### ✨ تحسينات
+
+- **إصلاح شامل لجودة DTOs:** تم تنفيذ عملية إصلاح شاملة لتحسين جودة كائنات نقل البيانات (DTOs) في جميع مكونات النظام.
+  - **استبدال `any` types:** تم استبدال 53 استخدامًا لنوع `any` بأنواع أكثر تحديدًا أو `unknown` لزيادة أمان الأنواع (Type Safety).
+  - **فرض استيراد العقود:** تم إضافة 20 استيرادًا من `@semop/contracts` لضمان استخدام العقود المشتركة وتقليل تكرار الكود.
+  - **إضافة تعليقات `PHASE`:** تم إضافة تعليقات `PHASE: DTO_QUALITY_FIX` إلى 83 ملفًا لتسهيل تتبع التعديلات المستقبلية.
+
+### Affected Components
+
+- **1-core-services:** `auth`, `dashboard`, `organizational-structure`, `permissions`, `prisma`, `role-permissions`, `roles`, `src`
+- **2-ocmp:** `genes`, `holdings`, `latitude-points`
+- **3-vertical-applications:** `accounting`, `projects`, `purchasing`, `sales`
