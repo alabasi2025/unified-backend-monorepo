@@ -100,7 +100,7 @@ export class FiscalPeriodsService {
     
     this.fiscalPeriods[index] = {
       ...this.fiscalPeriods[index],
-      ...data
+      ...(data as object)
     };
     
     return this.fiscalPeriods[index];

@@ -87,7 +87,7 @@ export class JournalEntriesService {
     
     this.entries[index] = {
       ...this.entries[index],
-      ...data,
+      ...(data as object),
       totalDebit: data.lines ? data.lines.reduce((sum: number, line: unknown) => sum + (line.debit || 0), 0) : this.entries[index].totalDebit,
       totalCredit: data.lines ? data.lines.reduce((sum: number, line: unknown) => sum + (line.credit || 0), 0) : this.entries[index].totalCredit
     };

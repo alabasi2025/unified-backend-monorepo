@@ -72,7 +72,7 @@ export class CostCentersService {
     
     this.costCenters[index] = {
       ...this.costCenters[index],
-      ...data
+      ...(data as object)
     };
     
     return this.costCenters[index];

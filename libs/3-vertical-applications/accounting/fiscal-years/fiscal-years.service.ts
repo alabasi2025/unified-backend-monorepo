@@ -79,7 +79,7 @@ export class FiscalYearsService {
     
     this.fiscalYears[index] = {
       ...this.fiscalYears[index],
-      ...data
+      ...(data as object)
     };
     
     return this.fiscalYears[index];

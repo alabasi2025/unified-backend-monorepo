@@ -6,7 +6,7 @@ import { } from '@semop/contracts';
 @Injectable()
 export class GenesService {
   async create(createDto: unknown) {
-    return { id: '1', ...createDto };
+    return { id: '1', ...(createDto as object) };
   }
 
   async findAll() {
@@ -18,7 +18,7 @@ export class GenesService {
   }
 
   async update(id: string, updateDto: unknown) {
-    return { id, ...updateDto };
+    return { id, ...(updateDto as object) };
   }
 
   async remove(id: string) {

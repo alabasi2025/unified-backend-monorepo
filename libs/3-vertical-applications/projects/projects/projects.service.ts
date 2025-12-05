@@ -20,7 +20,7 @@ export class ProjectsService {
   }
 
   create(createDto: unknown) {
-    const newItem = { id: this.nextId++, ...createDto };
+    const newItem = { id: this.nextId++, ...(createDto as object) };
     this.items.push(newItem);
     return newItem;
   }
@@ -30,7 +30,7 @@ export class ProjectsService {
     if (index === -1) {
       throw new NotFoundException(`Item with ID ${id} not found`);
     }
-    this.items[index] = { ...this.items[index], ...updateDto };
+    this.items[index] = { ...this.items[index], ...(updateDto as object) };
     return this.items[index];
   }
 

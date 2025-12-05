@@ -34,7 +34,7 @@ export class RolesService {
   create(createRoleDto: unknown) {
     const newRole = {
       id: this.nextId++,
-      ...createRoleDto,
+      ...(createRoleDto as object),
       isActive: true
     };
     this.roles.push(newRole);
@@ -46,7 +46,7 @@ export class RolesService {
     if (roleIndex === -1) {
       throw new NotFoundException(`Role with ID ${id} not found`);
     }
-    this.roles[roleIndex] = { ...this.roles[roleIndex], ...updateRoleDto };
+    this.roles[roleIndex] = { ...this.roles[roleIndex], ...(updateRoleDto as object) };
     return this.roles[roleIndex];
   }
 
