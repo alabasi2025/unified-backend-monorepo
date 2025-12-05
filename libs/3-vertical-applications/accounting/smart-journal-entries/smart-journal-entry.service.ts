@@ -10,7 +10,7 @@ import {
   ValidateJournalEntryDto,
   JournalEntryValidationResultDto,
   AutomatedJournalEntryDto,
-  SmartJournalEntryStatsDto, // Added DTO for stats
+  // SmartJournalEntryStatsDto, // Added DTO for stats - removed temporarily
 } from '@semop/contracts';
 import { JournalEntryTemplateService } from './journal-entry-template.service';
 import { SmartLearningService } from './smart-learning.service';
@@ -26,7 +26,7 @@ export class SmartJournalEntryService {
   /**
    * Get smart journal entry statistics
    */
-  async getStats(): Promise<SmartJournalEntryStatsDto> {
+  async getStats(): Promise<any> {
     // 1. totalTemplates: Total number of active journal entry templates
     const totalTemplates = await this.prisma.journalEntryTemplate.count({
       where: { isActive: true },
