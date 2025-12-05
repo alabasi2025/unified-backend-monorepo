@@ -49,7 +49,7 @@ export class CostCentersService {
     return costCenter;
   }
 
-  create(data: unknown) {
+  create(data: { code: string; nameAr: string; nameEn?: string; description?: string; isActive?: boolean }) {
     const newCostCenter = {
       id: String(this.nextId++),
       code: data.code,
@@ -64,7 +64,7 @@ export class CostCentersService {
     return newCostCenter;
   }
 
-  update(id: string, data: unknown) {
+  update(id: string, data: { code?: string; nameAr?: string; nameEn?: string; description?: string; isActive?: boolean }) {
     const index = this.costCenters.findIndex(cc => cc.id === id);
     if (index === -1) {
       throw new NotFoundException(`Cost Center with ID ${id} not found`);

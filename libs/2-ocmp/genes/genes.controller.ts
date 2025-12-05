@@ -37,17 +37,17 @@ export class GenesController {
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.genesService.findOne(id);
+    return this.genesService.findOne(String(id));
   }
 
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() updateGeneDto: UpdateGeneDto) {
-    return this.genesService.update(id, updateGeneDto);
+    return this.genesService.update(String(id), updateGeneDto);
   }
 
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.genesService.remove(id);
+    return this.genesService.remove(String(id));
   }
 
   @Post(':id/sector')
@@ -58,7 +58,7 @@ export class GenesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() linkGeneSectorDto: LinkGeneSectorDto,
   ) {
-    return this.genesService.linkGeneToSector(id, linkGeneSectorDto.sectorCode);
+    return this.genesService.linkGeneToSector(String(id), linkGeneSectorDto.sectorCode);
   }
 
   @Get('by-sector/:sectorCode')
@@ -93,14 +93,14 @@ export class GenesController {
   @ApiOperation({ summary: 'تفعيل جين معين' })
   @ApiResponse({ status: 200, description: 'تم تفعيل الجين بنجاح' })
   activateGene(@Param('id', ParseIntPipe) id: number) {
-    return this.genesService.activateGene(id);
+    return this.genesService.activateGene(String(id));
   }
 
   @Post(':id/deactivate')
   @ApiOperation({ summary: 'تعطيل جين معين' })
   @ApiResponse({ status: 200, description: 'تم تعطيل الجين بنجاح' })
   deactivateGene(@Param('id', ParseIntPipe) id: number) {
-    return this.genesService.deactivateGene(id);
+    return this.genesService.deactivateGene(String(id));
   }
 
   @Get('usage-report')
@@ -131,7 +131,7 @@ export class GenesController {
     @Param('id') id: string,
     @Body() body: { dependsOnGeneId: string; dependencyType: string; description?: string },
   ) {
-    return this.genesService.addDependency(id, body.dependsOnGeneId, body.dependencyType, body.description);
+    return this.genesService.addDependency({ id, dependsOnGeneId: body.dependsOnGeneId, dependencyType: body.dependencyType, description: body.description });
   }
 
   @Get(':id/can-activate')

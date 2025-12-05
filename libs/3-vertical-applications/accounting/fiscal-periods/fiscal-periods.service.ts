@@ -73,7 +73,7 @@ export class FiscalPeriodsService {
     return fiscalPeriod;
   }
 
-  create(data: unknown) {
+  create(data: { fiscalYearId: string; code: string; nameAr: string; nameEn?: string; startDate: string; endDate: string }) {
     const newFiscalPeriod = {
       id: String(this.nextId++),
       fiscalYearId: data.fiscalYearId,
@@ -92,7 +92,7 @@ export class FiscalPeriodsService {
     return newFiscalPeriod;
   }
 
-  update(id: string, data: unknown) {
+  update(id: string, data: { fiscalYearId?: string; code?: string; nameAr?: string; nameEn?: string; startDate?: string; endDate?: string; isClosed?: boolean }) {
     const index = this.fiscalPeriods.findIndex(fp => fp.id === id);
     if (index === -1) {
       throw new NotFoundException(`Fiscal Period with ID ${id} not found`);

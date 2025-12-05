@@ -24,7 +24,7 @@ export class HoldingsController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: CreateDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: any) {
     return this.holdingsService.update(id, updateDto);
   }
 

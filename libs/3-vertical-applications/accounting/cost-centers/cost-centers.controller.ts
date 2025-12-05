@@ -19,12 +19,12 @@ export class CostCentersController {
   }
 
   @Post()
-  create(@Body() data: unknown) {
+  create(@Body() data: any) {
     return this.costCentersService.create(data);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: unknown) {
+  update(@Param('id') id: string, @Body() data: any) {
     return this.costCentersService.update(id, data);
   }
 

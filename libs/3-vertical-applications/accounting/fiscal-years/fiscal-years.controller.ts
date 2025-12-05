@@ -18,12 +18,12 @@ export class FiscalYearsController {
   }
 
   @Post()
-  create(@Body() data: unknown) {
+  create(@Body() data: any) {
     return this.fiscalYearsService.create(data);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: unknown) {
+  update(@Param('id') id: string, @Body() data: any) {
     return this.fiscalYearsService.update(id, data);
   }
 

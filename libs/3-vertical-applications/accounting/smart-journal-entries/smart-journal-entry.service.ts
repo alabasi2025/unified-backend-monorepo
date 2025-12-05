@@ -113,9 +113,16 @@ export class SmartJournalEntryService {
       );
 
       // Add line
-      const line: unknown = {
+      const line: {
+        accountId: string;
+        description: string;
+        debit: number;
+        credit: number;
+      } = {
         accountId,
         description,
+        debit: 0,
+        credit: 0,
       };
 
       if (templateLine.accountType === 'debit') {

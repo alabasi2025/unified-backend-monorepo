@@ -192,7 +192,7 @@ export class JournalEntryTemplateService {
   /**
    * Map Prisma model to DTO
    */
-  private mapToDto(template: unknown): JournalEntryTemplateDto {
+  private mapToDto(template: any): JournalEntryTemplateDto {
     return {
       id: template.id,
       code: template.code,
@@ -200,7 +200,7 @@ export class JournalEntryTemplateService {
       nameEn: template.nameEn,
       operationType: template.operationType,
       isActive: template.isActive,
-      lines: template.lines?.map((line: unknown) => ({
+      lines: template.lines?.map((line: any) => ({
         id: line.id,
         templateId: line.templateId,
         lineOrder: line.lineOrder,

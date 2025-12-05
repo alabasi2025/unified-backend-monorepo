@@ -54,7 +54,7 @@ export class FiscalYearsService {
     return fiscalYear;
   }
 
-  create(data: unknown) {
+  create(data: { code: string; nameAr: string; nameEn?: string; startDate: string; endDate: string; isActive?: boolean }) {
     const newFiscalYear = {
       id: String(this.nextId++),
       code: data.code,
@@ -71,7 +71,7 @@ export class FiscalYearsService {
     return newFiscalYear;
   }
 
-  update(id: string, data: unknown) {
+  update(id: string, data: { code?: string; nameAr?: string; nameEn?: string; startDate?: string; endDate?: string; isActive?: boolean; isClosed?: boolean }) {
     const index = this.fiscalYears.findIndex(fy => fy.id === id);
     if (index === -1) {
       throw new NotFoundException(`Fiscal Year with ID ${id} not found`);

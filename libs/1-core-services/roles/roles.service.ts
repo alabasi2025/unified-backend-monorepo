@@ -37,8 +37,8 @@ export class RolesService {
       ...(createRoleDto as object),
       isActive: true
     };
-    this.roles.push(newRole);
-    return newRole;
+    this.roles.push(newRole as any);
+    return newRole as any;
   }
 
   update(id: number, updateRoleDto: unknown) {
