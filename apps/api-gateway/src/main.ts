@@ -9,6 +9,9 @@ import { AppModule } from './app/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Add security headers using Helmet (Helmet helps secure the app by setting various HTTP headers)
+  app.use(require('helmet')());
   
   // Enable CORS
   app.enableCors();
