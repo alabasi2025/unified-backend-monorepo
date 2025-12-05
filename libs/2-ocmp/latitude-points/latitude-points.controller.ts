@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: تحسين جودة DTOs - إضافة تعليقات PHASE للتوثيق
 /**
  * PHASE-11: Complete Backend Fixes

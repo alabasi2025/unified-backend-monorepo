@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: إصلاح انتهاكات DTOs واستخدام @semop/contracts
 <!--
     ملف: billing.component.html

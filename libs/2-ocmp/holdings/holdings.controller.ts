@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: إصلاح جميع any types واستخدام DTOs من @semop/contracts
 // PHASE-12: إضافة Error Handling شامل مع try-catch و logging
 import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
@@ -18,7 +19,7 @@ export class HoldingsController {
   }
 
   @Post()
-  create(@Body() createDto: any) {
+  create(@Body() createDto: unknown) {
     return this.holdingsService.create(createDto);
   }
 

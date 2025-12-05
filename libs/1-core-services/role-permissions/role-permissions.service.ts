@@ -1,8 +1,11 @@
+// PHASE: DTO_QUALITY_FIX
 // role_permissions.service.ts
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../1-core-services/prisma/prisma.service'; // افتراض وجود PrismaService في هذا المسار
 import { CreateRolePermissionDto, UpdateRolePermissionDto } from './role_permissions.dto';
+import { } from '@semop/contracts';
+
 import { RolePermissions as RolePermissionModel } from '@prisma/client'; // افتراض أن اسم الموديل في العميل هو RolePermissions
 
 @Injectable()

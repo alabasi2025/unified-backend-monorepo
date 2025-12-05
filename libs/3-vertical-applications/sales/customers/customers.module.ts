@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: إصلاح انتهاكات DTOs واستخدام @semop/contracts
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Module } from '@nestjs/common';

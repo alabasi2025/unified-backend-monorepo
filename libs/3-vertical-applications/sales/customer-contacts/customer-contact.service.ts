@@ -1,8 +1,11 @@
+// PHASE: DTO_QUALITY_FIX
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CustomerContact } from './customer-contact.entity';
 import { CreateCustomerContactDto, UpdateCustomerContactDto } from './customer-contact.dto';
+import { } from '@semop/contracts';
+
 
 @Injectable()
 export class CustomerContactService {

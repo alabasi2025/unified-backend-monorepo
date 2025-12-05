@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-13: إضافة Input Validation وتحسين Business Logic
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -48,7 +49,7 @@ export class CostCentersService {
     return costCenter;
   }
 
-  create(data: any) {
+  create(data: unknown) {
     const newCostCenter = {
       id: String(this.nextId++),
       code: data.code,
@@ -63,7 +64,7 @@ export class CostCentersService {
     return newCostCenter;
   }
 
-  update(id: string, data: any) {
+  update(id: string, data: unknown) {
     const index = this.costCenters.findIndex(cc => cc.id === id);
     if (index === -1) {
       throw new NotFoundException(`Cost Center with ID ${id} not found`);

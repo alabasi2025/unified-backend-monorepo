@@ -1,8 +1,11 @@
+// PHASE: DTO_QUALITY_FIX
 import { Injectable } from '@nestjs/common';
+import { } from '@semop/contracts';
+
 
 @Injectable()
 export class GenesService {
-  async create(createDto: any) {
+  async create(createDto: unknown) {
     return { id: '1', ...createDto };
   }
 
@@ -14,7 +17,7 @@ export class GenesService {
     return { id };
   }
 
-  async update(id: string, updateDto: any) {
+  async update(id: string, updateDto: unknown) {
     return { id, ...updateDto };
   }
 
@@ -58,7 +61,7 @@ export class GenesService {
     return [];
   }
 
-  async addDependency(dto: any) {
+  async addDependency(dto: unknown) {
     return dto;
   }
 

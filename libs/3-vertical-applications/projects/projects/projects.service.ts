@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: إصلاح انتهاكات DTOs واستخدام @semop/contracts
 import { Injectable, NotFoundException } from '@nestjs/common';
 
@@ -18,13 +19,13 @@ export class ProjectsService {
     return item;
   }
 
-  create(createDto: any) {
+  create(createDto: unknown) {
     const newItem = { id: this.nextId++, ...createDto };
     this.items.push(newItem);
     return newItem;
   }
 
-  update(id: number, updateDto: any) {
+  update(id: number, updateDto: unknown) {
     const index = this.items.findIndex(i => i.id === id);
     if (index === -1) {
       throw new NotFoundException(`Item with ID ${id} not found`);

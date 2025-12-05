@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: إصلاح جميع any types واستخدام DTOs من @semop/contracts
 // PHASE-12: إضافة Error Handling شامل مع try-catch و logging
 import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
@@ -18,12 +19,12 @@ export class PermissionsController {
   }
 
   @Post()
-  create(@Body() createDto: any) {
+  create(@Body() createDto: unknown) {
     return this.permissionsService.create(createDto);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: any) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: unknown) {
     return this.permissionsService.update(id, updateDto);
   }
 

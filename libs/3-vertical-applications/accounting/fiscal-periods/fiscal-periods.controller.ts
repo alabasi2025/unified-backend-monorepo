@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Controller, Get, Post, Patch, Delete, Body, Param } from '@nestjs/common';
 import { FiscalPeriodsService } from './fiscal-periods.service';
@@ -17,12 +18,12 @@ export class FiscalPeriodsController {
   }
 
   @Post()
-  create(@Body() data: any) {
+  create(@Body() data: unknown) {
     return this.fiscalPeriodsService.create(data);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: any) {
+  update(@Param('id') id: string, @Body() data: unknown) {
     return this.fiscalPeriodsService.update(id, data);
   }
 

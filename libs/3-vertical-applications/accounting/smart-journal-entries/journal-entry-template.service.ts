@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-15: Smart Journal Entries System - Template Service
 // This service handles journal entry templates CRUD operations
 
@@ -191,7 +192,7 @@ export class JournalEntryTemplateService {
   /**
    * Map Prisma model to DTO
    */
-  private mapToDto(template: any): JournalEntryTemplateDto {
+  private mapToDto(template: unknown): JournalEntryTemplateDto {
     return {
       id: template.id,
       code: template.code,
@@ -199,7 +200,7 @@ export class JournalEntryTemplateService {
       nameEn: template.nameEn,
       operationType: template.operationType,
       isActive: template.isActive,
-      lines: template.lines?.map((line: any) => ({
+      lines: template.lines?.map((line: unknown) => ({
         id: line.id,
         templateId: line.templateId,
         lineOrder: line.lineOrder,

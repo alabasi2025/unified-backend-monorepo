@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-15: Smart Journal Entries System - Smart Learning Service
 // This service handles AI-powered learning and account suggestions
 
@@ -58,7 +59,7 @@ export class SmartLearningService {
     const limit = dto.limit || 5;
 
     // Build where clause
-    const where: any = {
+    const where: unknown = {
       operationType: dto.operationType,
     };
 

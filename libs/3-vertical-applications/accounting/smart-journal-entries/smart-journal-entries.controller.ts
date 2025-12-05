@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-15: Smart Journal Entries System - Controller
 // This controller exposes REST API endpoints for smart journal entries
 

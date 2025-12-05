@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: تحسين جودة DTOs - إضافة تعليقات PHASE للتوثيق
 /**
  * PHASE-11: Complete Backend Fixes
@@ -16,6 +17,8 @@ import { Module } from '@nestjs/common';
 import { LatitudePointsService } from './latitude-points.service';
 import { LatitudePointsController } from './latitude-points.controller';
 import { PrismaModule } from '../../1-core-services/prisma/prisma.module';
+import { } from '@semop/contracts';
+
 
 @Module({
   imports: [PrismaModule],

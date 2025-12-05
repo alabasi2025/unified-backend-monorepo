@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-12: إضافة Error Handling شامل مع try-catch و logging
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Controller, Get, Post, Patch, Delete, Body, Param } from '@nestjs/common';
@@ -18,12 +19,12 @@ export class CostCentersController {
   }
 
   @Post()
-  create(@Body() data: any) {
+  create(@Body() data: unknown) {
     return this.costCentersService.create(data);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: any) {
+  update(@Param('id') id: string, @Body() data: unknown) {
     return this.costCentersService.update(id, data);
   }
 

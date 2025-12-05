@@ -1,13 +1,16 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-12: إضافة Error Handling شامل مع try-catch و logging
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
 import { JournalEntriesService } from './journal-entries.service';
+import { } from '@semop/contracts';
+
 
 @Controller('journal-entries')
 export class JournalEntriesController {
   constructor(private readonly journalEntriesService: JournalEntriesService) {}
 
   @Get()
-  findAll(@Query() filters: any) {
+  findAll(@Query() filters: unknown) {
     return this.journalEntriesService.findAll(filters);
   }
 
@@ -17,12 +20,12 @@ export class JournalEntriesController {
   }
 
   @Post()
-  create(@Body() data: any) {
+  create(@Body() data: unknown) {
     return this.journalEntriesService.create(data);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: any) {
+  update(@Param('id') id: string, @Body() data: unknown) {
     return this.journalEntriesService.update(id, data);
   }
 

@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: إصلاح انتهاكات DTOs واستخدام @semop/contracts
 import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
@@ -17,12 +18,12 @@ export class ProjectsController {
   }
 
   @Post()
-  create(@Body() createDto: any) {
+  create(@Body() createDto: unknown) {
     return this.projectsService.create(createDto);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: any) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: unknown) {
     return this.projectsService.update(id, updateDto);
   }
 

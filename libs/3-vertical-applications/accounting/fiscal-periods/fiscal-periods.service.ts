@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Injectable, NotFoundException } from '@nestjs/common';
 
@@ -72,7 +73,7 @@ export class FiscalPeriodsService {
     return fiscalPeriod;
   }
 
-  create(data: any) {
+  create(data: unknown) {
     const newFiscalPeriod = {
       id: String(this.nextId++),
       fiscalYearId: data.fiscalYearId,
@@ -91,7 +92,7 @@ export class FiscalPeriodsService {
     return newFiscalPeriod;
   }
 
-  update(id: string, data: any) {
+  update(id: string, data: unknown) {
     const index = this.fiscalPeriods.findIndex(fp => fp.id === id);
     if (index === -1) {
       throw new NotFoundException(`Fiscal Period with ID ${id} not found`);

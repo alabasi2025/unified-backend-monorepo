@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: إصلاح جميع any types واستخدام DTOs من @semop/contracts
 /**
  * PHASE-11: Organizational Structure Development

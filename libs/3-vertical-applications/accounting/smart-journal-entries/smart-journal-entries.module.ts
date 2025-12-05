@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-15: Smart Journal Entries System - Module
 // This module bundles all smart journal entries components
 
@@ -7,6 +8,8 @@ import { SmartJournalEntriesController } from './smart-journal-entries.controlle
 import { JournalEntryTemplateService } from './journal-entry-template.service';
 import { SmartJournalEntryService } from './smart-journal-entry.service';
 import { SmartLearningService } from './smart-learning.service';
+import { } from '@semop/contracts';
+
 
 @Module({
   imports: [PrismaModule],

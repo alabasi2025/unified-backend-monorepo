@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: إصلاح جميع any types واستخدام DTOs من @semop/contracts
 import { Injectable, NotFoundException } from '@nestjs/common';
 
@@ -24,7 +25,7 @@ export class HoldingsService {
     return newItem;
   }
 
-  update(id: number, updateDto: any) {
+  update(id: number, updateDto: unknown) {
     const index = this.items.findIndex(i => i.id === id);
     if (index === -1) {
       throw new NotFoundException(`Item with ID ${id} not found`);

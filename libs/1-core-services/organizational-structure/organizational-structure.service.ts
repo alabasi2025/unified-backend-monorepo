@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: إصلاح جميع any types واستخدام DTOs من @semop/contracts
 // PHASE-13: إضافة Input Validation وتحسين Business Logic
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
@@ -86,7 +87,7 @@ export class OrganizationalStructureService {
   }
 
   async updateDepartment(id: string, dto: UpdateDepartmentDto) {
-    const data: any = {};
+    const data: unknown = {};
     if (dto.name) {
       data.nameAr = dto.name;
       data.nameEn = dto.name;
@@ -181,7 +182,7 @@ export class OrganizationalStructureService {
   }
 
   async updatePosition(id: string, dto: UpdatePositionDto) {
-    const data: any = {};
+    const data: unknown = {};
     if (dto.title) {
       data.titleAr = dto.title;
       data.titleEn = dto.title;
@@ -271,7 +272,7 @@ export class OrganizationalStructureService {
   }
 
   async updateEmployee(id: string, dto: UpdateEmployeeDto) {
-    const data: any = {};
+    const data: unknown = {};
     if ((dto as any).firstName) {
       data.firstNameAr = (dto as any).firstName;
       data.firstNameEn = (dto as any).firstName;

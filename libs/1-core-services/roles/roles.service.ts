@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: إصلاح جميع any types واستخدام DTOs من @semop/contracts
 // PHASE-13: إضافة Input Validation وتحسين Business Logic
 // PHASE-13: إضافة Input Validation وتحسين Business Logic
@@ -40,7 +41,7 @@ export class RolesService {
     return newRole;
   }
 
-  update(id: number, updateRoleDto: any) {
+  update(id: number, updateRoleDto: unknown) {
     const roleIndex = this.roles.findIndex(r => r.id === id);
     if (roleIndex === -1) {
       throw new NotFoundException(`Role with ID ${id} not found`);

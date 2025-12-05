@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
 import { Injectable, NotFoundException } from '@nestjs/common';
 
@@ -53,7 +54,7 @@ export class FiscalYearsService {
     return fiscalYear;
   }
 
-  create(data: any) {
+  create(data: unknown) {
     const newFiscalYear = {
       id: String(this.nextId++),
       code: data.code,
@@ -70,7 +71,7 @@ export class FiscalYearsService {
     return newFiscalYear;
   }
 
-  update(id: string, data: any) {
+  update(id: string, data: unknown) {
     const index = this.fiscalYears.findIndex(fy => fy.id === id);
     if (index === -1) {
       throw new NotFoundException(`Fiscal Year with ID ${id} not found`);

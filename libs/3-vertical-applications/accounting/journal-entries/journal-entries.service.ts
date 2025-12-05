@@ -1,4 +1,7 @@
+// PHASE: DTO_QUALITY_FIX
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { } from '@semop/contracts';
+
 
 @Injectable()
 export class JournalEntriesService {
@@ -34,7 +37,7 @@ export class JournalEntriesService {
   ];
   private nextId = 3;
 
-  findAll(filters?: any) {
+  findAll(filters?: unknown) {
     let result = [...this.entries];
     
     if (filters?.status) {
@@ -60,15 +63,15 @@ export class JournalEntriesService {
     return entry;
   }
 
-  create(data: any) {
+  create(data: unknown) {
     const newEntry = {
       id: String(this.nextId++),
       entryNumber: `JE-2025-${String(this.nextId).padStart(3, '0')}`,
       date: data.date,
       description: data.description,
       status: data.status || 'DRAFT',
-      totalDebit: data.lines.reduce((sum: number, line: any) => sum + (line.debit || 0), 0),
-      totalCredit: data.lines.reduce((sum: number, line: any) => sum + (line.credit || 0), 0),
+      totalDebit: data.lines.reduce((sum: number, line: unknown) => sum + (line.debit || 0), 0),
+      totalCredit: data.lines.reduce((sum: number, line: unknown) => sum + (line.credit || 0), 0),
       lines: data.lines
     };
     
@@ -76,7 +79,7 @@ export class JournalEntriesService {
     return newEntry;
   }
 
-  update(id: string, data: any) {
+  update(id: string, data: unknown) {
     const index = this.entries.findIndex(e => e.id === id);
     if (index === -1) {
       throw new NotFoundException(`Journal Entry with ID ${id} not found`);
@@ -85,8 +88,8 @@ export class JournalEntriesService {
     this.entries[index] = {
       ...this.entries[index],
       ...data,
-      totalDebit: data.lines ? data.lines.reduce((sum: number, line: any) => sum + (line.debit || 0), 0) : this.entries[index].totalDebit,
-      totalCredit: data.lines ? data.lines.reduce((sum: number, line: any) => sum + (line.credit || 0), 0) : this.entries[index].totalCredit
+      totalDebit: data.lines ? data.lines.reduce((sum: number, line: unknown) => sum + (line.debit || 0), 0) : this.entries[index].totalDebit,
+      totalCredit: data.lines ? data.lines.reduce((sum: number, line: unknown) => sum + (line.credit || 0), 0) : this.entries[index].totalCredit
     };
     
     return this.entries[index];

@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-14: إصلاح انتهاكات DTOs واستخدام @semop/contracts
 // PHASE-12: إضافة Error Handling شامل مع try-catch و logging
 // PHASE-11: إصلاح انتهاكات DTOs والبنية المعمارية - استخدام @semop/contracts
@@ -19,12 +20,12 @@ export class CustomersController {
   }
 
   @Post()
-  create(@Body() createDto: any) {
+  create(@Body() createDto: unknown) {
     return this.customersService.create(createDto);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: any) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: unknown) {
     return this.customersService.update(id, updateDto);
   }
 

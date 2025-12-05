@@ -1,3 +1,4 @@
+// PHASE: DTO_QUALITY_FIX
 // PHASE-15: Smart Journal Entries System - Main Service
 // This service handles smart journal entry creation and validation
 
@@ -112,7 +113,7 @@ export class SmartJournalEntryService {
       );
 
       // Add line
-      const line: any = {
+      const line: unknown = {
         accountId,
         description,
       };
@@ -307,7 +308,7 @@ export class SmartJournalEntryService {
   /**
    * Helper: Resolve placeholder from source data
    */
-  private resolvePlaceholder(placeholder: string, sourceData: any): string | null {
+  private resolvePlaceholder(placeholder: string, sourceData: unknown): string | null {
     // Simple placeholder resolution (e.g., "customer_account" -> sourceData.customerAccountId)
     const key = placeholder.replace(/_/g, '') + 'Id';
     return sourceData[key] || sourceData[placeholder] || null;
@@ -316,14 +317,14 @@ export class SmartJournalEntryService {
   /**
    * Helper: Get amount from source data
    */
-  private getAmountFromSource(amountSource: string, sourceData: any): number {
+  private getAmountFromSource(amountSource: string, sourceData: unknown): number {
     return parseFloat(sourceData[amountSource]) || 0;
   }
 
   /**
    * Helper: Build description from template
    */
-  private buildDescription(template: string | undefined, sourceData: any, defaultDescription?: string): string {
+  private buildDescription(template: string | undefined, sourceData: unknown, defaultDescription?: string): string {
     if (!template) {
       return defaultDescription || 'Automated journal entry';
     }
