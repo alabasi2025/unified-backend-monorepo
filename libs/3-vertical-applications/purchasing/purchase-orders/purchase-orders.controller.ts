@@ -13,7 +13,9 @@
 
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { PurchaseOrdersService } from './purchase-orders.service';
-import { CreatePurchaseOrderDto, UpdatePurchaseOrderDto } from '@semop/contracts';
+// DTOs will be defined inline for now
+type CreatePurchaseOrderDto = any;
+type UpdatePurchaseOrderDto = any;
 
 @Controller('purchase-orders')
 export class PurchaseOrdersController {

@@ -14,7 +14,9 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../1-core-services/prisma/prisma.service';
-import { CreatePurchaseOrderDto, UpdatePurchaseOrderDto } from '@semop/contracts';
+// DTOs will be defined inline for now
+type CreatePurchaseOrderDto = any;
+type UpdatePurchaseOrderDto = any;
 import { PurchaseOrder } from '@prisma/client';
 
 @Injectable()
