@@ -3,6 +3,7 @@
  * Version: 2.4.0
  */
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { HttpExceptionFilter } from '../../../libs/1-core-services/common/filters/http-exception.filter';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
@@ -26,8 +27,14 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
+
+  // Global Exception Filter for error handling
+  app.useGlobalFilters(new HttpExceptionFilter());
   
   // Swagger Configuration
   const config = new DocumentBuilder()
