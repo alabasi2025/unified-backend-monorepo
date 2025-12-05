@@ -63,5 +63,8 @@
     "prisma:studio": "prisma studio",
     "test": "nx test",
     "lint": "nx lint"
+  },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   }
 }
