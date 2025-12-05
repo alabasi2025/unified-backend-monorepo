@@ -51,6 +51,9 @@ import { CustomerContactsModule } from '../../../../libs/3-vertical-applications
 // Layer 3: Vertical Applications - Projects
 import { ProjectsModule } from '../../../../libs/3-vertical-applications/projects/projects/projects.module';
 
+// Layer 3: Vertical Applications - Inventory
+import { InventoryModule } from '../../../../libs/3-vertical-applications/inventory/inventory.module';
+
 @Module({
   imports: [
     // Layer 1: Core Services (including Prisma)
@@ -86,6 +89,9 @@ import { ProjectsModule } from '../../../../libs/3-vertical-applications/project
     
     // Layer 3: Projects
     ProjectsModule,
+    
+    // Layer 3: Inventory
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
