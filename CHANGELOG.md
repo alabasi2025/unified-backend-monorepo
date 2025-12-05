@@ -1,3 +1,44 @@
+# CHANGELOG
+
+## v4.0.2 - 2025-12-05
+
+### ✨ ميزات جديدة
+
+#### نظام المخازن الكامل
+تم تطوير نظام مخازن متكامل يشمل:
+
+**Backend:**
+- ✅ 8 جداول جديدة في قاعدة البيانات (Warehouses, Items, StockMovements, InventoryCount, إلخ)
+- ✅ DTOs كاملة لجميع الوحدات
+- ✅ Services & Controllers (Warehouses, Items, StockMovements)
+- ✅ Inventory Module مسجل في AppModule
+
+**Frontend:**
+- ✅ واجهة الأصناف (Items) كاملة ومتكاملة
+- ✅ تصميم احترافي باستخدام PrimeNG
+- ✅ عمليات CRUD كاملة (إضافة، تعديل، حذف، عرض)
+- ✅ بحث وفلترة متقدمة
+
+**البيانات الأولية:**
+- ✅ 3 مستودعات (رئيسي، فرعي، قطع غيار)
+- ✅ 10 أصناف مع أسعار ومخزون
+- ✅ Seed script جاهز للاستخدام
+
+### 🐛 إصلاحات
+
+- ✅ إصلاح Nginx proxy configuration لتوجيه `/api/*` بشكل صحيح
+- ✅ إصلاح Frontend build وإزالة InputTextareaModule
+- ✅ مسح cache وإعادة نشر الواجهة
+
+### 📦 Commits
+
+- `b97ded0` - feat: add complete inventory management system
+- `c3c7079` - fix: remove InputTextareaModule from items component
+- `a8f5e21` - feat: add seed data for warehouses and items
+
+---
+
+## v4.0.1 - 2025-12-05
 # Changelog - Version 4.0.1
 
 ## تاريخ الإصدار: 2025-12-05
