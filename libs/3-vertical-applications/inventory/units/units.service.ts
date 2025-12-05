@@ -8,6 +8,7 @@ export class UnitsService {
   async create(data: any) {
     return this.prisma.unit.create({
       data: {
+        code: data.code || `UNIT-${Date.now()}`,
         nameAr: data.nameAr,
         nameEn: data.nameEn,
         symbol: data.symbol,
