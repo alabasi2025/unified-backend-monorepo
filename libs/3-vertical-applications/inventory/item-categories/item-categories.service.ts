@@ -1,86 +1,51 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateItemCategoryDto } from './dto/create-item-category.dto';
-import { UpdateItemCategoryDto } from './dto/update-item-category.dto';
-import { ItemCategoryDto } from './dto/item-category.dto';
-
-// محاكاة لقاعدة البيانات
-let categories: ItemCategoryDto[] = [
-  { id: 1, name: 'أدوات كهربائية', description: 'جميع الأدوات الكهربائية', isActive: true, createdAt: new Date(), updatedAt: new Date() },
-  { id: 2, name: 'مواد بناء', description: 'الأسمنت والحديد والرمل', isActive: true, createdAt: new Date(), updatedAt: new Date() },
-  { id: 3, name: 'أثاث مكتبي', description: 'طاولات وكراسي وخزائن', isActive: false, createdAt: new Date(), updatedAt: new Date() },
-];
-let nextId = 4;
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../1-core-services/prisma/prisma.service';
 
 @Injectable()
 export class ItemCategoriesService {
-  /**
-   * إنشاء صنف جديد
-   * @param createItemCategoryDto بيانات الصنف الجديد
-   * @returns الصنف المنشأ
-   */
-  create(createItemCategoryDto: CreateItemCategoryDto): ItemCategoryDto {
-    const newCategory: ItemCategoryDto = {
-      id: nextId++,
-      ...createItemCategoryDto,
-      isActive: createItemCategoryDto.isActive ?? true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    categories.push(newCategory);
-    return newCategory;
+  constructor(private prisma: PrismaService) {}
+
+  async create(data: any) {
+    return this.prisma.itemCategory.create({
+      data: {
+        code: data.code || `CAT-${Date.now()}`,
+        nameAr: data.nameAr,
+        nameEn: data.nameEn,
+        description: data.description,
+        parentId: data.parentId,
+        isActive: data.isActive ?? true,
+      },
+    });
   }
 
-  /**
-   * جلب جميع الأصناف
-   * @returns قائمة الأصناف
-   */
-  findAll(): ItemCategoryDto[] {
-    return categories;
+  async findAll() {
+    return this.prisma.itemCategory.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
-  /**
-   * جلب صنف معين بالمعرف
-   * @param id معرف الصنف
-   * @returns الصنف المطلوب
-   */
-  findOne(id: number): ItemCategoryDto {
-    const category = categories.find(c => c.id === id);
-    if (!category) {
-      throw new NotFoundException(`لم يتم العثور على الصنف بالمعرف ${id}`);
-    }
-    return category;
+  async findOne(id: string) {
+    return this.prisma.itemCategory.findUnique({
+      where: { id },
+    });
   }
 
-  /**
-   * تحديث بيانات صنف
-   * @param id معرف الصنف
-   * @param updateItemCategoryDto البيانات المراد تحديثها
-   * @returns الصنف المحدث
-   */
-  update(id: number, updateItemCategoryDto: UpdateItemCategoryDto): ItemCategoryDto {
-    const index = categories.findIndex(c => c.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`لم يتم العثور على الصنف بالمعرف ${id}`);
-    }
-
-    categories[index] = {
-      ...categories[index],
-      ...updateItemCategoryDto,
-      updatedAt: new Date(),
-    };
-
-    return categories[index];
+  async update(id: string, data: any) {
+    return this.prisma.itemCategory.update({
+      where: { id },
+      data: {
+        nameAr: data.nameAr,
+        nameEn: data.nameEn,
+        description: data.description,
+        parentId: data.parentId,
+        isActive: data.isActive,
+      },
+    });
   }
 
-  /**
-   * حذف صنف
-   * @param id معرف الصنف
-   */
-  remove(id: number): void {
-    const initialLength = categories.length;
-    categories = categories.filter(c => c.id !== id);
-    if (categories.length === initialLength) {
-      throw new NotFoundException(`لم يتم العثور على الصنف بالمعرف ${id}`);
-    }
+  async remove(id: string) {
+    return this.prisma.itemCategory.delete({
+      where: { id },
+    });
   }
 }
