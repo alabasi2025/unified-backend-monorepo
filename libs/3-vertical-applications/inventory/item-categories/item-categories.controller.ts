@@ -1,39 +1,50 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { ItemCategoriesService } from './item-categories.service';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { CreateItemCategoryDto } from './dto/create-item-category.dto';
+import { UpdateItemCategoryDto } from './dto/update-item-category.dto';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ItemCategoryDto } from './dto/item-category.dto';
 
-@ApiTags('Item Categories')
+@ApiTags('أصناف المواد')
 @Controller('item-categories')
 export class ItemCategoriesController {
   constructor(private readonly itemCategoriesService: ItemCategoriesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new item category' })
-  create(@Body() createDto: any) {
-    return this.itemCategoriesService.create(createDto);
+  @ApiOperation({ summary: 'إنشاء صنف مادة جديد' })
+  @ApiResponse({ status: 201, description: 'تم إنشاء الصنف بنجاح', type: ItemCategoryDto })
+  create(@Body() createItemCategoryDto: CreateItemCategoryDto): ItemCategoryDto {
+    return this.itemCategoriesService.create(createItemCategoryDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all item categories' })
-  findAll() {
+  @ApiOperation({ summary: 'جلب جميع أصناف المواد' })
+  @ApiResponse({ status: 200, description: 'قائمة الأصناف', type: [ItemCategoryDto] })
+  findAll(): ItemCategoryDto[] {
     return this.itemCategoriesService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get item category by ID' })
-  findOne(@Param('id') id: string) {
+  @ApiOperation({ summary: 'جلب صنف مادة بالمعرف' })
+  @ApiResponse({ status: 200, description: 'الصنف المطلوب', type: ItemCategoryDto })
+  @ApiResponse({ status: 404, description: 'الصنف غير موجود' })
+  findOne(@Param('id', ParseIntPipe) id: number): ItemCategoryDto {
     return this.itemCategoriesService.findOne(id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update item category' })
-  update(@Param('id') id: string, @Body() updateDto: any) {
-    return this.itemCategoriesService.update(id, updateDto);
+  @ApiOperation({ summary: 'تحديث صنف مادة' })
+  @ApiResponse({ status: 200, description: 'تم تحديث الصنف بنجاح', type: ItemCategoryDto })
+  @ApiResponse({ status: 404, description: 'الصنف غير موجود' })
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateItemCategoryDto: UpdateItemCategoryDto): ItemCategoryDto {
+    return this.itemCategoriesService.update(id, updateItemCategoryDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete item category' })
-  remove(@Param('id') id: string) {
-    return this.itemCategoriesService.remove(id);
+  @ApiOperation({ summary: 'حذف صنف مادة' })
+  @ApiResponse({ status: 204, description: 'تم حذف الصنف بنجاح' })
+  @ApiResponse({ status: 404, description: 'الصنف غير موجود' })
+  remove(@Param('id', ParseIntPipe) id: number): void {
+    this.itemCategoriesService.remove(id);
   }
 }

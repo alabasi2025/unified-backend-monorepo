@@ -21,13 +21,48 @@ import { ItemCategoriesService } from './item-categories/item-categories.service
 import { UnitsController } from './units/units.controller';
 import { UnitsService } from './units/units.service';
 
+// Advanced Search
+import { ItemsController as AdvancedSearchController } from './advanced-search/items.controller';
+import { ItemsService as AdvancedSearchService } from './advanced-search/items.service';
+
+// Barcode Scanner
+import { BarcodeScannerController } from './barcode-scanner/barcode-scanner.controller';
+import { BarcodeScannerService } from './barcode-scanner/barcode-scanner.service';
+
+// Reports
+import { ReportsController } from './reports/reports.controller';
+import { ReportsService } from './reports/reports.service';
+
+// Batch Operations
+import { BatchOperationsController } from './batch-operations/batch-operations.controller';
+import { BatchOperationsService } from './batch-operations/batch-operations.service';
+
+// Dashboard Analytics
+import { DashboardAnalyticsController } from './dashboard-analytics/dashboard-analytics.controller';
+import { DashboardAnalyticsService } from './dashboard-analytics/dashboard-analytics.service';
+
+// Multi Warehouse Transfer
+import { MultiWarehouseTransferController } from './multi-warehouse-transfer/multi-warehouse-transfer.controller';
+import { MultiWarehouseTransferService } from './multi-warehouse-transfer/multi-warehouse-transfer.service';
+
+// Mobile Dashboard
+import { MobileDashboardController } from './mobile-dashboard/mobile-dashboard.controller';
+import { MobileDashboardService } from './mobile-dashboard/mobile-dashboard.service';
+
 @Module({
   controllers: [
     WarehousesController,
     ItemsController,
     StockMovementsController,
     ItemCategoriesController,
-    UnitsController
+    UnitsController,
+    AdvancedSearchController,
+    BarcodeScannerController,
+    ReportsController,
+    BatchOperationsController,
+    DashboardAnalyticsController,
+    MultiWarehouseTransferController,
+    MobileDashboardController
   ],
   providers: [
     PrismaService,
@@ -35,12 +70,28 @@ import { UnitsService } from './units/units.service';
     ItemsService,
     StockMovementsService,
     ItemCategoriesService,
-    UnitsService
+    UnitsService,
+    AdvancedSearchService,
+    BarcodeScannerService,
+    ReportsService,
+    BatchOperationsService,
+    DashboardAnalyticsService,
+    MultiWarehouseTransferService,
+    MobileDashboardService
   ],
   exports: [
     WarehousesService,
     ItemsService,
-    StockMovementsService
+    StockMovementsService,
+    ItemCategoriesService,
+    UnitsService,
+    AdvancedSearchService,
+    BarcodeScannerService,
+    ReportsService,
+    BatchOperationsService,
+    DashboardAnalyticsService,
+    MultiWarehouseTransferService,
+    MobileDashboardService
   ]
 })
 export class InventoryModule {}
